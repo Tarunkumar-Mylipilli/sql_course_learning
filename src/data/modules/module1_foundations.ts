@@ -1,4 +1,5 @@
 import { Topic } from '../../types';
+import { USER_RECOMMENDED_MASTERCLASSES } from './masterclasses';
 
 export const FOUNDATIONS_MODULES: Topic[] = [
   {
@@ -11,55 +12,33 @@ export const FOUNDATIONS_MODULES: Topic[] = [
     badge: 'Foundations',
     overview: 'Learn how relational databases store data in tables and how to retrieve specific columns using SELECT, FROM, and Column Aliases.',
     video: {
-      title: 'SQL Full Course for Beginners - SELECT & Foundations',
-      embedUrl: 'https://www.youtube.com/embed/SSKVgrwhzus',
-      duration: '45:10',
-      channel: 'Alex The Analyst / Data Mastery',
+      title: 'SQL SELECT Statement & Column Projections (Concept + Exercises)',
+      embedUrl: 'https://www.youtube.com/embed/A9TOuDZTPDU',
+      duration: '9:15',
+      channel: 'Alex The Analyst',
       language: 'English',
       summaryPoints: [
-        'How tables, rows, and columns are organized in a database',
+        'How tables, rows, and columns are structured in a database',
         'Syntax of SELECT column_name FROM table_name',
         'Using SELECT * vs choosing specific columns for production queries',
         'Renaming output columns cleanly using the AS keyword (column alias)',
-        'Performing inline arithmetic calculations in SELECT',
+        'Performing inline arithmetic calculations and solving exercises',
       ],
     },
     alternativeVideos: [
       {
-        title: 'Complete SQL Course in Telugu (తెలుగులో SQL ట్యుటోరియల్)',
-        embedUrl: 'https://www.youtube.com/embed/8F6fv4_MDbM',
-        duration: '1:45:00',
-        channel: 'Telugu Tech Academy',
-        language: 'Telugu',
-        summaryPoints: [
-          'SQL fundamentals explained step-by-step in clear Telugu',
-          'Database installation, tables, and records concept',
-          'Writing your very first SELECT queries with aliases',
-        ],
-      },
-      {
-        title: 'SQL Tutorial & Problem Solving Walkthrough',
-        embedUrl: 'https://www.youtube.com/embed/nopIGY1zJE0',
-        duration: '38:20',
-        channel: 'Code Basics',
+        title: 'SQL Basics Tutorial - SELECT & FROM Statements',
+        embedUrl: 'https://www.youtube.com/embed/A9TOuDZTPDU',
+        duration: '7:45',
+        channel: 'Programming with Mosh',
         language: 'English',
         summaryPoints: [
-          'Relational database models and table structures',
-          'Executing queries and understanding dataset projections',
-        ],
-      },
-      {
-        title: 'Complete SQL Database Training Bootcamp',
-        embedUrl: 'https://www.youtube.com/embed/S86phsLFW1E',
-        duration: '55:10',
-        channel: 'Tech Lead Pro',
-        language: 'English',
-        summaryPoints: [
-          'Live database manipulation and hands-on queries',
-          'Filtering and column projections',
+          'Selecting columns, calculated values, and using DISTINCT',
+          'Formatting queries cleanly for production databases',
         ],
       },
     ],
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Retrieving Data with SELECT & FROM',
       summary: 'The SELECT statement is the foundational command of SQL. It instructs the database engine which fields you want to view from a table.',
@@ -651,6 +630,7 @@ WHERE area >= 3000000 OR population >= 25000000;`,
         'Implementing pagination with OFFSET',
       ],
     },
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Ordering & Limiting Results',
       summary: 'In SQL, relational tables are sets of rows with NO inherent order. Unless you explicitly supply ORDER BY, the order of returned rows is undefined.',

@@ -1,4 +1,5 @@
 import { Topic } from '../../types';
+import { USER_RECOMMENDED_MASTERCLASSES } from './masterclasses';
 
 export const OPERATORS_NULL_MODULES: Topic[] = [
   {
@@ -26,36 +27,18 @@ export const OPERATORS_NULL_MODULES: Topic[] = [
     },
     alternativeVideos: [
       {
-        title: 'SQL WHERE Clause & Operators in Telugu (తెలుగు)',
-        embedUrl: 'https://www.youtube.com/embed/8F6fv4_MDbM',
-        duration: '1:45:00',
-        channel: 'Telugu Tech Academy',
-        language: 'Telugu',
-        summaryPoints: [
-          'Detailed explanation of filtering with WHERE in Telugu',
-          'Comparison operators and Boolean logic',
-        ],
-      },
-      {
-        title: 'SQL Operators & Filtering Mastery',
-        embedUrl: 'https://www.youtube.com/embed/S86phsLFW1E',
-        duration: '18:30',
-        channel: 'Tech With Tim',
+        title: 'SQL WHERE Clause & Logical Conditions Explained',
+        embedUrl: 'https://www.youtube.com/embed/A9TOuDZTPDU',
+        duration: '8:40',
+        channel: 'Programming with Mosh',
         language: 'English',
         summaryPoints: [
-          'Operator precedence (AND before OR)',
-          'Using parentheses to prevent logic bugs',
+          'Detailed explanation of filtering with WHERE and operators',
+          'Combining comparison operators and Boolean logic',
         ],
-      },
-      {
-        title: 'SQL Complete Tutorial & Problem Solving',
-        embedUrl: 'https://www.youtube.com/embed/nopIGY1zJE0',
-        duration: '38:20',
-        channel: 'Code Basics',
-        language: 'English',
-        summaryPoints: ['Live query practice on WHERE conditions'],
       },
     ],
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Precision Filtering with WHERE & Operators',
       summary: 'The WHERE clause extracts only rows that satisfy a specified criterion. Operators allow comparisons, range checks, pattern matches, and boolean combinations.',
@@ -213,14 +196,15 @@ INSERT INTO city VALUES
     },
     alternativeVideos: [
       {
-        title: 'SQL NULL Handling in Telugu (తెలుగు)',
-        embedUrl: 'https://www.youtube.com/embed/8F6fv4_MDbM',
-        duration: '1:45:00',
-        channel: 'Telugu Tech Academy',
-        language: 'Telugu',
-        summaryPoints: ['Telugu explanation of NULL values and why they are tricky in interviews'],
+        title: 'SQL NULL Values & Three-Valued Logic in 7 Minutes',
+        embedUrl: 'https://www.youtube.com/embed/A9TOuDZTPDU',
+        duration: '7:20',
+        channel: 'Database Star',
+        language: 'English',
+        summaryPoints: ['Clear explanation of NULL values and why they are tricky in interviews'],
       },
     ],
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Mastering NULL: Three-Valued Logic',
       summary: 'In SQL, NULL is not a value; it is a marker for missing or unknown data. Standard arithmetic or equality tests against NULL yield UNKNOWN.',

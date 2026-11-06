@@ -1,4 +1,5 @@
 import { Topic } from '../../types';
+import { USER_RECOMMENDED_MASTERCLASSES } from './masterclasses';
 
 export const AGGREGATION_MODULES: Topic[] = [
   {
@@ -26,28 +27,18 @@ export const AGGREGATION_MODULES: Topic[] = [
     },
     alternativeVideos: [
       {
-        title: 'SQL GROUP BY & Aggregations in Telugu (తెలుగు)',
-        embedUrl: 'https://www.youtube.com/embed/8F6fv4_MDbM',
-        duration: '1:45:00',
-        channel: 'Telugu Tech Academy',
-        language: 'Telugu',
+        title: 'SQL GROUP BY & HAVING Clause in 10 Minutes',
+        embedUrl: 'https://www.youtube.com/embed/LXwfzIRD-Ds',
+        duration: '10:15',
+        channel: 'Programming with Mosh',
+        language: 'English',
         summaryPoints: [
-          'Detailed GROUP BY and HAVING explanation in Telugu',
+          'Step-by-step GROUP BY and HAVING tutorial',
           'COUNT vs SUM vs AVG pitfalls',
         ],
       },
-      {
-        title: 'SQL Aggregations and Grouping Deep Dive',
-        embedUrl: 'https://www.youtube.com/embed/SSKVgrwhzus',
-        duration: '35:00',
-        channel: 'Data Analyst Masterclass',
-        language: 'English',
-        summaryPoints: [
-          'Real business analytics queries with HAVING',
-          'Filtering on aggregated metrics',
-        ],
-      },
     ],
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Summarizing Data with Aggregates & GROUP BY',
       summary: 'Aggregate functions compute a single summary value across a set of rows. GROUP BY breaks data into buckets before computing the summary.',
@@ -319,28 +310,18 @@ GROUP BY month, country;`,
     },
     alternativeVideos: [
       {
-        title: 'SQL Joins Complete Guide in Telugu (తెలుగు)',
-        embedUrl: 'https://www.youtube.com/embed/8F6fv4_MDbM',
-        duration: '1:45:00',
-        channel: 'Telugu Tech Academy',
-        language: 'Telugu',
+        title: 'SQL Joins Explained Visually in 8 Minutes',
+        embedUrl: 'https://www.youtube.com/embed/ccm6_kiYo2M',
+        duration: '8:30',
+        channel: 'Programming with Mosh',
+        language: 'English',
         summaryPoints: [
-          'Visual understanding of INNER, LEFT, RIGHT joins in Telugu',
+          'Visual understanding of INNER, LEFT, RIGHT joins',
           'Primary key and foreign key mapping',
         ],
       },
-      {
-        title: 'SQL Joins with LeetCode & Interview Problems',
-        embedUrl: 'https://www.youtube.com/embed/nopIGY1zJE0',
-        duration: '35:00',
-        channel: 'Code Basics',
-        language: 'English',
-        summaryPoints: [
-          'Solving multi-table interview questions',
-          'Avoiding duplicate row multiplication',
-        ],
-      },
     ],
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Connecting Data with Joins',
       summary: 'Relational databases normalize data into separate tables to eliminate redundancy. Joins allow you to reconstruct complete records across tables on the fly.',

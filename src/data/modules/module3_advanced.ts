@@ -1,4 +1,5 @@
 import { Topic } from '../../types';
+import { USER_RECOMMENDED_MASTERCLASSES } from './masterclasses';
 
 export const ADVANCED_MODULES: Topic[] = [
   {
@@ -26,17 +27,18 @@ export const ADVANCED_MODULES: Topic[] = [
     },
     alternativeVideos: [
       {
-        title: 'SQL CTEs & Subqueries in Telugu (తెలుగు)',
-        embedUrl: 'https://www.youtube.com/embed/8F6fv4_MDbM',
-        duration: '1:45:00',
-        channel: 'Telugu Tech Academy',
-        language: 'Telugu',
+        title: 'SQL CTEs & Subqueries in 10 Minutes',
+        embedUrl: 'https://www.youtube.com/embed/2H8jf10UeJc',
+        duration: '9:30',
+        channel: 'Programming with Mosh',
+        language: 'English',
         summaryPoints: [
-          'CTEs explained in Telugu with real-life analogies',
-          'Breaking large queries into manageable steps',
+          'CTEs explained with real-life examples and clean syntax',
+          'Breaking down nested queries into readable pipeline steps',
         ],
       },
     ],
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Modular Logic with CTEs & Subqueries',
       summary: 'A Common Table Expression (CTE) is a temporary named result set defined before the main query using the WITH keyword.',
@@ -246,17 +248,18 @@ WHERE (e.departmentId, e.salary) IN (
     },
     alternativeVideos: [
       {
-        title: 'SQL Window Functions in Telugu (తెలుగు)',
-        embedUrl: 'https://www.youtube.com/embed/8F6fv4_MDbM',
-        duration: '1:45:00',
-        channel: 'Telugu Tech Academy',
-        language: 'Telugu',
+        title: 'SQL Window Functions Explained in 10 Minutes',
+        embedUrl: 'https://www.youtube.com/embed/0h3jO3_H3uc',
+        duration: '10:15',
+        channel: 'Programming with Mosh',
+        language: 'English',
         summaryPoints: [
-          'Telugu walkthrough of window ranking functions',
+          'Walkthrough of window ranking functions',
           'PARTITION BY vs ORDER BY inside OVER()',
         ],
       },
     ],
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Advanced Analytics with Window Functions',
       summary: 'A window function performs a calculation across a set of table rows that are related to the current row, without collapsing rows like GROUP BY does.',
@@ -447,6 +450,7 @@ LIMIT 1;`,
         'Using COALESCE to handle NULL values',
       ],
     },
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Conditional Branching with CASE WHEN',
       summary: 'The CASE expression goes through conditions and returns a value when the first condition is met.',

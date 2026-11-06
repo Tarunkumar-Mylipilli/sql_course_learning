@@ -1,4 +1,5 @@
 import { Topic } from '../../types';
+import { USER_RECOMMENDED_MASTERCLASSES } from './masterclasses';
 
 export const JOINS_DEEP_MODULES: Topic[] = [
   {
@@ -25,14 +26,15 @@ export const JOINS_DEEP_MODULES: Topic[] = [
     },
     alternativeVideos: [
       {
-        title: 'SQL Self Joins in Telugu (తెలుగు)',
-        embedUrl: 'https://www.youtube.com/embed/8F6fv4_MDbM',
-        duration: '1:45:00',
-        channel: 'Telugu Tech Academy',
-        language: 'Telugu',
-        summaryPoints: ['Telugu explanation of self-joins and employee-manager queries'],
+        title: 'SQL Self Join in 8 Minutes',
+        embedUrl: 'https://www.youtube.com/embed/ccm6_kiYo2M',
+        duration: '8:15',
+        channel: 'Programming with Mosh',
+        language: 'English',
+        summaryPoints: ['Explanation of self-joins and employee-manager queries'],
       },
     ],
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Demystifying the SELF JOIN',
       summary: 'A SELF JOIN is a regular join in which a table is joined with itself. It is indispensable for hierarchical structures (e.g., employee-to-manager) and pairwise comparisons.',

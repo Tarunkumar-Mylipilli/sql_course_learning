@@ -1,4 +1,5 @@
 import { Topic } from '../../types';
+import { USER_RECOMMENDED_MASTERCLASSES } from './masterclasses';
 
 export const VIEWS_INDEXES_MODULES: Topic[] = [
   {
@@ -25,17 +26,18 @@ export const VIEWS_INDEXES_MODULES: Topic[] = [
     },
     alternativeVideos: [
       {
-        title: 'SQL Views, Indexes & Commands in Telugu (తెలుగు)',
-        embedUrl: 'https://www.youtube.com/embed/8F6fv4_MDbM',
-        duration: '1:45:00',
-        channel: 'Telugu Tech Academy',
-        language: 'Telugu',
+        title: 'SQL Views and Indexes Explained in 8 Minutes',
+        embedUrl: 'https://www.youtube.com/embed/SSKVgrwhzus',
+        duration: '8:40',
+        channel: 'Programming with Mosh',
+        language: 'English',
         summaryPoints: [
-          'Telugu guide on how indexes make database queries 100x faster',
+          'Guide on how indexes make database queries 100x faster',
           'Creating views to simplify complex joins',
         ],
       },
     ],
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Performance & Abstraction: Views & Indexes',
       summary: 'Views provide simplified, secure virtual access to queries. Indexes provide fast pointer lookups (B-Tree) to avoid full-table scans.',

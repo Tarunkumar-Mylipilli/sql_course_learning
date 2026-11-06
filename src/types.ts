@@ -67,8 +67,9 @@ export interface Topic {
   estimatedMinutes: number;
   badge: string;
   overview: string;
-  video: TopicVideo;
-  alternativeVideos?: TopicVideo[]; // Allows switching between preferred creators & Telugu
+  video: TopicVideo; // Short, focused topic tutorial (5-12 mins) with exercise explanation
+  alternativeVideos?: TopicVideo[]; // Alternative short creator options
+  addonVideos?: TopicVideo[]; // Long full-course masterclasses & Telugu full lectures for deep understanding
   theory: TopicTheory;
   quiz: {
     passingScorePercent: number; // e.g. 75

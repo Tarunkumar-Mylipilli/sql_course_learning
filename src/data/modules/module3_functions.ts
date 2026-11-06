@@ -1,4 +1,5 @@
 import { Topic } from '../../types';
+import { USER_RECOMMENDED_MASTERCLASSES } from './masterclasses';
 
 export const FUNCTIONS_MODULES: Topic[] = [
   {
@@ -12,8 +13,8 @@ export const FUNCTIONS_MODULES: Topic[] = [
     overview: 'Manipulate textual data: convert case with UPPER/LOWER, concatenate columns, extract pieces with SUBSTRING, clean whitespace with TRIM, and substitute characters with REPLACE.',
     video: {
       title: 'SQL String Functions Tutorial (LENGTH, CONCAT, SUBSTRING, TRIM, REPLACE)',
-      embedUrl: 'https://www.youtube.com/embed/SSKVgrwhzus',
-      duration: '12:00',
+      embedUrl: 'https://www.youtube.com/embed/A9TOuDZTPDU',
+      duration: '10:30',
       channel: 'Alex The Analyst',
       language: 'English',
       summaryPoints: [
@@ -23,6 +24,7 @@ export const FUNCTIONS_MODULES: Topic[] = [
         'Trimming whitespaces and sanitizing input text',
       ],
     },
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Text Transformation with SQL String Functions',
       summary: 'Databases contain messy real-world text. SQL provides built-in scalar string functions to transform and clean strings directly inside queries.',
@@ -129,6 +131,7 @@ ORDER BY user_id;`,
         'Formatting dates into YYYY-MM for financial grouping',
       ],
     },
+    addonVideos: USER_RECOMMENDED_MASTERCLASSES,
     theory: {
       title: 'Temporal Analytics with Date Functions',
       summary: 'Dates and timestamps are critical for cohorts, retention, daily active users (DAU), and financial reporting.',
