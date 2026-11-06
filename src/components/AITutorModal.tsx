@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, Send, Lightbulb, BookOpen, CheckCircle, Code2, AlertCircle } from 'lucide-react';
+import { X, Sparkles, Lightbulb, BookOpen, Code2, AlertCircle } from 'lucide-react';
 import { Topic } from '../types';
 
 interface AITutorModalProps {
@@ -13,18 +13,8 @@ interface AITutorModalProps {
   };
 }
 
-const PUTER_SYSTEM_PROMPT = `You are the AI SQL Tutor for a gamified "Zero to Pro" SQL learning platform.
-Your objective is to mentor students through Step 4 coding challenges using the Socratic method.
-
-CRITICAL RULES:
-1. NEVER output the full or partial SQL solution query. Never write query clauses that the student can copy-paste to pass the challenge.
-2. If the student asks for the answer (e.g., "Give me the query", "What is the code?"), politely decline and ask a guiding question to test their understanding.
-3. Diagnose the student's syntax error or logical bug from their submitted query or question:
-   - Missing commas: Remind them how multiple expressions in the SELECT clause must be separated.
-   - Alias errors: Remind them how the AS keyword works, and when double quotes are necessary.
-   - Column or Table mismatches: Prompt them to double-check column spelling against the schema context.
-   - Trailing commas: Prompt them to inspect the word immediately before the FROM keyword.
-4. Keep all responses brief (under 3 sentences). Be encouraging, clear, and focused on building their problem-solving muscle.`;
+const SOCRATIC_SYSTEM_PROMPT =
+  'You are a strict, Socratic SQL Tutor. Your absolute primary rule is: DO NOT WRITE SQL CODE FOR THE STUDENT. You are forbidden from generating SELECT, FROM, JOIN, or any other SQL syntax in your responses. If the student asks for the answer, you must refuse. Your job is to guide them using ONLY the following methods: 1. Ask a leading question. 2. Point out a syntax error in their current code. 3. Explain a concept. Keep your responses under 3 sentences. Never output a code block.';
 
 export const AITutorModal: React.FC<AITutorModalProps> = ({
   isOpen,
@@ -43,30 +33,30 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
     setIsLoading(true);
     setResponseContent('');
 
-    // 1. Try Client-Side Free Puter.js AI first if available
+    // Context passed to AI strictly includes ONLY challenge_description and user_code.
+    // We intentionally OMIT expected_output_data, expected_output_columns, and solutionSql.
+    const challengeDescription = currentTopic.challenge.instructions;
+    const userCode = context?.userSql || '';
+
+    const userPrompt = `Challenge Goal:\n${challengeDescription}\n\nStudent's Current Code:\n${userCode ? userCode : '(No code written yet)'}`;
+
+    // 1. Client-Side Puter.js AI Call
     try {
       const puter = (window as any).puter;
       if (puter && puter.ai && typeof puter.ai.chat === 'function') {
-        const userPrompt = `
-Topic: ${currentTopic.title} (${currentTopic.level} level)
-Challenge Goal: ${currentTopic.challenge.instructions}
-Database Schema: ${currentTopic.challenge.schemaSql}
-Student's Current SQL Query:
-\`\`\`sql
-${context?.userSql || currentTopic.challenge.starterSql}
-\`\`\`
-${context?.errorMessage ? `Execution Error: ${context.errorMessage}` : ''}
-${context?.mismatchDetails ? `Mismatch Details: ${context.mismatchDetails}` : ''}
-
-Student asks for: ${type === 'hint' ? 'A Socratic hint nudging them in the right direction without solving it' : type === 'concept_breakdown' ? 'A conceptual explanation of the SQL clause needed here' : 'Guidance on how to structure the query logic step-by-step'}
-`;
-
         const response = await puter.ai.chat(
-          `${PUTER_SYSTEM_PROMPT}\n\n${userPrompt}`,
+          `${SOCRATIC_SYSTEM_PROMPT}\n\n${userPrompt}`,
           { model: 'claude-3-5-sonnet' }
         );
 
-        const textOutput = typeof response === 'string' ? response : response?.message?.content || response?.text || '';
+        let textOutput =
+          typeof response === 'string'
+            ? response
+            : response?.message?.content || response?.text || '';
+
+        // Strip any code blocks just in case model attempted to generate one
+        textOutput = textOutput.replace(/```[\s\S]*?```/g, '').trim();
+
         if (textOutput) {
           setResponseContent(textOutput);
           setIsLoading(false);
@@ -74,75 +64,34 @@ Student asks for: ${type === 'hint' ? 'A Socratic hint nudging them in the right
         }
       }
     } catch (puterErr) {
-      console.warn('Puter.js AI tutor unavailable, falling back to server/local tutor:', puterErr);
+      console.warn('Puter.js AI tutor unavailable, using deterministic Socratic fallback:', puterErr);
     }
 
-    // 2. Server API fallback
-    try {
-      const res = await fetch('/api/tutor/explain', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topicTitle: currentTopic.title,
-          topicLevel: currentTopic.level,
-          challengeDescription: currentTopic.challenge.instructions,
-          schemaSql: currentTopic.challenge.schemaSql,
-          userSql: context?.userSql || currentTopic.challenge.starterSql,
-          errorMessage: context?.errorMessage,
-          mismatchDetails: context?.mismatchDetails,
-          requestType: type,
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.content) {
-          setResponseContent(data.content);
-          setIsLoading(false);
-          return;
-        }
-      }
-    } catch (_) {}
-
-    // 3. Built-in Deterministic Socratic Guidance Engine
+    // 2. Offline / Fallback Socratic Guidance (strictly adheres to rule: NO direct SQL syntax)
     if (type === 'hint') {
-      const sql = (context?.userSql || '').toUpperCase();
-      let guidance = `💡 **AI Socratic Hint for ${currentTopic.title}**:\n\n`;
-
-      if (context?.errorMessage) {
-        guidance += `• **Error Diagnostic**: The database returned: \`${context.errorMessage}\`.\n`;
-        if (context.errorMessage.toLowerCase().includes('syntax') && !sql.includes('FROM')) {
-          guidance += `• Have you declared the source table using the \`FROM\` clause?\n`;
-        } else if (sql.includes(', FROM') || sql.includes(',\nFROM')) {
-          guidance += `• Watch out for a trailing comma right before the \`FROM\` keyword!\n`;
-        } else {
-          guidance += `• Double-check column spelling against the Schema Inspector tab.\n`;
-        }
-      } else if (context?.mismatchDetails) {
-        guidance += `• **Output Check**: Your query executed, but the returned columns/rows do not match the expected specification.\n`;
-        guidance += `• Verify you have aliased the column headers with the exact requested names using \`AS\`.\n`;
+      if (!userCode.trim()) {
+        setResponseContent(
+          'What table holds the data described in the challenge goal? Start by writing down which table you need to query in the FROM clause.'
+        );
+      } else if (context?.errorMessage) {
+        setResponseContent(
+          'Take a close look at how your column names are separated. Did you include all required commas, and ensure there is no extra comma before the table name?'
+        );
       } else {
-        guidance += `• Inspect the table schema on the left. What columns does the challenge ask you to select?\n`;
-        guidance += `• Remember that each projected expression in \`SELECT\` must be separated by a single comma.\n`;
+        setResponseContent(
+          'Which specific attributes does the challenge ask you to display? Verify whether your current projection includes every requested field.'
+        );
       }
-      setResponseContent(guidance);
     } else if (type === 'concept_breakdown') {
       setResponseContent(
-        `📚 **Core Concept Breakdown for ${currentTopic.title}**:\n\n` +
-        `${currentTopic.theory.summary}\n\n` +
-        `**Standard Syntax Pattern:**\n\`\`\`sql\n${currentTopic.theory.syntax}\n\`\`\`\n\n` +
-        `**Key Rules to Remember:**\n` +
-        currentTopic.theory.keyRules.map((r) => `• ${r}`).join('\n')
+        `${currentTopic.theory.summary} Remember that the database engine locates the target table first before filtering or selecting columns.`
       );
     } else {
       setResponseContent(
-        `🎯 **Step-by-Step Approach Guide**:\n\n` +
-        `1. Start by identifying the source table: \`FROM <table_name>\`.\n` +
-        `2. Write out only the specific columns needed in \`SELECT\`.\n` +
-        `3. If an alias or calculation is requested, use arithmetic operators and \`AS <alias_name>\`.\n` +
-        `4. Run the query with [Ctrl + Enter] to inspect your output preview.`
+        'Start by writing the table identifier in the FROM clause, then list only the necessary attributes and column aliases in the projection.'
       );
     }
+
     setIsLoading(false);
   };
 
@@ -156,8 +105,8 @@ Student asks for: ${type === 'hint' ? 'A Socratic hint nudging them in the right
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">AI SQL Tutor</h3>
-              <p className="text-xs text-slate-400">Contextual guidance for {currentTopic.title}</p>
+              <h3 className="text-base font-bold text-white">Socratic AI SQL Tutor</h3>
+              <p className="text-xs text-slate-400">Guiding you to the solution without giving away direct answers</p>
             </div>
           </div>
           <button
@@ -168,7 +117,7 @@ Student asks for: ${type === 'hint' ? 'A Socratic hint nudging them in the right
           </button>
         </div>
 
-        {/* User Context Banner if error or mismatch */}
+        {/* User Context Banner if error */}
         {context?.errorMessage && (
           <div className="p-3 bg-rose-950/30 border border-rose-500/30 rounded-xl text-xs text-rose-300 flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
@@ -190,7 +139,7 @@ Student asks for: ${type === 'hint' ? 'A Socratic hint nudging them in the right
             }`}
           >
             <Lightbulb className="w-3.5 h-3.5" />
-            <span>Give Me a Hint</span>
+            <span>Give Me a Socratic Hint</span>
           </button>
           <button
             onClick={() => handleAskTutor('concept_breakdown')}
@@ -212,22 +161,22 @@ Student asks for: ${type === 'hint' ? 'A Socratic hint nudging them in the right
             }`}
           >
             <Code2 className="w-3.5 h-3.5" />
-            <span>Walk Through Steps</span>
+            <span>Problem-Solving Approach</span>
           </button>
         </div>
 
         {/* Response Area */}
-        <div className="p-5 bg-slate-950 rounded-2xl border border-slate-800/80 min-h-[160px] text-xs text-slate-200 leading-relaxed font-sans">
+        <div className="p-5 bg-slate-950 rounded-2xl border border-slate-800/80 min-h-[140px] text-xs text-slate-200 leading-relaxed font-sans">
           {isLoading ? (
-            <div className="flex items-center justify-center gap-2 py-10 text-indigo-400">
+            <div className="flex items-center justify-center gap-2 py-8 text-indigo-400">
               <Sparkles className="w-5 h-5 animate-spin" />
-              <span>Analyzing query logic and preparing explanation...</span>
+              <span>Analyzing code context and formulating guiding questions...</span>
             </div>
           ) : responseContent ? (
-            <div className="whitespace-pre-wrap space-y-2">{responseContent}</div>
+            <div className="whitespace-pre-wrap space-y-2 text-slate-100 text-sm">{responseContent}</div>
           ) : (
             <div className="text-slate-500 text-center py-8">
-              Click one of the options above to get targeted hints, concept breakdowns, or step-by-step guidance.
+              Click one of the buttons above to ask your tutor for a guiding question or concept explanation.
             </div>
           )}
         </div>

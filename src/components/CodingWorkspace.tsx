@@ -17,6 +17,7 @@ import {
   Award,
   X,
   PlusCircle,
+  Shuffle,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { CodingChallenge } from '../types';
@@ -51,17 +52,20 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
   hasNextTopic,
   onOpenAITutorWithContext,
 }) => {
+  // 1. Initial coding bank from props
+  const codingBank = challenges && challenges.length > 0 ? challenges : [challenge];
+
+  // Dynamic AI generated challenges state
   const [dynamicChallenges, setDynamicChallenges] = useState<CodingChallenge[]>([]);
   const [showThemeModal, setShowThemeModal] = useState<boolean>(false);
 
-  const initialList = challenges && challenges.length > 0 ? challenges : [challenge];
-  const challengeList = [...initialList, ...dynamicChallenges];
-  const [selectedChallengeIdx, setSelectedChallengeIdx] = useState<number>(0);
-  const currentChallenge = challengeList[selectedChallengeIdx] || challenge;
+  // Combined challenge list
+  const fullChallengeList = [...codingBank, ...dynamicChallenges];
 
-  const [userSql, setUserSql] = useState<string>(
-    selectedChallengeIdx === 0 && savedSql ? savedSql : currentChallenge.starterSql
-  );
+  // Active challenge state - initialized to null for mounting hook
+  const [activeChallenge, setActiveChallenge] = useState<CodingChallenge | null>(null);
+  const [userCode, setUserCode] = useState<string>('');
+
   const [activeTab, setActiveTab] = useState<'instructions' | 'schema' | 'hints'>('instructions');
   const [selectedTableIndex, setSelectedTableIndex] = useState<number>(0);
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -70,25 +74,64 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [unlockedHints, setUnlockedHints] = useState<number[]>([]);
   const [completedChallengeIds, setCompletedChallengeIds] = useState<string[]>(
-    isCompleted ? [currentChallenge.id] : []
+    isCompleted ? [challenge.id] : []
   );
 
-  // Sync editor when switching challenge
+  // 1. Mount effect: initialize activeChallenge using getRandomCodingChallenge(codingBank)
   useEffect(() => {
-    setUserSql(currentChallenge.starterSql);
+    const randomInitial = getRandomCodingChallenge(codingBank) || codingBank[0] || challenge;
+    setActiveChallenge(randomInitial);
+    setUserCode(savedSql || randomInitial?.starterSql || '');
+  }, []);
+
+  // Sync if topic changes
+  useEffect(() => {
+    if (activeChallenge && !codingBank.some((c) => c.id === activeChallenge.id)) {
+      const fresh = getRandomCodingChallenge(codingBank) || codingBank[0] || challenge;
+      setActiveChallenge(fresh);
+      setUserCode(savedSql || fresh?.starterSql || '');
+    }
+  }, [challenge.id]);
+
+  // 2. Loading fallback: if activeChallenge is null, return Loading state
+  if (!activeChallenge) {
+    return (
+      <div className="flex items-center justify-center p-16 bg-slate-900 border border-slate-800 rounded-2xl text-slate-400 font-mono text-sm shadow-xl">
+        <div className="flex items-center gap-3">
+          <Sparkles className="w-5 h-5 text-sky-400 animate-spin" />
+          <span>Loading Challenge...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Random Challenge Handler: updates activeChallenge AND clears userCode to ''
+  const handleRandomChallenge = () => {
+    const randomPick = getRandomCodingChallenge(fullChallengeList);
+    if (randomPick) {
+      setActiveChallenge(randomPick);
+      setUserCode(''); // Clear userCode so editor refreshes with new prompt
+      setQueryResult(null);
+      setValidationResult(null);
+      setSelectedTableIndex(0);
+      setUnlockedHints([]);
+    }
+  };
+
+  const handleSelectChallenge = (ch: CodingChallenge) => {
+    setActiveChallenge(ch);
+    setUserCode(ch.starterSql || '');
     setQueryResult(null);
     setValidationResult(null);
     setSelectedTableIndex(0);
     setUnlockedHints([]);
-  }, [selectedChallengeIdx]);
+  };
 
-  const handlePickRandomChallenge = () => {
-    if (challengeList.length <= 1) return;
-    let nextIdx = Math.floor(Math.random() * challengeList.length);
-    if (nextIdx === selectedChallengeIdx) {
-      nextIdx = (nextIdx + 1) % challengeList.length;
-    }
-    setSelectedChallengeIdx(nextIdx);
+  // Reset to starter SQL
+  const handleReset = () => {
+    setUserCode(activeChallenge.starterSql || '');
+    setQueryResult(null);
+    setValidationResult(null);
   };
 
   // Keyboard shortcut Ctrl+Enter to run query
@@ -103,7 +146,7 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
     setIsRunning(true);
     setValidationResult(null);
     try {
-      const result = await executeQuery(currentChallenge.schemaSql, userSql);
+      const result = await executeQuery(activeChallenge.schemaSql, userCode);
       setQueryResult(result);
     } catch (err: any) {
       setQueryResult({
@@ -120,27 +163,27 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
 
   const handleSubmitSolution = async () => {
     setIsSubmitting(true);
-    try {
-      const validation = await validateSolution(
-        currentChallenge.schemaSql,
-        userSql,
-        currentChallenge.solutionSql,
-        currentChallenge.expectedColumns
-      );
-      setValidationResult(validation);
-      if (validation.userResult) {
-        setQueryResult(validation.userResult);
-      }
+    setValidationResult(null);
 
-      if (validation.passed) {
-        onCodingComplete(userSql);
-        if (!completedChallengeIds.includes(currentChallenge.id)) {
-          setCompletedChallengeIds([...completedChallengeIds, currentChallenge.id]);
+    try {
+      const result = await validateSolution(
+        activeChallenge.schemaSql,
+        userCode,
+        activeChallenge.solutionSql
+      );
+
+      setValidationResult(result);
+
+      if (result.passed) {
+        if (!completedChallengeIds.includes(activeChallenge.id)) {
+          setCompletedChallengeIds([...completedChallengeIds, activeChallenge.id]);
         }
+        onCodingComplete(userCode);
+
         try {
           confetti({
             particleCount: 100,
-            spread: 80,
+            spread: 70,
             origin: { y: 0.6 },
           });
         } catch (_) {}
@@ -149,54 +192,65 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
       setValidationResult({
         passed: false,
         message: err?.message || 'Validation error',
+        userResult: {
+          columns: [],
+          values: [],
+          error: err?.message || 'Validation error',
+          rowCount: 0,
+          executionTimeMs: 0,
+        },
+        expectedResult: {
+          columns: [],
+          values: [],
+          rowCount: 0,
+          executionTimeMs: 0,
+        },
+        mismatchReason: err?.message || 'Validation error',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleReset = () => {
-    setUserSql(currentChallenge.starterSql);
-    setQueryResult(null);
-    setValidationResult(null);
-  };
-
   const toggleHint = (index: number) => {
     if (unlockedHints.includes(index)) {
-      setUnlockedHints(unlockedHints.filter((h) => h !== index));
+      setUnlockedHints(unlockedHints.filter((i) => i !== index));
     } else {
       setUnlockedHints([...unlockedHints, index]);
     }
   };
 
-  const handleGenerateThemeScenario = (theme: ScenarioTheme) => {
-    const newEx = generateLocalExercise(topicTitle, theme);
-    const updated = [...dynamicChallenges, newEx];
-    setDynamicChallenges(updated);
-    setSelectedChallengeIdx(initialList.length + dynamicChallenges.length);
+  const handleCreateDynamicTheme = (themeKey: ScenarioTheme) => {
+    const freshChallenge = generateLocalExercise('select', themeKey);
+    setDynamicChallenges((prev) => [...prev, freshChallenge]);
+    setActiveChallenge(freshChallenge);
+    setUserCode(freshChallenge.starterSql || '');
     setShowThemeModal(false);
+    setQueryResult(null);
+    setValidationResult(null);
   };
 
-  const currentTable = currentChallenge.tables[selectedTableIndex] || currentChallenge.tables[0];
+  const currentTable = activeChallenge.tables[selectedTableIndex] || activeChallenge.tables[0];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Multi-Practice Problem Selector Bar & AI Scenario Generator */}
+      {/* Exercise Bar */}
       <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-2xl flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
           <Layers className="w-4 h-4 text-sky-400" />
-          <span>Practice Exercises for this Topic ({challengeList.length} scenarios):</span>
+          <span>Practice Exercises for this Topic ({fullChallengeList.length} scenarios):</span>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {challengeList.map((ch, idx) => {
+          {fullChallengeList.map((ch, idx) => {
             const isDone = completedChallengeIds.includes(ch.id);
+            const isSelected = activeChallenge.id === ch.id;
             return (
               <button
                 key={ch.id}
-                onClick={() => setSelectedChallengeIdx(idx)}
+                onClick={() => handleSelectChallenge(ch)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
-                  selectedChallengeIdx === idx
+                  isSelected
                     ? 'bg-sky-500 text-slate-950 font-bold shadow-md'
                     : isDone
                     ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30'
@@ -215,13 +269,13 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
             );
           })}
 
-          {/* Random Challenge Selector */}
+          {/* 4. Random Challenge Button: Pick random & clear userCode */}
           <button
-            onClick={handlePickRandomChallenge}
+            onClick={handleRandomChallenge}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white border border-slate-700 text-xs font-semibold transition cursor-pointer"
-            title="Randomly pick one challenge from the coding bank"
+            title="Randomly pick one challenge and clear the code editor"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-sky-400" />
+            <Shuffle className="w-3.5 h-3.5 text-sky-400" />
             <span>🎲 Random Challenge</span>
           </button>
 
@@ -244,132 +298,123 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-lg font-bold text-white">Generate Fresh AI Practice Scenario</h3>
+                <h3 className="text-base font-bold text-white">Generate Real-World SQL Scenario</h3>
               </div>
               <button
                 onClick={() => setShowThemeModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
             <p className="text-xs text-slate-300">
-              Select an industry scenario to generate a brand new realistic problem with its own tables, dataset, and solution:
+              Select an industry domain to generate a realistic enterprise dataset, business schema, and SQL practice challenge:
             </p>
-
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              {SCENARIO_THEMES.map((theme) => (
-                <button
-                  key={theme.id}
-                  onClick={() => handleGenerateThemeScenario(theme.id)}
-                  className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-sky-500/50 hover:bg-slate-800/60 text-left transition cursor-pointer flex flex-col justify-between space-y-1.5"
-                >
-                  <span className="text-2xl">{theme.icon}</span>
-                  <span className="text-xs font-bold text-slate-200 block">{theme.label}</span>
-                </button>
-              ))}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              {SCENARIO_THEMES.map((theme) => {
+                return (
+                  <button
+                    key={theme.id}
+                    onClick={() => handleCreateDynamicTheme(theme.id)}
+                    className="p-3 bg-slate-800 hover:bg-indigo-950/60 border border-slate-700 hover:border-indigo-500/50 rounded-xl text-left transition cursor-pointer group"
+                  >
+                    <div className="text-lg mb-1">{theme.icon}</div>
+                    <div className="text-xs font-bold text-white group-hover:text-indigo-300">
+                      {theme.label}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
       )}
 
-      {/* Challenge Title Banner */}
-      <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-              <Code2 className="w-3 h-3" /> Step 4: SQL Coding Sandbox
-            </span>
-            {currentChallenge.source && (
-              <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                {currentChallenge.source}
-              </span>
-            )}
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                currentChallenge.difficulty === 'Easy'
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                  : currentChallenge.difficulty === 'Medium'
-                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-              }`}
-            >
-              {currentChallenge.difficulty}
-            </span>
-          </div>
-          <h2 className="text-xl font-bold text-white tracking-tight">{currentChallenge.title}</h2>
-          <p className="text-xs text-slate-400">
-            Write standard SQL, execute in real SQLite WebAssembly, and test against expected benchmarks.
-          </p>
-        </div>
-
-        {completedChallengeIds.includes(currentChallenge.id) && (
-          <div className="flex items-center gap-2 px-3.5 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs font-semibold self-start md:self-center">
-            <CheckCircle className="w-4 h-4 text-emerald-400" />
-            <span>Task Solved!</span>
-          </div>
-        )}
-      </div>
-
-      {/* Main 2-Column Workspace Grid */}
-      <div className="grid lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Context, Schema & Hints (5 cols) */}
+      {/* Main Workspace Layout (2 columns) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Instructions & Schema Tab (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
-          {/* Tabs */}
-          <div className="bg-slate-900 border border-slate-800 p-1 rounded-xl flex items-center gap-1">
+          {/* Navigation Tabs */}
+          <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-800 p-1.5 rounded-xl">
             <button
               onClick={() => setActiveTab('instructions')}
-              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition cursor-pointer ${
+              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 ${
                 activeTab === 'instructions'
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-sky-500 text-slate-950 shadow-sm font-bold'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              Task Prompt
+              <Lightbulb className="w-3.5 h-3.5" />
+              <span>Challenge</span>
             </button>
             <button
               onClick={() => setActiveTab('schema')}
-              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 ${
                 activeTab === 'schema'
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-sky-500 text-slate-950 shadow-sm font-bold'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              <Database className="w-3.5 h-3.5 text-sky-400" />
-              <span>Tables ({currentChallenge.tables.length})</span>
+              <Database className="w-3.5 h-3.5" />
+              <span>Tables ({activeChallenge.tables.length})</span>
             </button>
             <button
               onClick={() => setActiveTab('hints')}
-              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 ${
                 activeTab === 'hints'
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-sky-500 text-slate-950 shadow-sm font-bold'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-              <span>Hints ({currentChallenge.hints.length})</span>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Hints ({activeChallenge.hints.length})</span>
             </button>
           </div>
 
-          {/* Tab 1: Instructions */}
+          {/* Tab 1: Instructions & Problem Description */}
           {activeTab === 'instructions' && (
             <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-              <div>
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  Challenge Objectives
-                </h3>
-                <div className="text-sm text-slate-200 leading-relaxed bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
-                  {currentChallenge.instructions}
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                      Step 4: Interactive Sandbox
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        activeChallenge.difficulty === 'Easy'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          : activeChallenge.difficulty === 'Medium'
+                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                      }`}
+                    >
+                      {activeChallenge.difficulty}
+                    </span>
+                    {activeChallenge.source && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                        {activeChallenge.sourceId || activeChallenge.source}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-base font-bold text-white tracking-tight">{activeChallenge.title}</h3>
                 </div>
               </div>
 
-              {currentChallenge.expectedColumns && (
-                <div>
-                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                    Expected Output Columns
+              <div className="p-3.5 bg-slate-950/70 rounded-xl border border-slate-800 text-xs text-slate-200 leading-relaxed space-y-2">
+                <span className="font-bold text-sky-400 block uppercase tracking-wider text-[10px]">
+                  Task Requirement:
+                </span>
+                <p>{activeChallenge.instructions}</p>
+              </div>
+
+              {activeChallenge.expectedColumns && activeChallenge.expectedColumns.length > 0 && (
+                <div className="space-y-1.5">
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Expected Columns in Output:
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {currentChallenge.expectedColumns.map((col, idx) => (
+                    {activeChallenge.expectedColumns.map((col, idx) => (
                       <span
                         key={idx}
                         className="px-2.5 py-1 rounded-lg text-xs font-mono bg-sky-500/10 text-sky-300 border border-sky-500/20"
@@ -397,7 +442,7 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
             <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
               {/* Table Switcher */}
               <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {currentChallenge.tables.map((t, idx) => (
+                {activeChallenge.tables.map((t, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedTableIndex(idx)}
@@ -440,11 +485,6 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                                     PK
                                   </span>
                                 )}
-                                {c.isFk && (
-                                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-sky-500/10 text-sky-400 border border-sky-500/20 font-bold">
-                                    FK
-                                  </span>
-                                )}
                               </td>
                             </tr>
                           ))}
@@ -458,12 +498,12 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                     <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                       Sample Data ({currentTable.sampleData.length} records)
                     </h4>
-                    <div className="overflow-x-auto rounded-xl border border-slate-800 max-h-48">
+                    <div className="overflow-x-auto rounded-xl border border-slate-800">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider text-[10px] sticky top-0">
+                        <thead className="bg-slate-950 text-slate-400 text-[10px] uppercase">
                           <tr>
                             {currentTable.columns.map((c, i) => (
-                              <th key={i} className="p-2 font-mono">
+                              <th key={i} className="p-2">
                                 {c.name}
                               </th>
                             ))}
@@ -494,7 +534,7 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                 Guiding Hints (Click to Reveal)
               </h3>
-              {currentChallenge.hints.map((hint, idx) => {
+              {activeChallenge.hints.map((hint, idx) => {
                 const isOpen = unlockedHints.includes(idx);
                 return (
                   <div key={idx} className="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/40">
@@ -542,7 +582,7 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                 <button
                   onClick={() =>
                     onOpenAITutorWithContext({
-                      userSql,
+                      userSql: userCode,
                       errorMessage: queryResult?.error,
                       mismatchDetails: validationResult?.mismatchReason,
                     })
@@ -550,20 +590,23 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                   className="flex items-center gap-1 text-xs text-indigo-300 hover:text-indigo-100 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 px-2.5 py-1 rounded-lg transition cursor-pointer"
                 >
                   <Sparkles className="w-3 h-3 text-indigo-400" />
-                  <span>Get AI Hint</span>
+                  <span>Ask AI Tutor</span>
                 </button>
               </div>
             </div>
 
-            {/* Monospaced Editor Textarea */}
-            <div className="relative">
+            {/* 3. Fixed Height Parent Wrapper: Prevents editor from collapsing to 0px */}
+            <div
+              className="relative bg-slate-950"
+              style={{ height: '400px', width: '100%', minHeight: '350px' }}
+            >
               <textarea
-                value={userSql}
-                onChange={(e) => setUserSql(e.target.value)}
+                value={userCode}
+                onChange={(e) => setUserCode(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Write your SQL query here..."
-                rows={9}
-                className="w-full p-4 bg-slate-950 text-sky-200 font-mono text-sm leading-relaxed outline-none resize-y border-none focus:ring-0 selection:bg-sky-500/30"
+                style={{ height: '100%', width: '100%', resize: 'none' }}
+                className="w-full h-full p-4 bg-slate-950 text-sky-200 font-mono text-sm leading-relaxed outline-none border-none focus:ring-0 selection:bg-sky-500/30"
                 spellCheck={false}
               />
             </div>
@@ -578,127 +621,123 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                 <button
                   onClick={handleRunQuery}
                   disabled={isRunning}
-                  className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer"
+                  className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
                 >
-                  <Play className="w-3.5 h-3.5 text-sky-400" />
-                  <span>{isRunning ? 'Running...' : 'Run Query'}</span>
+                  <Play className="w-3.5 h-3.5 fill-current text-sky-400" />
+                  <span>{isRunning ? 'Running...' : 'Run Query Preview'}</span>
                 </button>
                 <button
                   onClick={handleSubmitSolution}
                   disabled={isSubmitting}
-                  className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-semibold shadow-lg shadow-emerald-500/20 transition cursor-pointer"
+                  className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-bold transition shadow-lg shadow-emerald-500/20 cursor-pointer disabled:opacity-50"
                 >
                   <CheckCircle className="w-3.5 h-3.5" />
-                  <span>{isSubmitting ? 'Evaluating...' : 'Test & Submit'}</span>
+                  <span>{isSubmitting ? 'Evaluating...' : 'Submit Final Solution'}</span>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Validation Result Banner */}
+          {/* Validation Result Banner (Pass / Fail) */}
           {validationResult && (
             <div
-              className={`p-4 rounded-2xl border ${
+              className={`p-4 rounded-2xl border text-xs space-y-2 animate-fadeIn ${
                 validationResult.passed
-                  ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
-                  : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
+                  ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-200'
+                  : 'bg-rose-950/30 border-rose-500/30 text-rose-200'
               }`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 font-bold text-sm">
                   {validationResult.passed ? (
-                    <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                    <>
+                      <CheckCircle className="w-5 h-5 text-emerald-400" />
+                      <span className="text-emerald-300">Challenge Passed! Query output verified.</span>
+                    </>
                   ) : (
-                    <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                    <>
+                      <AlertTriangle className="w-5 h-5 text-rose-400" />
+                      <span className="text-rose-300">Output mismatch. Inspect details below:</span>
+                    </>
                   )}
-                  <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider">
-                      {validationResult.passed ? 'Solution Accepted!' : 'Test Cases Failed'}
-                    </h4>
-                    <p className="text-xs mt-1 leading-relaxed">{validationResult.message}</p>
-                  </div>
                 </div>
 
                 {validationResult.passed && (
                   <div className="flex items-center gap-2">
-                    {selectedChallengeIdx < challengeList.length - 1 ? (
-                      <button
-                        onClick={() => setSelectedChallengeIdx(selectedChallengeIdx + 1)}
-                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs shadow-md transition cursor-pointer"
-                      >
-                        <span>Next Task in Topic</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={onProceedToNextTopic}
-                        className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition cursor-pointer"
-                      >
-                        <span>{hasNextTopic ? 'Next Topic in SQL' : 'Course Completed!'}</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    )}
+                    <button
+                      onClick={onProceedToNextTopic}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition cursor-pointer shadow-md"
+                    >
+                      <span>Proceed to Next Module</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 )}
               </div>
-            </div>
-          )}
 
-          {/* Query Results Viewer */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-            <div className="bg-slate-950 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
-              <span className="font-semibold text-slate-300">Execution Output</span>
-              {queryResult && (
-                <div className="flex items-center gap-3 text-[11px]">
-                  <span>{queryResult.rowCount} rows</span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {queryResult.executionTimeMs}ms
-                  </span>
+              {!validationResult.passed && validationResult.mismatchReason && (
+                <div className="p-3 bg-rose-950/50 rounded-xl border border-rose-500/20 font-mono text-[11px] text-rose-300">
+                  {validationResult.mismatchReason}
                 </div>
               )}
             </div>
+          )}
 
-            {/* Error or Empty or Results Table */}
-            {queryResult?.error ? (
-              <div className="p-4 bg-rose-950/20 text-xs font-mono text-rose-300 border-l-4 border-rose-500">
-                <span className="font-bold text-rose-400">SQL Error: </span>
-                {queryResult.error}
+          {/* Query Execution Result Grid */}
+          {queryResult && (
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
+                  <Database className="w-4 h-4 text-sky-400" />
+                  <span>Query Execution Result</span>
+                  {queryResult.rowCount !== undefined && (
+                    <span className="text-slate-400 text-[11px]">({queryResult.rowCount} rows)</span>
+                  )}
+                </div>
+                {queryResult.executionTimeMs !== undefined && (
+                  <div className="flex items-center gap-1 text-[11px] text-slate-400">
+                    <Clock className="w-3 h-3 text-slate-400" />
+                    <span>{queryResult.executionTimeMs.toFixed(1)} ms</span>
+                  </div>
+                )}
               </div>
-            ) : queryResult && queryResult.columns.length > 0 ? (
-              <div className="overflow-x-auto max-h-72">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider text-[10px] sticky top-0 border-b border-slate-800">
-                    <tr>
-                      {queryResult.columns.map((col, idx) => (
-                        <th key={idx} className="p-2.5">
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/80 bg-slate-950/50 text-slate-200">
-                    {queryResult.values.map((row, rIdx) => (
-                      <tr key={rIdx} className="hover:bg-slate-800/50">
-                        {row.map((cell, cIdx) => (
-                          <td key={cIdx} className="p-2.5 truncate max-w-[180px]">
-                            {cell === null ? (
-                              <span className="text-slate-500 italic">NULL</span>
-                            ) : (
-                              String(cell)
-                            )}
-                          </td>
+
+              {queryResult.error ? (
+                <div className="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl font-mono text-xs text-rose-300">
+                  ⚠️ {queryResult.error}
+                </div>
+              ) : queryResult.values.length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-400 italic bg-slate-950/50 rounded-xl">
+                  Query executed successfully, but returned 0 rows.
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-slate-800 max-h-60 overflow-y-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-950 text-slate-300 font-mono sticky top-0 border-b border-slate-800 text-[11px]">
+                      <tr>
+                        {queryResult.columns.map((col, idx) => (
+                          <th key={idx} className="p-2.5">
+                            {col}
+                          </th>
                         ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="p-8 text-center text-xs text-slate-500">
-                Run or test your query above to see live database results here.
-              </div>
-            )}
-          </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/80 bg-slate-950/50 font-mono text-slate-300">
+                      {queryResult.values.map((row, rIdx) => (
+                        <tr key={rIdx} className="hover:bg-slate-900/60">
+                          {row.map((val: any, cIdx: number) => (
+                            <td key={cIdx} className="p-2.5 truncate max-w-[160px]">
+                              {val !== null && val !== undefined ? String(val) : <span className="text-slate-500">NULL</span>}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
