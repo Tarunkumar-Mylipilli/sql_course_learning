@@ -17,7 +17,7 @@ export const USER_RECOMMENDED_MASTERCLASSES: TopicVideo[] = [
     title: 'SQL Full Course for Beginners (Zero to Hero Masterclass)',
     embedUrl: 'https://www.youtube.com/embed/SSKVgrwhzus',
     duration: '45:10',
-    channel: 'Alex The Analyst / Data Mastery',
+    channel: 'Data with Baraa',
     language: 'English',
     summaryPoints: [
       'End-to-end relational database models and schema relationships',

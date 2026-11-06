@@ -47,6 +47,7 @@ export interface TopicTheory {
   commonMistakes: string[];
   exampleQuery: string;
   exampleExplanation: string;
+  mermaidMindmap?: string;
 }
 
 export interface TopicVideo {

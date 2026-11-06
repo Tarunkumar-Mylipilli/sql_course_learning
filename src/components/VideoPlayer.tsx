@@ -8,10 +8,12 @@ import {
   ListChecks,
   ExternalLink,
   RefreshCw,
-  Globe,
+  Film,
   Sparkles,
   BookOpen,
-  Film,
+  HelpCircle,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react';
 import { TopicVideo } from '../types';
 
@@ -37,13 +39,23 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [useNoCookie, setUseNoCookie] = useState(false);
 
-  // Reset selected video index to the short topic lesson (index 0) when topic changes
+  // Video verification checkpoint state
+  const [showCheckpoint, setShowCheckpoint] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationSuccess, setVerificationSuccess] = useState(isWatched);
+
+  // Reset state when topic changes
   useEffect(() => {
     setSelectedVideoIndex(0);
-  }, [video?.embedUrl]);
+    setShowCheckpoint(false);
+    setSelectedAnswer(null);
+    setVerificationError(null);
+    setVerificationSuccess(isWatched);
+  }, [video?.embedUrl, isWatched]);
 
   const activeVideo = allVideos[selectedVideoIndex] || video || {
-    title: 'SQL Tutorial Video',
+    title: 'SQL SELECT Statement in MySQL',
     embedUrl: 'https://www.youtube.com/embed/A9TOuDZTPDU',
     duration: '9:15',
     channel: 'Alex The Analyst',
@@ -60,13 +72,30 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`
     : `https://www.youtube.com/embed/${videoId}?rel=0`;
 
+  // Quick 1-question verification checkpoint to confirm video completion
+  const handleVerifyVideo = () => {
+    if (selectedAnswer === null) {
+      setVerificationError('Please select an answer to verify video completion.');
+      return;
+    }
+
+    // Correct answer is always option 1 (AS keyword / key rule highlighted in the lesson)
+    if (selectedAnswer === 1) {
+      setVerificationSuccess(true);
+      setVerificationError(null);
+      onMarkWatched();
+    } else {
+      setVerificationError('Incorrect. Please review the video clip: the second option is the correct standard SQL rule.');
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Video Source Switcher: Short Topic Lesson vs Add-on Masterclasses */}
       <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-300 px-1">
           <Film className="w-4 h-4 text-sky-400" />
-          <span>Video Selection:</span>
+          <span>Curriculum Video Selection:</span>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -80,7 +109,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>🎯 Short Topic Lesson</span>
+            <span>🎯 Short Lesson ({video.channel})</span>
             <span className="text-[10px] opacity-80">({video.duration})</span>
           </button>
 
@@ -133,7 +162,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             </span>
             {selectedVideoIndex === 0 ? (
               <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-                ⚡ Short Concept & Exercises
+                ⚡ Short Concept & Practice
               </span>
             ) : (
               <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
@@ -151,7 +180,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </div>
           <h2 className="text-xl font-bold text-white tracking-tight">{activeVideo.title}</h2>
           <p className="text-xs text-slate-400">
-            Instructor / Channel: <span className="text-sky-400 font-medium">{activeVideo.channel}</span>
+            Instructor / Channel: <span className="text-sky-400 font-semibold">{activeVideo.channel}</span>
           </p>
         </div>
 
@@ -171,15 +200,15 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             <ExternalLink className="w-3 h-3" />
           </a>
 
-          {isWatched ? (
+          {verificationSuccess ? (
             <div className="flex items-center gap-2 px-3.5 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs font-semibold">
               <CheckCircle className="w-4 h-4 text-emerald-400" />
-              <span>Video Completed</span>
+              <span>Video Verified & Completed</span>
             </div>
           ) : (
             <div className="flex items-center gap-2 px-3.5 py-2 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400 text-xs font-medium">
               <PlayCircle className="w-4 h-4 text-amber-400" />
-              <span>Watch to unlock Theory</span>
+              <span>Must Watch & Verify to Unlock Theory</span>
             </div>
           )}
         </div>
@@ -245,6 +274,74 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </ul>
       </div>
 
+      {/* Interactive Verification Checkpoint Modal / Box */}
+      {!verificationSuccess && (
+        <div className="bg-gradient-to-br from-slate-900 via-slate-900/90 to-sky-950/40 border border-sky-500/30 rounded-2xl p-6 space-y-4 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-bold text-sky-300">
+              <HelpCircle className="w-4 h-4 text-sky-400" />
+              <span>Mandatory Video Completion Checkpoint</span>
+            </div>
+            <span className="text-xs text-amber-400 font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+              🔒 Step 2 Locked until verified
+            </span>
+          </div>
+          <p className="text-xs text-slate-300">
+            To ensure genuine learning, confirm you followed the video lecture by answering this 1-click concept check:
+          </p>
+
+          <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
+            <p className="text-sm font-semibold text-white">
+              Q: Based on the tutorial video, which keyword is standardly used to assign a friendly alias to an output column?
+            </p>
+            <div className="grid sm:grid-cols-2 gap-2.5">
+              {[
+                { id: 0, text: 'RENAME column_name' },
+                { id: 1, text: 'AS alias_name (e.g. salary * 12 AS annual_salary)' },
+                { id: 2, text: 'TO alias_name' },
+                { id: 3, text: 'SET header_name' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => setSelectedAnswer(opt.id)}
+                  className={`p-3 rounded-xl border text-left text-xs font-medium transition cursor-pointer flex items-center gap-2.5 ${
+                    selectedAnswer === opt.id
+                      ? 'bg-sky-500/20 border-sky-400 text-sky-200 shadow-sm'
+                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                  }`}
+                >
+                  <span
+                    className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                      selectedAnswer === opt.id
+                        ? 'border-sky-400 bg-sky-500 text-slate-950'
+                        : 'border-slate-600'
+                    }`}
+                  >
+                    {selectedAnswer === opt.id && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </span>
+                  <span>{opt.text}</span>
+                </button>
+              ))}
+            </div>
+
+            {verificationError && (
+              <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center gap-2 text-xs text-rose-300">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span>{verificationError}</span>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={handleVerifyVideo}
+            className="w-full sm:w-auto px-6 py-2.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-xl transition shadow-lg shadow-sky-500/20 cursor-pointer flex items-center justify-center gap-2"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Verify Video Completion & Unlock Theory</span>
+          </button>
+        </div>
+      )}
+
       {/* Add-on Masterclasses Section */}
       {addonVideos && addonVideos.length > 0 && (
         <div className="bg-gradient-to-r from-slate-900/80 via-indigo-950/20 to-slate-900/80 border border-indigo-900/30 rounded-2xl p-5 space-y-3">
@@ -279,7 +376,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                       </span>
                     </div>
                     <h4 className="text-xs font-bold text-slate-200 line-clamp-2 mt-1">{add.title}</h4>
-                    <p className="text-[11px] text-slate-400">{add.channel}</p>
+                    <p className="text-[11px] text-slate-400 font-medium">{add.channel}</p>
                   </div>
                   <button
                     className={`mt-2.5 text-[11px] font-semibold py-1 px-2.5 rounded-lg w-full text-center transition ${
@@ -298,30 +395,23 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* Action Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
         <p className="text-xs text-slate-400">
-          Finished watching the video lesson? Click below to confirm and move to reading the website theory.
+          {verificationSuccess
+            ? '✅ Video verified! You are ready to study the point-by-point theory notes.'
+            : '🔒 Complete the Video Checkpoint above to unlock Step 2.'}
         </p>
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          {!isWatched ? (
-            <button
-              onClick={() => {
-                onMarkWatched();
-                onProceedToTheory();
-              }}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-semibold text-sm shadow-lg shadow-sky-500/25 transition cursor-pointer"
-            >
-              <CheckCircle className="w-4 h-4" />
-              <span>Mark as Watched & Next: Theory</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              onClick={onProceedToTheory}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-md transition cursor-pointer"
-            >
-              <span>Proceed to Step 2: Theory</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          )}
+          <button
+            onClick={onProceedToTheory}
+            disabled={!verificationSuccess}
+            className={`w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition ${
+              verificationSuccess
+                ? 'bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white shadow-lg shadow-sky-500/25 cursor-pointer'
+                : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'
+            }`}
+          >
+            <span>Proceed to Step 2: Theory</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>

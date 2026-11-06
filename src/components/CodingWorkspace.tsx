@@ -15,10 +15,13 @@ import {
   ChevronUp,
   Layers,
   Award,
+  X,
+  PlusCircle,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { CodingChallenge } from '../types';
 import { executeQuery, validateSolution, QueryResult, ValidationResult } from '../lib/sqlEngine';
+import { SCENARIO_THEMES, ScenarioTheme, generateLocalExercise } from '../lib/aiExerciseGenerator';
 
 interface CodingWorkspaceProps {
   challenge: CodingChallenge;
@@ -47,7 +50,11 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
   hasNextTopic,
   onOpenAITutorWithContext,
 }) => {
-  const challengeList = challenges && challenges.length > 0 ? challenges : [challenge];
+  const [dynamicChallenges, setDynamicChallenges] = useState<CodingChallenge[]>([]);
+  const [showThemeModal, setShowThemeModal] = useState<boolean>(false);
+
+  const initialList = challenges && challenges.length > 0 ? challenges : [challenge];
+  const challengeList = [...initialList, ...dynamicChallenges];
   const [selectedChallengeIdx, setSelectedChallengeIdx] = useState<number>(0);
   const currentChallenge = challengeList[selectedChallengeIdx] || challenge;
 
@@ -152,43 +159,96 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
     }
   };
 
+  const handleGenerateThemeScenario = (theme: ScenarioTheme) => {
+    const newEx = generateLocalExercise(topicTitle, theme);
+    const updated = [...dynamicChallenges, newEx];
+    setDynamicChallenges(updated);
+    setSelectedChallengeIdx(initialList.length + dynamicChallenges.length);
+    setShowThemeModal(false);
+  };
+
   const currentTable = currentChallenge.tables[selectedTableIndex] || currentChallenge.tables[0];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Multi-Practice Problem Selector Bar */}
-      {challengeList.length > 1 && (
-        <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-2xl flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
-            <Layers className="w-4 h-4 text-sky-400" />
-            <span>Practice Exercises for this Topic ({challengeList.length} tasks):</span>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {challengeList.map((ch, idx) => {
-              const isDone = completedChallengeIds.includes(ch.id);
-              return (
+      {/* Multi-Practice Problem Selector Bar & AI Scenario Generator */}
+      <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-2xl flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
+          <Layers className="w-4 h-4 text-sky-400" />
+          <span>Practice Exercises for this Topic ({challengeList.length} scenarios):</span>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {challengeList.map((ch, idx) => {
+            const isDone = completedChallengeIds.includes(ch.id);
+            return (
+              <button
+                key={ch.id}
+                onClick={() => setSelectedChallengeIdx(idx)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                  selectedChallengeIdx === idx
+                    ? 'bg-sky-500 text-slate-950 font-bold shadow-md'
+                    : isDone
+                    ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                {isDone ? (
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <span className="w-4 h-4 rounded-full bg-slate-900 text-slate-300 text-[10px] flex items-center justify-center font-bold">
+                    {idx + 1}
+                  </span>
+                )}
+                <span>{ch.sourceId || ch.title.split(':')[0]}</span>
+              </button>
+            );
+          })}
+
+          {/* AI Scenario Generator Button */}
+          <button
+            onClick={() => setShowThemeModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500/20 to-purple-500/20 hover:from-indigo-500/30 hover:to-purple-500/30 border border-indigo-500/40 text-indigo-300 hover:text-white text-xs font-semibold transition cursor-pointer shadow-sm"
+            title="Generate a brand-new scenario (E-commerce, Healthcare, Fintech, Streaming, etc.)"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            <span>✨ Generate AI Scenario</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Scenario Theme Selector Modal */}
+      {showThemeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-lg font-bold text-white">Generate Fresh AI Practice Scenario</h3>
+              </div>
+              <button
+                onClick={() => setShowThemeModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-xs text-slate-300">
+              Select an industry scenario to generate a brand new realistic problem with its own tables, dataset, and solution:
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              {SCENARIO_THEMES.map((theme) => (
                 <button
-                  key={ch.id}
-                  onClick={() => setSelectedChallengeIdx(idx)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
-                    selectedChallengeIdx === idx
-                      ? 'bg-sky-500 text-slate-950 font-bold shadow-md'
-                      : isDone
-                      ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                  }`}
+                  key={theme.id}
+                  onClick={() => handleGenerateThemeScenario(theme.id)}
+                  className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-sky-500/50 hover:bg-slate-800/60 text-left transition cursor-pointer flex flex-col justify-between space-y-1.5"
                 >
-                  {isDone ? (
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                  ) : (
-                    <span className="w-4 h-4 rounded-full bg-slate-900 text-slate-300 text-[10px] flex items-center justify-center font-bold">
-                      {idx + 1}
-                    </span>
-                  )}
-                  <span>{ch.sourceId || ch.title}</span>
+                  <span className="text-2xl">{theme.icon}</span>
+                  <span className="text-xs font-bold text-slate-200 block">{theme.label}</span>
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
       )}
