@@ -371,183 +371,208 @@ export const MODULE_1_QUIZ_BANK: QuizQuestion[] = [
 export const MODULE_1_CODING_BANK: CodingChallenge[] = [
   {
     id: 'ch_1',
-    title: 'Employee Directory Column Projection',
+    title: 'Challenge 1: Employee Directory & Monthly Salary',
     difficulty: 'Easy',
     source: 'Standard',
     sourceId: 'Corporate Directory',
-    instructions: 'Write a query to retrieve the `first_name`, `last_name`, and `department` of all employees from the `employees` table.',
+    instructions: "Write a query to retrieve each employee's `name` and their monthly `salary` from the `Employees` table.",
     schemaSql: `
-CREATE TABLE employees (
-  emp_id INT PRIMARY KEY,
-  first_name VARCHAR(50),
-  last_name VARCHAR(50),
+CREATE TABLE Employees (
+  id INT PRIMARY KEY,
+  name VARCHAR(50),
   department VARCHAR(50),
-  salary INT,
-  hire_date DATE
+  salary INT
 );
-INSERT INTO employees VALUES
-(1, 'Alice', 'Johnson', 'Engineering', 85000, '2021-03-15'),
-(2, 'Bob', 'Smith', 'Marketing', 62000, '2020-07-22'),
-(3, 'Charlie', 'Brown', 'Finance', 71000, '2019-11-04'),
-(4, 'Diana', 'Prince', 'Engineering', 94000, '2018-01-19');`,
+INSERT INTO Employees VALUES
+(1, 'Alice Johnson', 'Engineering', 92000),
+(2, 'Bob Smith', 'Marketing', 78000),
+(3, 'Charlie Brown', 'Engineering', 85000),
+(4, 'Diana Prince', 'Product', 95000),
+(5, 'Evan Wright', 'Sales', 64000);
+`,
     tables: [
       {
-        name: 'employees',
+        name: 'Employees',
         columns: [
-          { name: 'emp_id', type: 'INT', isPk: true },
-          { name: 'first_name', type: 'VARCHAR(50)' },
-          { name: 'last_name', type: 'VARCHAR(50)' },
+          { name: 'id', type: 'INT', isPk: true },
+          { name: 'name', type: 'VARCHAR(50)' },
           { name: 'department', type: 'VARCHAR(50)' },
           { name: 'salary', type: 'INT' },
-          { name: 'hire_date', type: 'DATE' },
         ],
         sampleData: [
-          { emp_id: 1, first_name: 'Alice', last_name: 'Johnson', department: 'Engineering' },
-          { emp_id: 2, first_name: 'Bob', last_name: 'Smith', department: 'Marketing' },
+          { id: 1, name: 'Alice Johnson', department: 'Engineering', salary: 92000 },
+          { id: 2, name: 'Bob Smith', department: 'Marketing', salary: 78000 },
         ],
       },
     ],
-    starterSql: `-- Select first_name, last_name, and department
+    starterSql: `-- Write a query to find each employee's name and salary
 SELECT 
-FROM employees;`,
-    solutionSql: `SELECT first_name, last_name, department FROM employees;`,
-    expectedColumns: ['first_name', 'last_name', 'department'],
+FROM Employees;`,
+    solutionSql: `SELECT name, salary FROM Employees;`,
+    expectedColumns: ['name', 'salary'],
+    expectedOutputData: [
+      { name: 'Alice Johnson', salary: 92000 },
+      { name: 'Bob Smith', salary: 78000 },
+      { name: 'Charlie Brown', salary: 85000 },
+      { name: 'Diana Prince', salary: 95000 },
+      { name: 'Evan Wright', salary: 64000 },
+    ],
     hints: [
-      'Specify the three requested column names separated by commas.',
+      'Specify only the columns name and salary separated by a comma.',
       'Check that there is no trailing comma before the FROM clause.',
     ],
   },
   {
     id: 'ch_2',
-    title: 'Annual Compensation Calculator',
+    title: 'Challenge 2: Annual Compensation Calculator',
     difficulty: 'Easy',
     source: 'Standard',
-    sourceId: 'HR Compensation',
-    instructions: 'Calculate each employee\'s annual base pay. Retrieve `emp_id`, `first_name`, and their annual salary computed as `monthly_salary * 12`, aliased exactly as `annual_salary`.',
+    sourceId: 'Finance Payroll',
+    instructions: "The finance team needs annual salary figures. Write a query to return each employee's `name` and their annual earnings (`salary * 12`) with the alias `annual_compensation`.",
     schemaSql: `
-CREATE TABLE staff (
-  emp_id INT PRIMARY KEY,
-  first_name VARCHAR(50),
-  monthly_salary DECIMAL(10,2),
-  position VARCHAR(50)
+CREATE TABLE Employees (
+  id INT PRIMARY KEY,
+  name VARCHAR(50),
+  department VARCHAR(50),
+  salary INT
 );
-INSERT INTO staff VALUES
-(1, 'Marcus', 6000.00, 'Software Engineer'),
-(2, 'Chloe', 8000.00, 'Product Manager'),
-(3, 'Liam', 4500.00, 'Sales Associate'),
-(4, 'Sophia', 9500.00, 'Director');`,
+INSERT INTO Employees VALUES
+(1, 'Alice Johnson', 'Engineering', 92000),
+(2, 'Bob Smith', 'Marketing', 78000),
+(3, 'Charlie Brown', 'Engineering', 85000),
+(4, 'Diana Prince', 'Product', 95000),
+(5, 'Evan Wright', 'Sales', 64000);
+`,
     tables: [
       {
-        name: 'staff',
+        name: 'Employees',
         columns: [
-          { name: 'emp_id', type: 'INT', isPk: true },
-          { name: 'first_name', type: 'VARCHAR(50)' },
-          { name: 'monthly_salary', type: 'DECIMAL(10,2)' },
-          { name: 'position', type: 'VARCHAR(50)' },
+          { name: 'id', type: 'INT', isPk: true },
+          { name: 'name', type: 'VARCHAR(50)' },
+          { name: 'department', type: 'VARCHAR(50)' },
+          { name: 'salary', type: 'INT' },
         ],
         sampleData: [
-          { emp_id: 1, first_name: 'Marcus', monthly_salary: 6000.0 },
-          { emp_id: 2, first_name: 'Chloe', monthly_salary: 8000.0 },
+          { id: 1, name: 'Alice Johnson', department: 'Engineering', salary: 92000 },
+          { id: 2, name: 'Bob Smith', department: 'Marketing', salary: 78000 },
         ],
       },
     ],
-    starterSql: `-- Calculate annual_salary as monthly_salary * 12
-SELECT 
-FROM staff;`,
-    solutionSql: `SELECT emp_id, first_name, monthly_salary * 12 AS annual_salary FROM staff;`,
-    expectedColumns: ['emp_id', 'first_name', 'annual_salary'],
+    starterSql: `-- Calculate annual compensation = salary * 12
+SELECT name, 
+FROM Employees;`,
+    solutionSql: `SELECT name, salary * 12 AS annual_compensation FROM Employees;`,
+    expectedColumns: ['name', 'annual_compensation'],
+    expectedOutputData: [
+      { name: 'Alice Johnson', annual_compensation: 1104000 },
+      { name: 'Bob Smith', annual_compensation: 936000 },
+      { name: 'Charlie Brown', annual_compensation: 1020000 },
+      { name: 'Diana Prince', annual_compensation: 1140000 },
+      { name: 'Evan Wright', annual_compensation: 768000 },
+    ],
     hints: [
-      'Multiply monthly_salary by 12: (monthly_salary * 12).',
-      'Use the AS keyword to name the derived column `annual_salary`.',
+      'Multiply the salary column by 12: salary * 12.',
+      'Use the AS keyword to name the derived column: AS annual_compensation.',
     ],
   },
   {
     id: 'ch_3',
-    title: 'Product Inventory Stock Value',
+    title: 'Challenge 3: Total Retail Inventory Valuation',
     difficulty: 'Easy',
     source: 'FAANG',
     sourceId: 'Amazon Inventory',
-    instructions: 'Generate an inventory valuation report. Retrieve the `product_name`, `unit_price`, `stock_quantity`, and the calculated total stock value (`unit_price * stock_quantity`) aliased as `total_inventory_value`.',
+    instructions: "Write a query to calculate the total retail inventory value for each item in the `Products` table. Return `product_name`, `price`, `stock`, and the computed total value (`price * stock`) aliased as `total_stock_value`.",
     schemaSql: `
-CREATE TABLE products (
-  product_id INT PRIMARY KEY,
+CREATE TABLE Products (
+  id INT PRIMARY KEY,
   product_name VARCHAR(50),
-  category VARCHAR(30),
-  unit_price DECIMAL(8,2),
-  stock_quantity INT
+  price DECIMAL(10,2),
+  stock INT
 );
-INSERT INTO products VALUES
-(101, 'Wireless Mouse', 25.00, 40),
-(102, 'Mechanical Keyboard', 80.00, 15),
-(103, 'Gaming Monitor', 300.00, 8),
-(104, 'USB-C Hub', 35.00, 50);`,
+INSERT INTO Products VALUES
+(101, 'Mechanical Keyboard', 120.00, 45),
+(102, 'Wireless Mouse', 45.50, 110),
+(103, 'UltraWide Monitor', 450.00, 18),
+(104, 'USB-C Hub', 35.00, 80);
+`,
     tables: [
       {
-        name: 'products',
+        name: 'Products',
         columns: [
-          { name: 'product_id', type: 'INT', isPk: true },
+          { name: 'id', type: 'INT', isPk: true },
           { name: 'product_name', type: 'VARCHAR(50)' },
-          { name: 'category', type: 'VARCHAR(30)' },
-          { name: 'unit_price', type: 'DECIMAL(8,2)' },
-          { name: 'stock_quantity', type: 'INT' },
+          { name: 'price', type: 'DECIMAL(10,2)' },
+          { name: 'stock', type: 'INT' },
         ],
         sampleData: [
-          { product_id: 101, product_name: 'Wireless Mouse', unit_price: 25.0, stock_quantity: 40 },
-          { product_id: 102, product_name: 'Mechanical Keyboard', unit_price: 80.0, stock_quantity: 15 },
+          { id: 101, product_name: 'Mechanical Keyboard', price: 120.0, stock: 45 },
+          { id: 102, product_name: 'Wireless Mouse', price: 45.5, stock: 110 },
         ],
       },
     ],
-    starterSql: `-- Project product_name, unit_price, stock_quantity, and total_inventory_value
+    starterSql: `-- Project product_name, price, stock, and total_stock_value
 SELECT 
-FROM products;`,
-    solutionSql: `SELECT product_name, unit_price, stock_quantity, unit_price * stock_quantity AS total_inventory_value FROM products;`,
-    expectedColumns: ['product_name', 'unit_price', 'stock_quantity', 'total_inventory_value'],
+FROM Products;`,
+    solutionSql: `SELECT product_name, price, stock, price * stock AS total_stock_value FROM Products;`,
+    expectedColumns: ['product_name', 'price', 'stock', 'total_stock_value'],
+    expectedOutputData: [
+      { product_name: 'Mechanical Keyboard', price: 120.00, stock: 45, total_stock_value: 5400.00 },
+      { product_name: 'Wireless Mouse', price: 45.50, stock: 110, total_stock_value: 5005.00 },
+      { product_name: 'UltraWide Monitor', price: 450.00, stock: 18, total_stock_value: 8100.00 },
+      { product_name: 'USB-C Hub', price: 35.00, stock: 80, total_stock_value: 2800.00 },
+    ],
     hints: [
-      'Calculate total inventory value: unit_price * stock_quantity.',
-      'Assign the alias using: AS total_inventory_value.',
+      'Perform inline multiplication of price and stock: price * stock AS total_stock_value.',
+      'Check that product_name, price, stock, and the calculation are separated by commas.',
     ],
   },
   {
     id: 'ch_4',
-    title: 'Unique Operating Departments',
+    title: 'Challenge 4: Unique Operating Departments',
     difficulty: 'Easy',
     source: 'W3Resource',
-    sourceId: 'w3resource #4',
-    instructions: 'The leadership team wants to know which distinct departments currently have active headcount. Write a query to return a list of all unique departments from `employees` without duplicates, aliased as `department_name`.',
+    sourceId: 'SELECT DISTINCT #4',
+    instructions: "HR needs a list of all active departments within the company without any duplicate entries. Write a query to return unique department names aliased as `department_name`.",
     schemaSql: `
-CREATE TABLE employees (
-  emp_id INT PRIMARY KEY,
-  full_name VARCHAR(60),
+CREATE TABLE Employees (
+  id INT PRIMARY KEY,
+  name VARCHAR(50),
   department VARCHAR(50),
-  role VARCHAR(40)
+  salary INT
 );
-INSERT INTO employees VALUES
-(1, 'Alex Miller', 'Engineering', 'Backend Dev'),
-(2, 'Sarah Connor', 'Sales', 'Account Exec'),
-(3, 'David Kim', 'Engineering', 'Frontend Dev'),
-(4, 'Priya Patel', 'Human Resources', 'HR Lead'),
-(5, 'Marcus Vance', 'Legal', 'Counsel'),
-(6, 'Elena Rostova', 'Sales', 'Sales Rep');`,
+INSERT INTO Employees VALUES
+(1, 'Alice Johnson', 'Engineering', 92000),
+(2, 'Bob Smith', 'Marketing', 78000),
+(3, 'Charlie Brown', 'Engineering', 85000),
+(4, 'Diana Prince', 'Product', 95000),
+(5, 'Evan Wright', 'Sales', 64000);
+`,
     tables: [
       {
-        name: 'employees',
+        name: 'Employees',
         columns: [
-          { name: 'emp_id', type: 'INT', isPk: true },
-          { name: 'full_name', type: 'VARCHAR(60)' },
+          { name: 'id', type: 'INT', isPk: true },
+          { name: 'name', type: 'VARCHAR(50)' },
           { name: 'department', type: 'VARCHAR(50)' },
-          { name: 'role', type: 'VARCHAR(40)' },
+          { name: 'salary', type: 'INT' },
         ],
         sampleData: [
-          { emp_id: 1, full_name: 'Alex Miller', department: 'Engineering' },
-          { emp_id: 2, full_name: 'Sarah Connor', department: 'Sales' },
+          { id: 1, name: 'Alice Johnson', department: 'Engineering' },
+          { id: 2, name: 'Bob Smith', department: 'Marketing' },
         ],
       },
     ],
     starterSql: `-- Select unique department names aliased as department_name
 SELECT 
-FROM employees;`,
-    solutionSql: `SELECT DISTINCT department AS department_name FROM employees;`,
+FROM Employees;`,
+    solutionSql: `SELECT DISTINCT department AS department_name FROM Employees;`,
     expectedColumns: ['department_name'],
+    expectedOutputData: [
+      { department_name: 'Engineering' },
+      { department_name: 'Marketing' },
+      { department_name: 'Product' },
+      { department_name: 'Sales' },
+    ],
     hints: [
       'Use the DISTINCT keyword immediately following SELECT.',
       'Rename the column using: department AS department_name.',
@@ -555,45 +580,53 @@ FROM employees;`,
   },
   {
     id: 'ch_5',
-    title: 'E-Commerce Customer Invoice Labels',
+    title: 'Challenge 5: Warehouse Inventory Audit Labels',
     difficulty: 'Easy',
     source: 'FAANG',
-    sourceId: 'Stripe Invoice Modeling',
-    instructions: 'Construct customer billing summaries. Retrieve `order_id`, `customer_name`, an inflated total with a 10% shipping surcharge (`order_amount * 1.10`) aliased as `billed_amount`, and a static label constant `\'PROCESSED\'` aliased as `order_status`.',
+    sourceId: 'Inventory Audit',
+    instructions: "Warehouse management requires an inventory audit list. Return `product_name`, `stock`, and a static status column with the text value `'IN_STOCK'` aliased as `inventory_status`.",
     schemaSql: `
-CREATE TABLE orders (
-  order_id INT PRIMARY KEY,
-  customer_name VARCHAR(50),
-  order_amount DECIMAL(10,2),
-  order_date DATE
+CREATE TABLE Products (
+  id INT PRIMARY KEY,
+  product_name VARCHAR(50),
+  price DECIMAL(10,2),
+  stock INT
 );
-INSERT INTO orders VALUES
-(1001, 'Evelyn Wright', 100.00, '2024-01-10'),
-(1002, 'Kenji Sato', 250.00, '2024-01-11'),
-(1003, 'Maria Garcia', 50.00, '2024-01-12');`,
+INSERT INTO Products VALUES
+(101, 'Mechanical Keyboard', 120.00, 45),
+(102, 'Wireless Mouse', 45.50, 110),
+(103, 'UltraWide Monitor', 450.00, 18),
+(104, 'USB-C Hub', 35.00, 80);
+`,
     tables: [
       {
-        name: 'orders',
+        name: 'Products',
         columns: [
-          { name: 'order_id', type: 'INT', isPk: true },
-          { name: 'customer_name', type: 'VARCHAR(50)' },
-          { name: 'order_amount', type: 'DECIMAL(10,2)' },
-          { name: 'order_date', type: 'DATE' },
+          { name: 'id', type: 'INT', isPk: true },
+          { name: 'product_name', type: 'VARCHAR(50)' },
+          { name: 'price', type: 'DECIMAL(10,2)' },
+          { name: 'stock', type: 'INT' },
         ],
         sampleData: [
-          { order_id: 1001, customer_name: 'Evelyn Wright', order_amount: 100.0 },
-          { order_id: 1002, customer_name: 'Kenji Sato', order_amount: 250.0 },
+          { id: 101, product_name: 'Mechanical Keyboard', stock: 45 },
+          { id: 102, product_name: 'Wireless Mouse', stock: 110 },
         ],
       },
     ],
-    starterSql: `-- Select order_id, customer_name, billed_amount, and constant status 'PROCESSED'
+    starterSql: `-- Select product_name, stock, and literal 'IN_STOCK' AS inventory_status
 SELECT 
-FROM orders;`,
-    solutionSql: `SELECT order_id, customer_name, order_amount * 1.10 AS billed_amount, 'PROCESSED' AS order_status FROM orders;`,
-    expectedColumns: ['order_id', 'customer_name', 'billed_amount', 'order_status'],
+FROM Products;`,
+    solutionSql: `SELECT product_name, stock, 'IN_STOCK' AS inventory_status FROM Products;`,
+    expectedColumns: ['product_name', 'stock', 'inventory_status'],
+    expectedOutputData: [
+      { product_name: 'Mechanical Keyboard', stock: 45, inventory_status: 'IN_STOCK' },
+      { product_name: 'Wireless Mouse', stock: 110, inventory_status: 'IN_STOCK' },
+      { product_name: 'UltraWide Monitor', stock: 18, inventory_status: 'IN_STOCK' },
+      { product_name: 'USB-C Hub', stock: 80, inventory_status: 'IN_STOCK' },
+    ],
     hints: [
-      'Compute billed_amount: order_amount * 1.10 AS billed_amount.',
-      'Project the static string literal: \'PROCESSED\' AS order_status.',
+      'Project product_name and stock.',
+      "Add a static literal string enclosed in single quotes: 'IN_STOCK' AS inventory_status.",
     ],
   },
 ];

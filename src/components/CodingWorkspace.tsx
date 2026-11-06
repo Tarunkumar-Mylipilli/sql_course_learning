@@ -22,6 +22,7 @@ import confetti from 'canvas-confetti';
 import { CodingChallenge } from '../types';
 import { executeQuery, validateSolution, QueryResult, ValidationResult } from '../lib/sqlEngine';
 import { SCENARIO_THEMES, ScenarioTheme, generateLocalExercise } from '../lib/aiExerciseGenerator';
+import { getRandomCodingChallenge } from '../lib/randomizer';
 
 interface CodingWorkspaceProps {
   challenge: CodingChallenge;
@@ -80,6 +81,15 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
     setSelectedTableIndex(0);
     setUnlockedHints([]);
   }, [selectedChallengeIdx]);
+
+  const handlePickRandomChallenge = () => {
+    if (challengeList.length <= 1) return;
+    let nextIdx = Math.floor(Math.random() * challengeList.length);
+    if (nextIdx === selectedChallengeIdx) {
+      nextIdx = (nextIdx + 1) % challengeList.length;
+    }
+    setSelectedChallengeIdx(nextIdx);
+  };
 
   // Keyboard shortcut Ctrl+Enter to run query
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -204,6 +214,16 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
               </button>
             );
           })}
+
+          {/* Random Challenge Selector */}
+          <button
+            onClick={handlePickRandomChallenge}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white border border-slate-700 text-xs font-semibold transition cursor-pointer"
+            title="Randomly pick one challenge from the coding bank"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-sky-400" />
+            <span>🎲 Random Challenge</span>
+          </button>
 
           {/* AI Scenario Generator Button */}
           <button

@@ -35,6 +35,7 @@ export interface CodingChallenge {
   starterSql: string;
   solutionSql: string;
   expectedColumns?: string[];
+  expectedOutputData?: Record<string, any>[];
   hints: string[];
 }
 

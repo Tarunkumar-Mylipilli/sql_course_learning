@@ -13,6 +13,19 @@ interface AITutorModalProps {
   };
 }
 
+const PUTER_SYSTEM_PROMPT = `You are the AI SQL Tutor for a gamified "Zero to Pro" SQL learning platform.
+Your objective is to mentor students through Step 4 coding challenges using the Socratic method.
+
+CRITICAL RULES:
+1. NEVER output the full or partial SQL solution query. Never write query clauses that the student can copy-paste to pass the challenge.
+2. If the student asks for the answer (e.g., "Give me the query", "What is the code?"), politely decline and ask a guiding question to test their understanding.
+3. Diagnose the student's syntax error or logical bug from their submitted query or question:
+   - Missing commas: Remind them how multiple expressions in the SELECT clause must be separated.
+   - Alias errors: Remind them how the AS keyword works, and when double quotes are necessary.
+   - Column or Table mismatches: Prompt them to double-check column spelling against the schema context.
+   - Trailing commas: Prompt them to inspect the word immediately before the FROM keyword.
+4. Keep all responses brief (under 3 sentences). Be encouraging, clear, and focused on building their problem-solving muscle.`;
+
 export const AITutorModal: React.FC<AITutorModalProps> = ({
   isOpen,
   onClose,
@@ -30,6 +43,41 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
     setIsLoading(true);
     setResponseContent('');
 
+    // 1. Try Client-Side Free Puter.js AI first if available
+    try {
+      const puter = (window as any).puter;
+      if (puter && puter.ai && typeof puter.ai.chat === 'function') {
+        const userPrompt = `
+Topic: ${currentTopic.title} (${currentTopic.level} level)
+Challenge Goal: ${currentTopic.challenge.instructions}
+Database Schema: ${currentTopic.challenge.schemaSql}
+Student's Current SQL Query:
+\`\`\`sql
+${context?.userSql || currentTopic.challenge.starterSql}
+\`\`\`
+${context?.errorMessage ? `Execution Error: ${context.errorMessage}` : ''}
+${context?.mismatchDetails ? `Mismatch Details: ${context.mismatchDetails}` : ''}
+
+Student asks for: ${type === 'hint' ? 'A Socratic hint nudging them in the right direction without solving it' : type === 'concept_breakdown' ? 'A conceptual explanation of the SQL clause needed here' : 'Guidance on how to structure the query logic step-by-step'}
+`;
+
+        const response = await puter.ai.chat(
+          `${PUTER_SYSTEM_PROMPT}\n\n${userPrompt}`,
+          { model: 'claude-3-5-sonnet' }
+        );
+
+        const textOutput = typeof response === 'string' ? response : response?.message?.content || response?.text || '';
+        if (textOutput) {
+          setResponseContent(textOutput);
+          setIsLoading(false);
+          return;
+        }
+      }
+    } catch (puterErr) {
+      console.warn('Puter.js AI tutor unavailable, falling back to server/local tutor:', puterErr);
+    }
+
+    // 2. Server API fallback
     try {
       const res = await fetch('/api/tutor/explain', {
         method: 'POST',
@@ -46,41 +94,56 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
         }),
       });
 
-      if (!res.ok) {
-        throw new Error(`Server returned ${res.status}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.content) {
+          setResponseContent(data.content);
+          setIsLoading(false);
+          return;
+        }
       }
+    } catch (_) {}
 
-      const data = await res.json();
-      setResponseContent(data.content || 'Keep trying! Check your syntax and table schema.');
-    } catch (err: any) {
-      // Offline fallback tutor
-      if (type === 'hint') {
-        setResponseContent(
-          `💡 **Pedagogical Hint for ${currentTopic.title}**:\n\n` +
-          `• First, look at the Schema Inspector in the Tables tab to verify exact column names.\n` +
-          `• Remember SQL keyword ordering: \`SELECT\` -> \`FROM\` -> \`WHERE\` -> \`GROUP BY\` -> \`HAVING\` -> \`ORDER BY\` -> \`LIMIT\`.\n` +
-          `• Check for trailing commas in your column list before the FROM keyword.`
-        );
-      } else if (type === 'concept_breakdown') {
-        setResponseContent(
-          `📚 **Core Concept Breakdown for ${currentTopic.title}**:\n\n` +
-          `${currentTopic.theory.summary}\n\n` +
-          `**Standard Syntax Pattern:**\n\`\`\`sql\n${currentTopic.theory.syntax}\n\`\`\`\n\n` +
-          `**Key Rules to Remember:**\n` +
-          currentTopic.theory.keyRules.map((r) => `• ${r}`).join('\n')
-        );
+    // 3. Built-in Deterministic Socratic Guidance Engine
+    if (type === 'hint') {
+      const sql = (context?.userSql || '').toUpperCase();
+      let guidance = `💡 **AI Socratic Hint for ${currentTopic.title}**:\n\n`;
+
+      if (context?.errorMessage) {
+        guidance += `• **Error Diagnostic**: The database returned: \`${context.errorMessage}\`.\n`;
+        if (context.errorMessage.toLowerCase().includes('syntax') && !sql.includes('FROM')) {
+          guidance += `• Have you declared the source table using the \`FROM\` clause?\n`;
+        } else if (sql.includes(', FROM') || sql.includes(',\nFROM')) {
+          guidance += `• Watch out for a trailing comma right before the \`FROM\` keyword!\n`;
+        } else {
+          guidance += `• Double-check column spelling against the Schema Inspector tab.\n`;
+        }
+      } else if (context?.mismatchDetails) {
+        guidance += `• **Output Check**: Your query executed, but the returned columns/rows do not match the expected specification.\n`;
+        guidance += `• Verify you have aliased the column headers with the exact requested names using \`AS\`.\n`;
       } else {
-        setResponseContent(
-          `🎯 **Approach Guide**:\n\n` +
-          `To solve this challenge, break it into 3 steps:\n` +
-          `1. Choose the right table in FROM.\n` +
-          `2. Apply filtering or aggregations as specified.\n` +
-          `3. Sort or limit if requested by the challenge.`
-        );
+        guidance += `• Inspect the table schema on the left. What columns does the challenge ask you to select?\n`;
+        guidance += `• Remember that each projected expression in \`SELECT\` must be separated by a single comma.\n`;
       }
-    } finally {
-      setIsLoading(false);
+      setResponseContent(guidance);
+    } else if (type === 'concept_breakdown') {
+      setResponseContent(
+        `📚 **Core Concept Breakdown for ${currentTopic.title}**:\n\n` +
+        `${currentTopic.theory.summary}\n\n` +
+        `**Standard Syntax Pattern:**\n\`\`\`sql\n${currentTopic.theory.syntax}\n\`\`\`\n\n` +
+        `**Key Rules to Remember:**\n` +
+        currentTopic.theory.keyRules.map((r) => `• ${r}`).join('\n')
+      );
+    } else {
+      setResponseContent(
+        `🎯 **Step-by-Step Approach Guide**:\n\n` +
+        `1. Start by identifying the source table: \`FROM <table_name>\`.\n` +
+        `2. Write out only the specific columns needed in \`SELECT\`.\n` +
+        `3. If an alias or calculation is requested, use arithmetic operators and \`AS <alias_name>\`.\n` +
+        `4. Run the query with [Ctrl + Enter] to inspect your output preview.`
+      );
     }
+    setIsLoading(false);
   };
 
   return (

@@ -14,6 +14,7 @@ import {
 import confetti from 'canvas-confetti';
 import { QuizQuestion } from '../types';
 import { generateLocalQuizQuestions } from '../lib/aiExerciseGenerator';
+import { getRandomQuizQuestions, checkQuizPassingScore } from '../lib/randomizer';
 
 interface QuizStepProps {
   questions: QuizQuestion[];
@@ -32,14 +33,16 @@ export const QuizStep: React.FC<QuizStepProps> = ({
   onQuizSubmit,
   onProceedToCoding,
 }) => {
-  const [activeQuestions, setActiveQuestions] = useState<QuizQuestion[]>(questions);
+  const [activeQuestions, setActiveQuestions] = useState<QuizQuestion[]>(() =>
+    getRandomQuizQuestions(questions, 10)
+  );
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState<boolean>(isPassed);
   const [scorePercent, setScorePercent] = useState<number>(savedScore || 0);
 
   // Sync questions when prop changes
   useEffect(() => {
-    setActiveQuestions(questions);
+    setActiveQuestions(getRandomQuizQuestions(questions, 10));
     setSelectedAnswers({});
     setSubmitted(isPassed);
     setScorePercent(savedScore || 0);
@@ -64,7 +67,7 @@ export const QuizStep: React.FC<QuizStepProps> = ({
     });
 
     const calculatedPercent = Math.round((correctCount / activeQuestions.length) * 100);
-    const passed = calculatedPercent >= passingScorePercent;
+    const passed = checkQuizPassingScore(correctCount, activeQuestions.length);
 
     setScorePercent(calculatedPercent);
     setSubmitted(true);
@@ -82,8 +85,16 @@ export const QuizStep: React.FC<QuizStepProps> = ({
   };
 
   const handleRetry = () => {
+    setActiveQuestions(getRandomQuizQuestions(questions, 10));
     setSelectedAnswers({});
     setSubmitted(false);
+  };
+
+  const handleShuffleQuestions = () => {
+    setActiveQuestions(getRandomQuizQuestions(questions, 10));
+    setSelectedAnswers({});
+    setSubmitted(false);
+    setScorePercent(0);
   };
 
   const handleGenerateFreshQuiz = () => {
@@ -115,12 +126,21 @@ export const QuizStep: React.FC<QuizStepProps> = ({
 
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
+            onClick={handleShuffleQuestions}
+            className="flex items-center gap-1.5 px-3 py-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 rounded-xl text-xs font-semibold transition cursor-pointer"
+            title="Randomly pick 10 questions from the 20-question bank"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-sky-400" />
+            <span>🔀 Pick 10 Questions</span>
+          </button>
+
+          <button
             onClick={handleGenerateFreshQuiz}
             className="flex items-center gap-1.5 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 rounded-xl text-xs font-semibold transition cursor-pointer"
             title="Generate a brand new set of AI quiz questions"
           >
             <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-            <span>✨ Generate Fresh AI Quiz</span>
+            <span>✨ Fresh AI Scenarios</span>
           </button>
 
           {submitted && (
