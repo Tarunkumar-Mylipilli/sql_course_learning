@@ -20,6 +20,7 @@ import {
   Clock,
   AlertCircle,
   Unlock,
+  Sparkles,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { TopicVideo } from '../types';
