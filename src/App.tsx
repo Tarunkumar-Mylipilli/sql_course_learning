@@ -5,11 +5,11 @@ import {
   loadProgress,
   saveProgress,
   getInitialProgress,
-  loadCustomTopics,
-  saveCustomTopics,
-  isTopicUnlocked,
+  loadAllTopics,
+  saveAllTopics,
 } from './lib/storage';
 import { Navbar } from './components/Navbar';
+import { Sidebar } from './components/Sidebar';
 import { TopicWorkflow } from './components/TopicWorkflow';
 import { CourseRoadmap } from './components/CourseRoadmap';
 import { NotesHub } from './components/NotesHub';
@@ -18,10 +18,9 @@ import { AITutorModal } from './components/AITutorModal';
 import { AddTopicModal } from './components/AddTopicModal';
 
 export default function App() {
-  // Combine core SQL curriculum with custom user-created topics
+  // Load topics from storage (with core curriculum and user customizations)
   const [topics, setTopics] = useState<Topic[]>(() => {
-    const custom = loadCustomTopics();
-    return [...SQL_TOPICS, ...custom];
+    return loadAllTopics(SQL_TOPICS);
   });
 
   const [progress, setProgress] = useState<CourseProgress>(() => loadProgress(topics));
@@ -30,6 +29,7 @@ export default function App() {
     progress.currentTopicId || topics[0]?.id || 'topic-1-select'
   );
   const [currentStep, setCurrentStep] = useState<TopicStep>('video');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Modals state
   const [isAITutorOpen, setIsAITutorOpen] = useState<boolean>(false);
@@ -38,16 +38,28 @@ export default function App() {
     errorMessage?: string;
     mismatchDetails?: string;
   } | undefined>(undefined);
-  const [isAddTopicOpen, setIsAddTopicOpen] = useState<boolean>(false);
+  const [isTopicModalOpen, setIsTopicModalOpen] = useState<boolean>(false);
+  const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
 
   // Sync progress to localStorage on change
   useEffect(() => {
     saveProgress(progress);
   }, [progress]);
 
-  const currentTopic = (topics && topics.length > 0)
-    ? (topics.find((t) => t.id === currentTopicId) || topics[0])
-    : (SQL_TOPICS[0]);
+  // Filter topics if search query is active
+  const filteredTopics = searchQuery.trim()
+    ? topics.filter(
+        (t) =>
+          t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          t.overview?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : topics;
+
+  const currentTopic =
+    (topics && topics.length > 0
+      ? topics.find((t) => t.id === currentTopicId) || topics[0]
+      : SQL_TOPICS[0]);
+
   const currentIndex = topics.findIndex((t) => t.id === currentTopic.id);
   const hasPreviousTopic = currentIndex > 0;
   const hasNextTopic = currentIndex < topics.length - 1;
@@ -61,6 +73,7 @@ export default function App() {
         quizPassed: false,
         quizScore: 0,
         codingCompleted: false,
+        userSql: '',
       };
 
       return {
@@ -134,7 +147,7 @@ export default function App() {
     if (hasNextTopic) {
       const nextTopic = topics[currentIndex + 1];
       setCurrentTopicId(nextTopic.id);
-      setCurrentStep('video'); // Reset to video for the new topic
+      setCurrentStep('video');
       setProgress((prev) => ({
         ...prev,
         currentTopicId: nextTopic.id,
@@ -150,14 +163,17 @@ export default function App() {
       const prevTopic = topics[currentIndex - 1];
       setCurrentTopicId(prevTopic.id);
       setCurrentStep('video');
+      setProgress((prev) => ({
+        ...prev,
+        currentTopicId: prevTopic.id,
+      }));
     }
   };
 
-  // Select topic directly from Roadmap
+  // Direct selection of topic
   const handleSelectTopic = (topic: Topic) => {
     setCurrentTopicId(topic.id);
     setActiveView('course');
-    // Determine appropriate initial step based on progress
     const tProg = progress.topics[topic.id];
     if (!tProg?.videoWatched) {
       setCurrentStep('video');
@@ -170,27 +186,65 @@ export default function App() {
     }
   };
 
-  // Add custom topic
-  const handleAddTopic = (newTopic: Topic) => {
-    const updatedTopics = [...topics, newTopic];
-    setTopics(updatedTopics);
-    saveCustomTopics(updatedTopics.filter((t) => t.badge === 'Custom'));
+  // Create or Update Topic (Full CRUD)
+  const handleSaveTopic = (savedTopic: Topic) => {
+    const existingIndex = topics.findIndex((t) => t.id === savedTopic.id);
+    let updated: Topic[];
 
-    // Register in progress
+    if (existingIndex >= 0) {
+      // Update existing topic
+      updated = [...topics];
+      updated[existingIndex] = savedTopic;
+    } else {
+      // Add new topic
+      updated = [...topics, savedTopic];
+    }
+
+    setTopics(updated);
+    saveAllTopics(updated);
+
+    // Register in progress if not already present
     setProgress((prev) => ({
       ...prev,
       topics: {
         ...prev.topics,
-        [newTopic.id]: {
+        [savedTopic.id]: prev.topics[savedTopic.id] || {
           videoWatched: false,
           theoryRead: false,
           quizPassed: false,
           quizScore: 0,
           codingCompleted: false,
-          userSql: newTopic.challenge.starterSql,
+          userSql: '',
         },
       },
     }));
+
+    setCurrentTopicId(savedTopic.id);
+    setCurrentStep('video');
+  };
+
+  // Delete Topic (Full CRUD)
+  const handleDeleteTopic = (topicId: string) => {
+    const remaining = topics.filter((t) => t.id !== topicId);
+    if (remaining.length === 0) {
+      alert('You cannot delete all course topics.');
+      return;
+    }
+
+    // Re-index orders
+    const reindexed = remaining.map((t, idx) => ({
+      ...t,
+      order: idx + 1,
+      title: `${idx + 1}. ${t.title.replace(/^\d+\.\s*/, '')}`,
+    }));
+
+    setTopics(reindexed);
+    saveAllTopics(reindexed);
+
+    if (currentTopicId === topicId) {
+      setCurrentTopicId(reindexed[0].id);
+      setCurrentStep('video');
+    }
   };
 
   // Reset progress
@@ -215,53 +269,78 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#040814] text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
-      {/* Top Navigation */}
+      {/* Top Header Navbar */}
       <Navbar
         topics={topics}
         progress={progress}
         activeView={activeView}
         setActiveView={setActiveView}
-        onOpenAddTopic={() => setIsAddTopicOpen(true)}
+        onOpenAddTopic={() => {
+          setEditingTopic(null);
+          setIsTopicModalOpen(true);
+        }}
         onResetProgress={handleResetProgress}
         onOpenAITutor={() => {
           setAiTutorContext(undefined);
           setIsAITutorOpen(true);
         }}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
       />
 
-      {/* Main Learning Canvas */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {activeView === 'course' && currentTopic && (
-          <TopicWorkflow
-            topic={currentTopic}
-            currentStep={currentStep}
-            setCurrentStep={setCurrentStep}
-            progress={progress}
-            onMarkVideoWatched={handleMarkVideoWatched}
-            onMarkTheoryRead={handleMarkTheoryRead}
-            onQuizSubmit={handleQuizSubmit}
-            onCodingComplete={handleCodingComplete}
-            onProceedToNextTopic={handleProceedToNextTopic}
-            onPreviousTopic={handlePreviousTopic}
-            hasPreviousTopic={hasPreviousTopic}
-            hasNextTopic={hasNextTopic}
-            onOpenAITutorWithContext={handleOpenAITutorWithContext}
-          />
-        )}
+      {/* Main Layout: Left Sidebar + Central Work Area */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Vertical Left Sidebar Rail */}
+        <Sidebar
+          activeView={activeView}
+          setActiveView={setActiveView}
+          onOpenUpgradeModal={() =>
+            alert('Pro status is active! You have full access to all 50 LeetCode interview challenges and custom module generation.')
+          }
+        />
 
-        {activeView === 'roadmap' && (
-          <CourseRoadmap
-            topics={topics}
-            progress={progress}
-            onSelectTopic={handleSelectTopic}
-            onOpenAddTopic={() => setIsAddTopicOpen(true)}
-          />
-        )}
+        {/* Central Learning Canvas */}
+        <main className="flex-1 overflow-y-auto max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7">
+          {activeView === 'course' && currentTopic && (
+            <TopicWorkflow
+              topic={currentTopic}
+              currentStep={currentStep}
+              setCurrentStep={setCurrentStep}
+              progress={progress}
+              onMarkVideoWatched={handleMarkVideoWatched}
+              onMarkTheoryRead={handleMarkTheoryRead}
+              onQuizSubmit={handleQuizSubmit}
+              onCodingComplete={handleCodingComplete}
+              onProceedToNextTopic={handleProceedToNextTopic}
+              onPreviousTopic={handlePreviousTopic}
+              hasPreviousTopic={hasPreviousTopic}
+              hasNextTopic={hasNextTopic}
+              onEditTopic={(t) => {
+                setEditingTopic(t);
+                setIsTopicModalOpen(true);
+              }}
+              onDeleteTopic={handleDeleteTopic}
+              onOpenAITutorWithContext={handleOpenAITutorWithContext}
+            />
+          )}
 
-        {activeView === 'interview50' && <Interview50Hub />}
+          {activeView === 'roadmap' && (
+            <CourseRoadmap
+              topics={filteredTopics}
+              progress={progress}
+              onSelectTopic={handleSelectTopic}
+              onOpenAddTopic={() => {
+                setEditingTopic(null);
+                setIsTopicModalOpen(true);
+              }}
+            />
+          )}
 
-        {activeView === 'notes' && <NotesHub />}
-      </main>
+          {activeView === 'interview50' && <Interview50Hub />}
+
+          {activeView === 'notes' && <NotesHub />}
+        </main>
+      </div>
 
       {/* AI Tutor Assistant Modal */}
       <AITutorModal
@@ -271,11 +350,15 @@ export default function App() {
         context={aiTutorContext}
       />
 
-      {/* Add Custom Topic Modal */}
+      {/* Topic Creator & Editor Modal (Full CRUD, Multiple Quiz Questions & Multiple Coding Challenges) */}
       <AddTopicModal
-        isOpen={isAddTopicOpen}
-        onClose={() => setIsAddTopicOpen(false)}
-        onAddTopic={handleAddTopic}
+        isOpen={isTopicModalOpen}
+        onClose={() => {
+          setIsTopicModalOpen(false);
+          setEditingTopic(null);
+        }}
+        onSaveTopic={handleSaveTopic}
+        initialTopic={editingTopic}
         nextOrder={topics.length + 1}
       />
     </div>

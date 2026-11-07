@@ -1,6 +1,7 @@
 import { CourseProgress, Topic, TopicStep } from '../types';
 
 const STORAGE_KEY = 'sqlmastery_course_progress_v2';
+const ALL_TOPICS_KEY = 'sqlmastery_all_topics_v2';
 const CUSTOM_TOPICS_KEY = 'sqlmastery_custom_topics_v1';
 
 export function getInitialProgress(topics: Topic[]): CourseProgress {
@@ -19,7 +20,7 @@ export function getInitialProgress(topics: Topic[]): CourseProgress {
       quizPassed: false,
       quizScore: 0,
       codingCompleted: false,
-      userSql: t.challenge?.starterSql || 'SELECT * FROM employees;',
+      userSql: '', // ALWAYS empty so answers are never revealed!
     };
   });
 
@@ -30,7 +31,7 @@ export function loadProgress(topics: Topic[]): CourseProgress {
   try {
     const raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
     if (!raw) return getInitialProgress(topics);
-    
+
     const parsed = JSON.parse(raw) as CourseProgress;
     if (!parsed || typeof parsed !== 'object' || !parsed.topics || typeof parsed.topics !== 'object') {
       return getInitialProgress(topics);
@@ -46,7 +47,7 @@ export function loadProgress(topics: Topic[]): CourseProgress {
           quizPassed: false,
           quizScore: 0,
           codingCompleted: false,
-          userSql: t.challenge?.starterSql || 'SELECT * FROM employees;',
+          userSql: '',
         };
       }
     });
@@ -109,7 +110,32 @@ export function isStepUnlocked(
   }
 }
 
-// Custom topics persistence so users can add other topics dynamically
+// Load topics with localStorage overrides for user edits/additions/deletions
+export function loadAllTopics(defaultTopics: Topic[]): Topic[] {
+  try {
+    if (typeof window === 'undefined') return defaultTopics;
+    const raw = localStorage.getItem(ALL_TOPICS_KEY);
+    if (!raw) return defaultTopics;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return defaultTopics;
+    return parsed.filter((t) => t && t.id && t.title);
+  } catch (err) {
+    console.error('Failed to load all topics from localStorage:', err);
+    return defaultTopics;
+  }
+}
+
+export function saveAllTopics(topics: Topic[]): void {
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(ALL_TOPICS_KEY, JSON.stringify(topics));
+    }
+  } catch (err) {
+    console.error('Failed to save all topics to localStorage:', err);
+  }
+}
+
+// Legacy custom topics support
 export function loadCustomTopics(): Topic[] {
   try {
     if (typeof window === 'undefined') return [];

@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import {
   Play,
-  Pause,
-  SkipBack,
-  SkipForward,
   Volume2,
-  Settings,
   Maximize2,
-  Tv,
   Lock,
-  CheckCircle,
   Database,
   Table as TableIcon,
-  Sparkles,
+  Code2,
+  Filter,
+  CheckCircle2,
+  Copy,
+  Check,
+  BookOpen,
+  Zap,
+  BarChart2,
+  Globe,
+  Layers,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { TopicVideo } from '../types';
@@ -42,7 +45,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const allVideos = [video, ...(alternativeVideos || []), ...(addonVideos || [])];
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [useNoCookie] = useState(false);
+  const [copiedSnippet, setCopiedSnippet] = useState(false);
 
   useEffect(() => {
     setSelectedVideoIndex(0);
@@ -52,7 +55,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const activeVideo = allVideos[selectedVideoIndex] || video || {
     title: 'Select Statement in MySQL',
     embedUrl: 'https://www.youtube.com/embed/A9TOuDZTPDU',
-    duration: '9:15',
+    duration: '20:00',
     channel: 'Alex The Analyst',
     summaryPoints: [
       'Master SELECT and FROM clauses',
@@ -62,31 +65,28 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const videoId = activeVideo.embedUrl?.split('/embed/')[1]?.split('?')[0] || '';
-  const currentEmbedUrl = useNoCookie
-    ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`
-    : `https://www.youtube.com/embed/${videoId}?rel=0`;
+  const currentEmbedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`;
 
-  // Get clean tab label for each video
-  const getTabLabel = (v: TopicVideo, idx: number) => {
-    if (v.language?.toLowerCase() === 'telugu' || v.title?.toLowerCase().includes('telugu')) {
-      return 'Telugu';
-    }
-    const ch = v.channel.toLowerCase();
-    if (ch.includes('alex')) return 'Alex';
-    if (ch.includes('mosh')) return 'Mosh';
-    if (ch.includes('codebasics') || ch.includes('basics')) return 'CodeBasics';
-    if (idx === 0) return 'Alex';
-    if (idx === 1) return 'Mosh';
-    if (idx === 2) return 'CodeBasics';
-    return v.channel.split(' ')[0] || `Video ${idx + 1}`;
-  };
+  // Clean creator tabs configuration
+  const creatorTabs = [
+    { label: 'Alex', icon: <Play className="w-3 h-3 fill-current" /> },
+    { label: 'Mosh', icon: <Layers className="w-3 h-3" /> },
+    { label: 'CodeBasics', icon: <Code2 className="w-3 h-3" /> },
+    { label: 'Telugu', icon: <Globe className="w-3 h-3" /> },
+  ];
 
   const handleUnlockTheory = () => {
     onMarkWatched();
     try {
-      confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+      confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } });
     } catch (_) {}
     onProceedToTheory();
+  };
+
+  const handleCopySnippet = () => {
+    navigator.clipboard.writeText('SELECT column_name\nFROM table_name;');
+    setCopiedSnippet(true);
+    setTimeout(() => setCopiedSnippet(false), 2000);
   };
 
   // Derive bullet points for Lesson Overview
@@ -102,7 +102,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       {/* LEFT COLUMN: Main Video Player & Creator Tabs (8 cols on lg) */}
-      <div className="lg:col-span-8 bg-[#090f1d] border border-slate-800/80 rounded-3xl p-5 shadow-2xl space-y-4">
+      <div className="lg:col-span-8 bg-[#0a101f] border border-slate-800/80 rounded-3xl p-5 shadow-2xl space-y-4">
         {/* Video Canvas Container (16:9 ratio) */}
         <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-[#050811] border border-slate-800/80 shadow-inner group">
           {isPlaying ? (
@@ -116,138 +116,137 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           ) : (
             /* Interactive SQL Architecture Diagram Preview State */
             <div className="w-full h-full relative flex items-center justify-center select-none bg-gradient-to-b from-[#070e1c] via-[#050914] to-[#04060d]">
-              {/* Background relational connection lines */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40">
+              {/* Background glowing connection lines */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-50">
+                {/* Curve from Database (top left) to Center Database Cylinder */}
                 <path
-                  d="M 180 80 Q 250 140 320 140"
+                  d="M 210 100 C 260 100, 270 170, 320 170"
                   fill="none"
-                  stroke="#38bdf8"
-                  strokeWidth="1.5"
-                  strokeDasharray="4 4"
+                  stroke="#00d2ff"
+                  strokeWidth="2"
                 />
+                {/* Curve from SELECT (bottom left) to Center Database Cylinder */}
                 <path
-                  d="M 180 200 Q 250 140 320 140"
+                  d="M 210 240 C 260 240, 270 170, 320 170"
                   fill="none"
-                  stroke="#38bdf8"
-                  strokeWidth="1.5"
+                  stroke="#00d2ff"
+                  strokeWidth="2"
                 />
+                {/* Curve from Table (top right) to Center Database Cylinder */}
                 <path
-                  d="M 460 80 Q 390 140 320 140"
+                  d="M 430 100 C 380 100, 370 170, 320 170"
                   fill="none"
-                  stroke="#38bdf8"
-                  strokeWidth="1.5"
+                  stroke="#00d2ff"
+                  strokeWidth="2"
                 />
+                {/* Curve from Conditions (bottom right) to Center Database Cylinder */}
                 <path
-                  d="M 460 200 Q 390 140 320 140"
+                  d="M 430 240 C 380 240, 370 170, 320 170"
                   fill="none"
-                  stroke="#38bdf8"
-                  strokeWidth="1.5"
-                  strokeDasharray="4 4"
+                  stroke="#00d2ff"
+                  strokeWidth="2"
                 />
               </svg>
 
-              {/* Top-Left Table: Database */}
-              <div className="absolute top-6 left-6 sm:left-12 bg-[#0c1626]/90 border border-slate-700/80 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none">
-                <div className="text-[10px] sm:text-xs font-bold text-sky-300 pb-1 border-b border-slate-700/60 flex items-center gap-1">
-                  <Database className="w-3 h-3 text-cyan-400" /> Database
+              {/* Top-Left Card: Database */}
+              <div className="absolute top-5 left-5 sm:left-10 bg-[#0c1626]/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none">
+                <div className="text-[11px] font-bold text-sky-200 pb-1 border-b border-slate-700/60 flex items-center gap-1.5">
+                  <Database className="w-3.5 h-3.5 text-cyan-400" /> Database
                 </div>
-                <div className="text-[9px] sm:text-[10px] font-mono text-slate-400 mt-1 space-y-0.5">
-                  <div className="text-amber-300">🔑 id</div>
-                  <div>column_name</div>
-                  <div>username</div>
-                </div>
-              </div>
-
-              {/* Bottom-Left Table: Tables */}
-              <div className="absolute bottom-14 left-6 sm:left-12 bg-[#0c1626]/90 border border-slate-700/80 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none">
-                <div className="text-[10px] sm:text-xs font-bold text-sky-300 pb-1 border-b border-slate-700/60 flex items-center gap-1">
-                  <TableIcon className="w-3 h-3 text-cyan-400" /> Tables
-                </div>
-                <div className="text-[9px] sm:text-[10px] font-mono text-slate-400 mt-1 space-y-0.5">
-                  <div className="text-amber-300">🔑 id</div>
-                  <div>name</div>
-                  <div>username</div>
-                  <div>description</div>
+                <div className="text-[10px] text-slate-300 mt-1.5 space-y-0.5">
+                  <div>• Tables</div>
+                  <div>• Records</div>
+                  <div>• Queries</div>
                 </div>
               </div>
 
-              {/* Center Database Cylinder & Play Button */}
+              {/* Bottom-Left Card: </> SELECT */}
+              <div className="absolute bottom-14 left-5 sm:left-10 bg-[#0c1626]/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none">
+                <div className="text-[11px] font-bold text-sky-200 pb-1 border-b border-slate-700/60 flex items-center gap-1.5">
+                  <Code2 className="w-3.5 h-3.5 text-cyan-400" /> SELECT
+                </div>
+                <div className="text-[10px] text-slate-300 mt-1.5 space-y-0.5">
+                  <div>• Data</div>
+                  <div>• Filtering</div>
+                  <div>• Sorting</div>
+                </div>
+              </div>
+
+              {/* Center Glowing Database Cylinder & Circular Play Button */}
               <div className="relative z-10 flex flex-col items-center">
-                {/* Central Database Icon Glow */}
-                <div className="relative flex items-center justify-center mb-1">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center animate-pulse" />
+                {/* Database Cylinder Illustration with glowing blue discs */}
+                <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
+                  {/* Concentric cyan neon rings */}
+                  <div className="absolute inset-0 rounded-full bg-cyan-500/10 border-2 border-cyan-400/40 shadow-[0_0_30px_rgba(6,182,212,0.35)] animate-pulse" />
                   
-                  {/* Glassmorphism Play Button */}
+                  {/* Cylinder stack SVG */}
+                  <svg className="w-20 h-20 text-cyan-400 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <ellipse cx="12" cy="5" rx="9" ry="3" />
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                    <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
+                  </svg>
+
+                  {/* Centered Circular Glass Play Button */}
                   <button
                     onClick={() => setIsPlaying(true)}
-                    className="absolute w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-900/80 backdrop-blur-md border border-cyan-400/50 flex items-center justify-center shadow-[0_0_35px_rgba(6,182,212,0.4)] hover:scale-110 active:scale-95 transition cursor-pointer group"
+                    className="absolute w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-slate-900/85 backdrop-blur-md border border-cyan-400/60 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:scale-110 active:scale-95 transition cursor-pointer group"
                     title="Play Video"
                   >
-                    <Play className="w-7 h-7 sm:w-8 sm:h-8 text-cyan-300 fill-cyan-300 ml-1 group-hover:text-white group-hover:fill-white transition" />
+                    <Play className="w-6 h-6 sm:w-7 sm:h-7 text-white fill-white ml-0.5 group-hover:text-cyan-300 group-hover:fill-cyan-300 transition" />
                   </button>
                 </div>
               </div>
 
-              {/* Top-Right Table: Tables */}
-              <div className="absolute top-6 right-6 sm:right-12 bg-[#0c1626]/90 border border-slate-700/80 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none">
-                <div className="text-[10px] sm:text-xs font-bold text-sky-300 pb-1 border-b border-slate-700/60 flex items-center gap-1">
-                  <TableIcon className="w-3 h-3 text-cyan-400" /> Tables
+              {/* Top-Right Card: Table */}
+              <div className="absolute top-5 right-5 sm:right-10 bg-[#0c1626]/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none">
+                <div className="text-[11px] font-bold text-sky-200 pb-1 border-b border-slate-700/60 flex items-center gap-1.5">
+                  <TableIcon className="w-3.5 h-3.5 text-cyan-400" /> Table
                 </div>
-                <div className="text-[9px] sm:text-[10px] font-mono text-slate-400 mt-1 space-y-0.5">
-                  <div className="text-amber-300">🔑 id</div>
-                  <div>category</div>
-                  <div>price</div>
-                  <div>coordination</div>
-                </div>
-              </div>
-
-              {/* Bottom-Right Table: CodeBasics */}
-              <div className="absolute bottom-14 right-6 sm:right-12 bg-[#0c1626]/90 border border-slate-700/80 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none">
-                <div className="text-[10px] sm:text-xs font-bold text-sky-300 pb-1 border-b border-slate-700/60 flex items-center gap-1">
-                  <TableIcon className="w-3 h-3 text-cyan-400" /> CodeBasics
-                </div>
-                <div className="text-[9px] sm:text-[10px] font-mono text-slate-400 mt-1 space-y-0.5">
-                  <div className="text-amber-300">🔑 id</div>
-                  <div>name</div>
-                  <div>username</div>
-                  <div>table</div>
+                <div className="text-[10px] text-slate-300 mt-1.5 space-y-0.5">
+                  <div>• Rows</div>
+                  <div>• Columns</div>
+                  <div>• Constraints</div>
                 </div>
               </div>
 
-              {/* Bottom-Left Overlay Tag: Channel & Duration */}
-              <div className="absolute bottom-12 left-4 sm:left-6 z-20">
-                <div className="px-3 py-1 rounded-lg bg-slate-950/85 backdrop-blur-md border border-slate-800 text-xs font-semibold text-white shadow-md flex items-center gap-1.5">
-                  <span>{activeVideo.channel}</span>
-                  <span className="text-slate-400">({activeVideo.duration})</span>
+              {/* Bottom-Right Card: Conditions */}
+              <div className="absolute bottom-14 right-5 sm:right-10 bg-[#0c1626]/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none">
+                <div className="text-[11px] font-bold text-sky-200 pb-1 border-b border-slate-700/60 flex items-center gap-1.5">
+                  <Filter className="w-3.5 h-3.5 text-cyan-400" /> Conditions
+                </div>
+                <div className="text-[10px] text-slate-300 mt-1.5 space-y-0.5">
+                  <div>• AND</div>
+                  <div>• OR</div>
+                  <div>• WHERE</div>
                 </div>
               </div>
 
-              {/* Bottom Video Controls Scrubber Bar */}
+              {/* Bottom Media Controls Scrubber Bar */}
               <div className="absolute bottom-0 inset-x-0 h-10 bg-slate-950/90 backdrop-blur-md border-t border-slate-800/80 px-4 flex items-center justify-between gap-3 text-slate-400">
-                {/* Play / Skip Buttons */}
-                <div className="flex items-center gap-2">
+                {/* Play button & Time */}
+                <div className="flex items-center gap-3">
                   <button
                     onClick={() => setIsPlaying(true)}
-                    className="hover:text-white transition cursor-pointer"
+                    className="hover:text-cyan-400 transition cursor-pointer"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
                   </button>
-                  <SkipBack className="w-3.5 h-3.5 hover:text-white transition cursor-pointer" />
-                  <SkipForward className="w-3.5 h-3.5 hover:text-white transition cursor-pointer" />
+                  <span className="text-[11px] font-mono text-slate-400">0:00 / 20:00</span>
                 </div>
 
                 {/* Progress Bar / Scrubber */}
-                <div className="flex-1 mx-2 flex items-center">
+                <div className="flex-1 mx-3 flex items-center">
                   <div className="relative w-full h-1 bg-slate-800 rounded-full cursor-pointer overflow-hidden">
-                    <div className="w-1/3 h-full bg-cyan-400 rounded-full" />
+                    <div className="w-1/4 h-full bg-cyan-400 rounded-full shadow-[0_0_8px_#22d3ee]" />
                   </div>
                 </div>
 
-                {/* Right controls: volume, settings, tv, fullscreen */}
-                <div className="flex items-center gap-2.5">
+                {/* Right controls: volume, CC, fullscreen */}
+                <div className="flex items-center gap-3">
                   <Volume2 className="w-3.5 h-3.5 hover:text-white transition cursor-pointer" />
-                  <Settings className="w-3.5 h-3.5 hover:text-white transition cursor-pointer" />
-                  <Tv className="w-3.5 h-3.5 hover:text-white transition cursor-pointer" />
+                  <span className="text-[10px] font-bold border border-slate-700 px-1 rounded text-slate-400 hover:text-white transition cursor-pointer">
+                    CC
+                  </span>
                   <Maximize2
                     onClick={() => setIsPlaying(true)}
                     className="w-3.5 h-3.5 hover:text-white transition cursor-pointer"
@@ -258,26 +257,26 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           )}
         </div>
 
-        {/* Video Creator Switcher Tabs (Alex | Mosh | CodeBasics | Telugu) */}
+        {/* Creator Switcher Tabs (Alex | Mosh | CodeBasics | Telugu) */}
         <div className="w-full flex items-center justify-start sm:justify-center gap-2 overflow-x-auto py-1">
-          {allVideos.map((v, idx) => {
+          {creatorTabs.map((tab, idx) => {
             const isTabActive = selectedVideoIndex === idx;
-            const tabName = getTabLabel(v, idx);
 
             return (
               <button
                 key={idx}
                 onClick={() => {
-                  setSelectedVideoIndex(idx);
+                  setSelectedVideoIndex(idx < allVideos.length ? idx : 0);
                   setIsPlaying(false);
                 }}
-                className={`px-6 py-2 rounded-xl text-xs font-semibold transition cursor-pointer shrink-0 ${
+                className={`px-5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
                   isTabActive
-                    ? 'bg-slate-800 text-cyan-300 font-bold border border-cyan-500/30 shadow-md'
+                    ? 'bg-cyan-950/60 text-cyan-300 font-bold border border-cyan-500/50 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
                 }`}
               >
-                {tabName}
+                {tab.icon}
+                <span>{tab.label}</span>
               </button>
             );
           })}
@@ -287,73 +286,115 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* RIGHT COLUMN: Lesson Overview + Live Cheat Sheet + Quick Reference (4 cols on lg) */}
       <div className="lg:col-span-4 space-y-4">
         {/* Card 1: Lesson Overview */}
-        <div className="bg-[#090f1d] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-3">
-          <h2 className="text-white font-bold text-base tracking-tight">Lesson Overview</h2>
-          <p className="text-slate-400 text-xs">Key Takeaway in nutritious guide for:</p>
+        <div className="bg-[#0a101f] border border-slate-800/80 rounded-2xl p-6 shadow-xl relative overflow-hidden space-y-3">
+          {/* 3D Stack of books graphic in top right */}
+          <div className="absolute top-4 right-4 opacity-75 pointer-events-none">
+            <svg className="w-16 h-16 text-cyan-500" viewBox="0 0 24 24" fill="currentColor">
+              <path opacity="0.3" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path opacity="0.5" d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H20" />
+            </svg>
+          </div>
 
-          <ul className="space-y-2 text-xs text-slate-300 pt-1">
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-cyan-400" />
+            <h2 className="text-white font-bold text-base tracking-tight">Lesson Overview</h2>
+          </div>
+          <p className="text-slate-400 text-xs">Key Takeaways in this lesson guide you:</p>
+
+          <ul className="space-y-2 text-xs text-slate-200 pt-1">
             {overviewBullets.map((pt, i) => (
               <li key={i} className="flex items-start gap-2">
-                <span className="text-cyan-400 font-bold">•</span>
+                <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
                 <span className="leading-relaxed">{pt}</span>
               </li>
             ))}
           </ul>
 
-          {/* Large Amber Gradient CTA Button */}
+          {/* Large Amber Gradient CTA Button: 🔒 Verify & Unlock Step 2: Theory */}
           <button
             onClick={handleUnlockTheory}
             className="w-full mt-4 py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-extrabold text-sm shadow-[0_0_22px_rgba(245,158,11,0.3)] transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>Verify & Unlock Step 2: Theory</span>
             <Lock className="w-4 h-4 text-slate-950" />
+            <span>Verify & Unlock Step 2: Theory</span>
           </button>
         </div>
 
         {/* Bottom Row: Live Cheat Sheet + SQL Syntax Quick Reference */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Card 2A: Live Cheat Sheet */}
-          <div className="bg-[#090f1d] border border-slate-800/80 rounded-2xl p-4 shadow-xl space-y-2">
-            <h3 className="text-white font-bold text-xs tracking-tight">Live Cheat Sheet</h3>
-            <p className="text-slate-400 text-[11px]">Select all query snippets:</p>
-
-            <div className="bg-[#050811] border border-slate-800/80 rounded-xl p-3 font-mono text-[11px] leading-relaxed">
-              <div>
-                <span className="text-cyan-400 font-semibold">SELECT </span>
-                <span className="text-slate-300">column_name</span>
+          <div className="bg-[#0a101f] border border-slate-800/80 rounded-2xl p-4 shadow-xl space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-400" />
+                <h3 className="text-white font-bold text-xs tracking-tight">Live Cheat Sheet</h3>
               </div>
-              <div>
-                <span className="text-cyan-400 font-semibold">FROM </span>
-                <span className="text-slate-300">table_name;</span>
+              <button
+                onClick={handleCopySnippet}
+                className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer transition"
+              >
+                {copiedSnippet ? (
+                  <>
+                    <Check className="w-3 h-3 text-emerald-400" />
+                    <span className="text-emerald-400">Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3 h-3" />
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
+            </div>
+            <p className="text-slate-400 text-[10px]">Snippets & useful syntax</p>
+
+            {/* Code Box with line numbers */}
+            <div className="bg-[#050811] border border-slate-800/80 rounded-xl p-2.5 font-mono text-[11px] leading-relaxed space-y-0.5">
+              <div className="flex items-center gap-2">
+                <span className="text-slate-600 select-none text-[10px]">1</span>
+                <div>
+                  <span className="text-purple-400 font-semibold">SELECT </span>
+                  <span className="text-slate-200">column_name</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-600 select-none text-[10px]">2</span>
+                <div>
+                  <span className="text-purple-400 font-semibold">FROM </span>
+                  <span className="text-slate-200">table_name;</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Card 2B: SQL Syntax Quick Reference (Highlighted with amber glowing border) */}
-          <div className="bg-[#090f1d] border border-amber-500/40 shadow-[0_0_16px_rgba(245,158,11,0.15)] rounded-2xl p-4 space-y-2">
-            <h3 className="text-white font-bold text-xs tracking-tight">SQL Syntax Quick Reference</h3>
+          {/* Card 2B: SQL Syntax Quick Reference */}
+          <div className="bg-[#0a101f] border border-slate-800/80 rounded-2xl p-4 shadow-xl space-y-2">
+            <div className="flex items-center gap-1.5">
+              <BarChart2 className="w-3.5 h-3.5 text-cyan-400" />
+              <h3 className="text-white font-bold text-xs tracking-tight">SQL Syntax Quick Reference</h3>
+            </div>
 
-            <div className="space-y-1.5 pt-0.5">
-              <div className="bg-[#050811] border border-slate-800/80 rounded-xl p-2.5 font-mono text-[10px] leading-relaxed">
-                <div>
-                  <span className="text-cyan-400 font-semibold">SELECT </span>
-                  <span className="text-slate-300">column_name</span>
-                </div>
-                <div>
-                  <span className="text-cyan-400 font-semibold">FROM </span>
-                  <span className="text-slate-300">table_name;</span>
-                </div>
+            <div className="space-y-1 pt-1 font-mono text-[10px] text-slate-300">
+              <div className="flex items-center gap-1">
+                <span className="text-cyan-400">&gt;</span>
+                <span className="text-cyan-300 font-semibold">SELECT</span>
+                <span className="text-slate-400">- Retrieve data</span>
               </div>
-
-              <div className="bg-[#050811] border border-slate-800/80 rounded-xl p-2.5 font-mono text-[10px] leading-relaxed">
-                <div>
-                  <span className="text-cyan-400 font-semibold">SELECT </span>
-                  <span className="text-slate-300">column_name</span>
-                </div>
-                <div>
-                  <span className="text-cyan-400 font-semibold">FROM </span>
-                  <span className="text-slate-300">table_name;</span>
-                </div>
+              <div className="flex items-center gap-1">
+                <span className="text-cyan-400">&gt;</span>
+                <span className="text-cyan-300 font-semibold">FROM</span>
+                <span className="text-slate-400">- Specify table</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-cyan-400">&gt;</span>
+                <span className="text-cyan-300 font-semibold">WHERE</span>
+                <span className="text-slate-400">- Filter data</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-cyan-400">&gt;</span>
+                <span className="text-cyan-300 font-semibold">ORDER BY</span>
+                <span className="text-slate-400">- Sort results</span>
               </div>
             </div>
           </div>

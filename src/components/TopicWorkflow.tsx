@@ -1,13 +1,17 @@
 import React from 'react';
 import {
-  Video,
-  BookOpen,
+  Play,
+  FileText,
   HelpCircle,
   Code2,
   Lock,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Clock,
+  Layers,
+  Edit3,
+  Trash2,
 } from 'lucide-react';
 import { Topic, TopicStep, CourseProgress } from '../types';
 import { isStepUnlocked } from '../lib/storage';
@@ -29,6 +33,8 @@ interface TopicWorkflowProps {
   onPreviousTopic: () => void;
   hasPreviousTopic: boolean;
   hasNextTopic: boolean;
+  onEditTopic?: (topic: Topic) => void;
+  onDeleteTopic?: (topicId: string) => void;
   onOpenAITutorWithContext: (context: {
     userSql: string;
     errorMessage?: string;
@@ -49,6 +55,8 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
   onPreviousTopic,
   hasPreviousTopic,
   hasNextTopic,
+  onEditTopic,
+  onDeleteTopic,
   onOpenAITutorWithContext,
 }) => {
   const topicProgress = (progress?.topics && topic?.id && progress.topics[topic.id]) || {
@@ -63,6 +71,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
     id: TopicStep;
     stepNumber: number;
     title: string;
+    icon: React.ReactNode;
     isCompleted: boolean;
     isUnlocked: boolean;
   }[] = [
@@ -70,6 +79,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
       id: 'video',
       stepNumber: 1,
       title: 'Video',
+      icon: <Play className="w-3.5 h-3.5 fill-current" />,
       isCompleted: topicProgress.videoWatched,
       isUnlocked: true,
     },
@@ -77,6 +87,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
       id: 'theory',
       stepNumber: 2,
       title: 'Theory',
+      icon: <FileText className="w-3.5 h-3.5" />,
       isCompleted: topicProgress.theoryRead,
       isUnlocked: isStepUnlocked(topic.id, 'theory', progress),
     },
@@ -84,6 +95,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
       id: 'quiz',
       stepNumber: 3,
       title: 'Quiz',
+      icon: <HelpCircle className="w-3.5 h-3.5" />,
       isCompleted: topicProgress.quizPassed,
       isUnlocked: isStepUnlocked(topic.id, 'quiz', progress),
     },
@@ -91,6 +103,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
       id: 'coding',
       stepNumber: 4,
       title: 'SQL Playground',
+      icon: <Code2 className="w-3.5 h-3.5" />,
       isCompleted: topicProgress.codingCompleted,
       isUnlocked: isStepUnlocked(topic.id, 'coding', progress),
     },
@@ -98,66 +111,114 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
 
   const currentStepIndex = stepsConfig.findIndex((s) => s.id === currentStep);
 
+  // Function to highlight SQL keywords like SELECT in cyan inside title
+  const formatTitle = (titleStr: string) => {
+    const keywords = ['SELECT', 'WHERE', 'JOIN', 'GROUP BY', 'HAVING', 'ORDER BY', 'LIMIT', 'CTE', 'WINDOW', 'CASE'];
+    let formatted = titleStr;
+    const parts = formatted.split(new RegExp(`(${keywords.join('|')})`, 'g'));
+    return parts.map((part, idx) =>
+      keywords.includes(part) ? (
+        <span key={idx} className="text-cyan-400 font-black">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
+
+  const handleDelete = () => {
+    if (onDeleteTopic && window.confirm(`Are you sure you want to delete "${topic.title}"?`)) {
+      onDeleteTopic(topic.id);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Subheader: Module Tag + Title + Navigation Buttons */}
+      {/* Subheader: Breadcrumb Pill + Highlighted Title + Navigation Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
         <div className="space-y-1.5">
-          {/* Module tag pill */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-[#0b1220] border border-slate-800 text-slate-400">
-            <span>Module {topic.order}</span>
-            <span className="text-slate-600">•</span>
-            <span className="text-cyan-400 font-medium">{topic.level}</span>
-            <span className="text-slate-600">•</span>
-            <span>{topic.estimatedMinutes || 20} mins</span>
+          {/* Breadcrumb badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-[#0b1220] border border-slate-800/80 text-slate-400">
+            <span className="flex items-center gap-1">
+              <Layers className="w-3 h-3 text-slate-500" /> Modules
+            </span>
+            <span className="text-slate-600">&gt;</span>
+            <span className="flex items-center gap-1 text-slate-300">
+              <Clock className="w-3 h-3 text-cyan-400" /> {topic.level}
+            </span>
+            <span className="text-slate-600">&gt;</span>
+            <span className="text-slate-400">{topic.estimatedMinutes || 20} mins</span>
           </div>
 
-          {/* Large Title */}
+          {/* Large Title with SELECT highlighted in cyan */}
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            {topic.order}. {topic.title}
+            {topic.order}. {formatTitle(topic.title)}
           </h1>
         </div>
 
-        {/* Navigation Buttons: < Prev & Next > */}
-        <div className="flex items-center gap-1.5 bg-[#0b1220] p-1 rounded-xl border border-slate-800 self-start sm:self-center">
-          <button
-            onClick={onPreviousTopic}
-            disabled={!hasPreviousTopic}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1 ${
-              hasPreviousTopic
-                ? 'text-slate-300 hover:text-white hover:bg-slate-800/80'
-                : 'text-slate-600 cursor-not-allowed'
-            }`}
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            <span>Prev</span>
-          </button>
+        {/* Right side: Edit/Delete + Prev/Next Topic Navigation */}
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          {/* Edit Module */}
+          {onEditTopic && (
+            <button
+              onClick={() => onEditTopic(topic)}
+              className="p-2 rounded-xl bg-[#0b1220] border border-slate-800 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/40 transition cursor-pointer"
+              title="Edit Topic Content & Questions"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+            </button>
+          )}
 
-          <button
-            onClick={onProceedToNextTopic}
-            disabled={!hasNextTopic || !topicProgress.codingCompleted}
-            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
-              hasNextTopic && topicProgress.codingCompleted
-                ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-sm'
-                : hasNextTopic
-                ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
-                : 'text-slate-600 cursor-not-allowed'
-            }`}
-          >
-            <span>Next</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          {/* Delete Module */}
+          {onDeleteTopic && (
+            <button
+              onClick={handleDelete}
+              className="p-2 rounded-xl bg-[#0b1220] border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition cursor-pointer"
+              title="Delete Topic"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* Navigation Buttons: ← Prev & Next → */}
+          <div className="flex items-center gap-1.5 bg-[#0b1220] p-1 rounded-xl border border-slate-800">
+            <button
+              onClick={onPreviousTopic}
+              disabled={!hasPreviousTopic}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
+                hasPreviousTopic
+                  ? 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+                  : 'text-slate-600 cursor-not-allowed'
+              }`}
+            >
+              <span>← Prev</span>
+            </button>
+
+            <button
+              onClick={onProceedToNextTopic}
+              disabled={!hasNextTopic || !topicProgress.codingCompleted}
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
+                hasNextTopic && topicProgress.codingCompleted
+                  ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-sm'
+                  : hasNextTopic
+                  ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+                  : 'text-slate-600 cursor-not-allowed'
+              }`}
+            >
+              <span>Next →</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* 4-Step Stepped Progression Bar with Connected Glowing Beam */}
       <div className="w-full overflow-x-auto py-2">
-        <div className="min-w-[620px] flex items-center justify-between relative px-2">
+        <div className="min-w-[640px] flex items-center justify-between relative px-2">
           {stepsConfig.map((s, idx) => {
             const isActive = currentStep === s.id;
             const isPassed = s.isCompleted;
             const hasNext = idx < stepsConfig.length - 1;
-            // The connector beam glows cyan if this step is active or completed
             const isConnectorGlowing = idx < currentStepIndex || (isActive && idx === 0);
 
             return (
@@ -176,22 +237,18 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
                       : 'px-5 py-2 rounded-full bg-[#090f1d] border border-slate-800/70 text-slate-500 text-xs sm:text-sm font-medium cursor-not-allowed'
                   }`}
                 >
-                  <span>
+                  <span className="font-semibold">
                     {s.stepNumber}. {s.title}
                   </span>
                   {isActive ? (
-                    s.id === 'video' ? (
-                      <span className="text-xs">🎥</span>
-                    ) : s.id === 'coding' ? (
-                      <Code2 className="w-3.5 h-3.5" />
-                    ) : (
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    )
+                    s.icon
                   ) : isPassed ? (
                     <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
                   ) : !s.isUnlocked ? (
                     <Lock className="w-3.5 h-3.5 text-slate-500" />
-                  ) : null}
+                  ) : (
+                    s.icon
+                  )}
                 </button>
 
                 {/* Connecting Line / Beam between steps */}
@@ -200,7 +257,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
                     <div
                       className={`w-full h-1 rounded-full transition-all duration-500 ${
                         isConnectorGlowing
-                          ? 'bg-gradient-to-r from-cyan-400 to-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.85)]'
+                          ? 'bg-gradient-to-r from-cyan-400 to-cyan-500 shadow-[0_0_14px_rgba(6,182,212,0.9)]'
                           : 'bg-slate-800/80 h-0.5'
                       }`}
                     />
