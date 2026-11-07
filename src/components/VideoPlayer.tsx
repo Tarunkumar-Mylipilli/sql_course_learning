@@ -48,29 +48,39 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   topicTitle = 'SQL Basics & The SELECT Statement',
   theorySyntax,
 }) => {
-  // Primary module video is always default and index 0
-  // Any submodule with videoUrl is added cleanly with its title
-  const submoduleVideos: TopicVideo[] = (subModules || [])
-    .filter((sm) => sm.videoUrl && sm.videoUrl.trim().length > 0)
-    .map((sm, smIdx) => ({
-      title: sm.title,
-      embedUrl: sm.videoUrl || '',
-      duration: sm.duration || '10:00',
-      channel: sm.title,
-      language: 'English',
-      summaryPoints: [sm.title, sm.summary || 'Submodule video tutorial', 'Focused concepts walkthrough']
-    }));
+  // Top tier: Recommended alternative creator masterclasses (Alex, Mosh, CodeBasics, Telugu)
+  const creatorVideos: TopicVideo[] = [video, ...(alternativeVideos || []), ...(addonVideos || [])].filter(Boolean);
 
-  // Build clean video list: Primary Module Video first, alternative creators, then custom submodules
-  const allVideos = [video, ...(alternativeVideos || []), ...(addonVideos || []), ...submoduleVideos].filter(Boolean);
-  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
+  // Bottom tier: Granular submodules added on admin page
+  const submoduleList: {
+    title: string;
+    videoUrl: string;
+    duration: string;
+    summary: string;
+    notes?: string;
+  }[] = (subModules || []).map((sm, smIdx) => ({
+    title: sm.title || `Submodule ${smIdx + 1}`,
+    videoUrl: sm.videoUrl || video?.embedUrl || 'https://www.youtube.com/embed/A9TOuDZTPDU',
+    duration: sm.duration || '10:00',
+    summary: sm.summary || 'Submodule concepts and exercises',
+    notes: sm.notes,
+  }));
+
+  // Selected state: tracks whether user is watching a creator alternative or a submodule
+  const [activeTier, setActiveTier] = useState<'creator' | 'submodule'>(
+    submoduleList.length > 0 ? 'submodule' : 'creator'
+  );
+  const [selectedCreatorIdx, setSelectedCreatorIdx] = useState(0);
+  const [selectedSubmoduleIdx, setSelectedSubmoduleIdx] = useState(0);
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
 
-  // Track completed videos by index
-  const [watchedVideoIndices, setWatchedVideoIndices] = useState<number[]>(() => isWatched ? [0] : []);
+  // Set of watched submodule indices - EVERY submodule is compulsory to watch!
+  const [watchedSubmoduleIndices, setWatchedSubmoduleIndices] = useState<number[]>([]);
+  const [watchedCreatorIndices, setWatchedCreatorIndices] = useState<number[]>(() => isWatched ? [0] : []);
 
-  // Watch Time Verification Tracker
+  // Parse duration
   const parseDurationToSeconds = (durStr?: string): number => {
     if (!durStr) return 120;
     const parts = durStr.trim().split(':').map(Number);
@@ -82,58 +92,102 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return 120;
   };
 
-  const activeVideo = allVideos[selectedVideoIndex] || video || {
-    title: 'Select Statement in MySQL',
-    embedUrl: 'https://www.youtube.com/embed/A9TOuDZTPDU',
-    duration: '20:00',
-    channel: 'Alex The Analyst',
-    summaryPoints: [
-      'Master SELECT and FROM clauses',
-      'Understand query syntax',
-      'Retrieve data from single tables',
-    ],
-  };
+  // Resolve current active video object
+  const activeVideo: TopicVideo =
+    activeTier === 'submodule' && submoduleList[selectedSubmoduleIdx]
+      ? {
+          title: submoduleList[selectedSubmoduleIdx].title,
+          embedUrl: submoduleList[selectedSubmoduleIdx].videoUrl,
+          duration: submoduleList[selectedSubmoduleIdx].duration,
+          channel: submoduleList[selectedSubmoduleIdx].title,
+          language: 'English',
+          summaryPoints: [
+            submoduleList[selectedSubmoduleIdx].title,
+            submoduleList[selectedSubmoduleIdx].summary,
+            'Compulsory submodule walkthrough',
+          ],
+        }
+      : creatorVideos[selectedCreatorIdx] || video || {
+          title: 'SQL Tutorial',
+          embedUrl: 'https://www.youtube.com/embed/A9TOuDZTPDU',
+          duration: '20:00',
+          channel: 'Alex The Analyst',
+          summaryPoints: ['Understand core concepts', 'Master query syntax'],
+        };
 
   const fullVideoSeconds = parseDurationToSeconds(activeVideo.duration);
   const requiredSeconds = Math.min(fullVideoSeconds, 120);
 
-  // Per-video watch tracker
-  const [watchProgressSeconds, setWatchProgressSeconds] = useState<number>(() => isWatched ? requiredSeconds : 0);
+  // Per-video watch progress timer
+  const [watchProgressSeconds, setWatchProgressSeconds] = useState<number>(0);
   const [watchWarning, setWatchWarning] = useState<string>('');
 
-  // Switch to primary video on topic load
+  // Switch to first item on topic change
   useEffect(() => {
-    setSelectedVideoIndex(0);
+    if (submoduleList.length > 0) {
+      setActiveTier('submodule');
+      setSelectedSubmoduleIdx(0);
+    } else {
+      setActiveTier('creator');
+      setSelectedCreatorIdx(0);
+    }
     setIsPlaying(false);
-    setWatchProgressSeconds(isWatched ? 120 : 0);
+    setWatchProgressSeconds(0);
   }, [video?.embedUrl]);
 
-  // When switching videos within the same topic, pause and reset timer
-  const handleSelectVideo = (idx: number) => {
-    setSelectedVideoIndex(idx);
-    setIsPlaying(false); // Stop playing previous video
-    setWatchProgressSeconds(watchedVideoIndices.includes(idx) ? requiredSeconds : 0);
+  // Handle switching creator video in top bar
+  const handleSelectCreatorVideo = (idx: number) => {
+    setActiveTier('creator');
+    setSelectedCreatorIdx(idx);
+    setIsPlaying(false);
+    setWatchProgressSeconds(watchedCreatorIndices.includes(idx) ? requiredSeconds : 0);
     setWatchWarning('');
   };
 
-  // Timer loop: ONLY advances when video is actively playing (isPlaying === true)
-  // If the user pauses or stops, timer completely halts!
+  // Handle switching submodule video in bottom bar
+  const handleSelectSubmoduleVideo = (idx: number) => {
+    setActiveTier('submodule');
+    setSelectedSubmoduleIdx(idx);
+    setIsPlaying(false);
+    setWatchProgressSeconds(watchedSubmoduleIndices.includes(idx) ? requiredSeconds : 0);
+    setWatchWarning('');
+  };
+
+  // Timer: advances strictly when isPlaying === true
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    const isCurrentVerified = watchedVideoIndices.includes(selectedVideoIndex);
+    const isCurrentVerified =
+      activeTier === 'submodule'
+        ? watchedSubmoduleIndices.includes(selectedSubmoduleIdx)
+        : watchedCreatorIndices.includes(selectedCreatorIdx);
 
     if (isPlaying && !isCurrentVerified) {
       interval = setInterval(() => {
         setWatchProgressSeconds((prev) => {
           const next = prev + 1;
           if (next >= requiredSeconds) {
-            setWatchedVideoIndices((prevIndices) => {
-              if (!prevIndices.includes(selectedVideoIndex)) {
-                return [...prevIndices, selectedVideoIndex];
-              }
-              return prevIndices;
-            });
-            onMarkWatched();
+            if (activeTier === 'submodule') {
+              setWatchedSubmoduleIndices((prevList) => {
+                const updated = prevList.includes(selectedSubmoduleIdx)
+                  ? prevList
+                  : [...prevList, selectedSubmoduleIdx];
+                if (updated.length >= submoduleList.length) {
+                  onMarkWatched();
+                }
+                return updated;
+              });
+            } else {
+              setWatchedCreatorIndices((prevList) => {
+                const updated = prevList.includes(selectedCreatorIdx)
+                  ? prevList
+                  : [...prevList, selectedCreatorIdx];
+                if (submoduleList.length === 0) {
+                  onMarkWatched();
+                }
+                return updated;
+              });
+            }
+
             try {
               confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } });
             } catch (_) {}
@@ -145,18 +199,30 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPlaying, selectedVideoIndex, watchedVideoIndices, requiredSeconds, onMarkWatched]);
+  }, [
+    isPlaying,
+    activeTier,
+    selectedSubmoduleIdx,
+    selectedCreatorIdx,
+    watchedSubmoduleIndices,
+    watchedCreatorIndices,
+    requiredSeconds,
+    submoduleList.length,
+    onMarkWatched,
+  ]);
 
-  const hasVerifiedWatched = watchedVideoIndices.includes(selectedVideoIndex) || Boolean(isWatched);
+  const hasCurrentVideoWatched =
+    activeTier === 'submodule'
+      ? watchedSubmoduleIndices.includes(selectedSubmoduleIdx)
+      : watchedCreatorIndices.includes(selectedCreatorIdx);
 
-  // Check if all submodules with videos have been completed
-  const totalSubmoduleVideosCount = submoduleVideos.length;
-  const completedSubmoduleVideosCount = submoduleVideos.filter((_, sIdx) => {
-    const originalIdx = allVideos.length - submoduleVideos.length + sIdx;
-    return watchedVideoIndices.includes(originalIdx);
-  }).length;
+  // Submodules compulsory check
+  const totalSubmodulesCount = submoduleList.length;
+  const completedSubmodulesCount = watchedSubmoduleIndices.length;
+  const allSubmodulesCompleted =
+    totalSubmodulesCount === 0 || completedSubmodulesCount >= totalSubmodulesCount;
 
-  // Robust YouTube video ID extractor supporting all YouTube link variants
+  // Robust YouTube extractor
   const extractYoutubeId = (url: string) => {
     if (!url) return 'A9TOuDZTPDU';
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -172,43 +238,45 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const videoId = extractYoutubeId(activeVideo.embedUrl);
-  // Standard embed URL with proper parameters for third-party embeds
   const currentEmbedUrl = `https://www.youtube.com/embed/${videoId}?rel=0&enablejsapi=1&origin=${encodeURIComponent(
     typeof window !== 'undefined' ? window.location.origin : 'https://tarunkumar-mylipilli.github.io'
   )}`;
   const directWatchUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-  // Dynamically derive creator tabs from available allVideos
-  const getTabInfo = (v: TopicVideo, idx: number) => {
+  // Get Creator tab label and icon
+  const getCreatorTabInfo = (v: TopicVideo, idx: number) => {
     const ch = (v.channel || '').toLowerCase();
     const lang = (v.language || '').toLowerCase();
     if (lang === 'telugu' || ch.includes('telugu')) {
-      return { label: 'Telugu', icon: <Globe className="w-3 h-3" /> };
+      return { label: 'Telugu Full Course', icon: <Globe className="w-3.5 h-3.5" /> };
     }
     if (ch.includes('mosh')) {
-      return { label: 'Mosh', icon: <Layers className="w-3 h-3" /> };
+      return { label: 'Programming with Mosh', icon: <Layers className="w-3.5 h-3.5" /> };
     }
-    if (ch.includes('codebasics') || ch.includes('basics') || ch.includes('campusx')) {
-      return { label: 'CodeBasics', icon: <Code2 className="w-3 h-3" /> };
+    if (ch.includes('codebasics') || ch.includes('basics')) {
+      return { label: 'CodeBasics', icon: <Code2 className="w-3.5 h-3.5" /> };
     }
     if (ch.includes('alex') || idx === 0) {
-      return { label: 'Alex', icon: <Play className="w-3 h-3 fill-current" /> };
+      return { label: 'Alex The Analyst', icon: <Play className="w-3.5 h-3.5 fill-current" /> };
     }
-    return { label: v.channel.split(' ')[0] || `Video ${idx + 1}`, icon: <Play className="w-3 h-3" /> };
+    return { label: v.channel || `Recommended ${idx + 1}`, icon: <Play className="w-3.5 h-3.5" /> };
   };
 
   const handleUnlockTheory = () => {
-    // Check if current video watched
-    if (!hasVerifiedWatched) {
-      const remaining = Math.max(0, requiredSeconds - watchProgressSeconds);
-      const remainingMin = Math.ceil(remaining / 60);
-      setWatchWarning(`⚠️ Video Watch Verification: Please watch the video tutorial for at least ${remainingMin > 1 ? remainingMin + ' minutes' : remaining + ' seconds'} to verify completion before unlocking Theory.`);
+    // If submodules exist, enforce that ALL submodules are completed
+    if (totalSubmodulesCount > 0 && !allSubmodulesCompleted) {
+      setWatchWarning(
+        `⚠️ Compulsory Submodules Requirement: You must watch all submodules (${completedSubmodulesCount}/${totalSubmodulesCount} completed) before unlocking Step 2: Theory.`
+      );
       return;
     }
 
-    // Check if submodules with videos exist and if they are watched
-    if (totalSubmoduleVideosCount > 0 && completedSubmoduleVideosCount < totalSubmoduleVideosCount) {
-      setWatchWarning(`⚠️ Please complete watching all submodule videos (${completedSubmoduleVideosCount}/${totalSubmoduleVideosCount} completed) to unlock Step 2: Theory.`);
+    if (!hasCurrentVideoWatched && totalSubmodulesCount === 0) {
+      const remaining = Math.max(0, requiredSeconds - watchProgressSeconds);
+      const remainingMin = Math.ceil(remaining / 60);
+      setWatchWarning(
+        `⚠️ Video Watch Verification: Please watch the video for at least ${remainingMin > 1 ? remainingMin + ' minutes' : remaining + ' seconds'} to verify completion.`
+      );
       return;
     }
 
@@ -226,7 +294,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setTimeout(() => setCopiedSnippet(false), 2000);
   };
 
-  // Derive bullet points for Lesson Overview
   const overviewBullets =
     activeVideo.summaryPoints && activeVideo.summaryPoints.length >= 3
       ? activeVideo.summaryPoints.slice(0, 3)
@@ -238,9 +305,50 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      {/* LEFT COLUMN: Main Video Player & Creator Tabs (8 cols on lg) */}
+      {/* LEFT COLUMN: Main Video Player, Top Recommended Bar & Bottom Submodules (8 cols on lg) */}
       <div className="lg:col-span-8 bg-[#0a101f] border border-slate-800/80 rounded-3xl p-5 shadow-2xl space-y-4">
-        {/* Video Canvas Container (16:9 ratio) */}
+        
+        {/* 1. ABOVE VIDEO PLAYER: TOP RECOMMENDED LECTURES NAVBAR */}
+        {creatorVideos.length > 0 && (
+          <div className="space-y-1.5 pb-1 border-b border-slate-800/80">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1.5 uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                Recommended Lectures
+              </span>
+              <span className="text-[10px] text-slate-500 font-mono">Alternative Masterclasses</span>
+            </div>
+
+            <div className="w-full flex items-center justify-start gap-2 overflow-x-auto py-1">
+              {creatorVideos.map((v, idx) => {
+                const isTabActive = activeTier === 'creator' && selectedCreatorIdx === idx;
+                const isVideoVerified = watchedCreatorIndices.includes(idx);
+                const tab = getCreatorTabInfo(v, idx);
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleSelectCreatorVideo(idx)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
+                      isTabActive
+                        ? 'bg-amber-500/15 text-amber-300 font-bold border border-amber-500/50 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                        : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    {isVideoVerified ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    ) : (
+                      tab.icon
+                    )}
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 2. VIDEO CANVAS CONTAINER (16:9 ratio) */}
         <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-[#050811] border border-slate-800/80 shadow-inner group">
           {isPlaying ? (
             <div className="w-full h-full relative">
@@ -251,13 +359,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
               />
-              {/* Floating Quick Action: Open on YouTube directly in case of embed restrictions */}
+              {/* Floating Quick Action: Open on YouTube directly */}
               <a
                 href={directWatchUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="absolute top-2.5 right-2.5 px-3 py-1 rounded-lg bg-black/80 hover:bg-black text-[11px] font-semibold text-slate-200 hover:text-cyan-300 border border-slate-700/80 backdrop-blur-md flex items-center gap-1.5 shadow-lg transition opacity-80 hover:opacity-100 cursor-pointer"
-                title="If YouTube blocks playback inside your browser, click to watch directly on YouTube"
+                title="Watch on YouTube"
               >
                 <span>Watch on YouTube</span>
                 <ExternalLink className="w-3 h-3 text-cyan-400" />
@@ -405,33 +513,52 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           )}
         </div>
 
-        {/* Creator & Submodule Switcher Tabs */}
-        <div className="w-full flex items-center justify-start sm:justify-center gap-2 overflow-x-auto py-1">
-          {allVideos.map((v, idx) => {
-            const isTabActive = selectedVideoIndex === idx;
-            const isVideoVerified = watchedVideoIndices.includes(idx);
-            const tab = getTabInfo(v, idx);
+        {/* 3. BELOW VIDEO PLAYER: SUBMODULES SYLLABUS BAR (COMPULSORY TO WATCH!) */}
+        <div className="space-y-2 pt-1">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5 uppercase tracking-wider">
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              Compulsory Submodules Breakdown
+            </span>
+            <span className="text-[10px] font-mono text-slate-400">
+              Must watch all submodules ({completedSubmodulesCount}/{totalSubmodulesCount || 1} completed)
+            </span>
+          </div>
 
-            return (
-              <button
-                key={idx}
-                onClick={() => handleSelectVideo(idx)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
-                  isTabActive
-                    ? 'bg-cyan-950/60 text-cyan-300 font-bold border border-cyan-500/50 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                }`}
-              >
-                {isVideoVerified ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                ) : (
-                  tab.icon
-                )}
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+          <div className="w-full flex items-center justify-start gap-2 overflow-x-auto py-1">
+            {submoduleList.length === 0 ? (
+              <div className="text-xs text-slate-500 py-1">No custom submodules added for this module.</div>
+            ) : (
+              submoduleList.map((sm, idx) => {
+                const isTabActive = activeTier === 'submodule' && selectedSubmoduleIdx === idx;
+                const isSubVerified = watchedSubmoduleIndices.includes(idx);
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleSelectSubmoduleVideo(idx)}
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer shrink-0 ${
+                      isTabActive
+                        ? 'bg-cyan-950/70 text-cyan-300 font-bold border border-cyan-500/60 shadow-[0_0_14px_rgba(6,182,212,0.3)]'
+                        : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    {isSubVerified ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    ) : (
+                      <span className="w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] flex items-center justify-center font-bold">
+                        {idx + 1}
+                      </span>
+                    )}
+                    <span>{sm.title}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">({sm.duration})</span>
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
+
       </div>
 
       {/* RIGHT COLUMN: Lesson Overview + Live Cheat Sheet + Quick Reference (4 cols on lg) */}
