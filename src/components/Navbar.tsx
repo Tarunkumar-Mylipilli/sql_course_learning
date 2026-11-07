@@ -50,6 +50,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="text-white">SQL</span>
             <span className="text-cyan-400">Mastery</span>
           </div>
+          <a
+            href="./admin.html"
+            onClick={(e) => {
+              // Allows direct navigation to admin.html
+            }}
+            className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-950/90 text-blue-400 border border-blue-500/30 uppercase tracking-wider hover:bg-blue-900/60 hover:text-blue-300 transition"
+            title="Open SQLMastery Admin Dashboard & CMS"
+          >
+            ADMIN
+          </a>
         </div>
 
         {/* Center: Top Navigation Tabs */}
