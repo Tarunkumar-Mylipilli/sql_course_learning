@@ -19,6 +19,7 @@ import { MindmapViewer } from './MindmapViewer';
 
 interface TheoryViewerProps {
   theory: TopicTheory;
+  subModules?: import('../types').SubModule[];
   isRead: boolean;
   onMarkRead: () => void;
   onProceedToQuiz: () => void;
@@ -26,13 +27,17 @@ interface TheoryViewerProps {
 
 export const TheoryViewer: React.FC<TheoryViewerProps> = ({
   theory,
+  subModules = [],
   isRead,
   onMarkRead,
   onProceedToQuiz,
 }) => {
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'points' | 'mindmap' | 'execution' | 'pitfalls' | 'enterprise'>('points');
+  const [activeTab, setActiveTab] = useState<'points' | 'submodules' | 'mindmap' | 'execution' | 'pitfalls' | 'enterprise'>(
+    subModules && subModules.length > 0 && subModules.some(s => s.notes) ? 'submodules' : 'points'
+  );
   const [reviewedPoints, setReviewedPoints] = useState<number[]>([]);
+  const [selectedSubmoduleIndex, setSelectedSubmoduleIndex] = useState<number>(0);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -89,6 +94,20 @@ export const TheoryViewer: React.FC<TheoryViewerProps> = ({
 
       {/* Navigation Sub-Tabs */}
       <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800 p-1.5 rounded-xl flex-wrap">
+        {subModules && subModules.length > 0 && (
+          <button
+            onClick={() => setActiveTab('submodules')}
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === 'submodules'
+                ? 'bg-cyan-500 text-slate-950 shadow-md font-bold'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Submodule Notes ({subModules.length})</span>
+          </button>
+        )}
+
         <button
           onClick={() => setActiveTab('points')}
           className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
@@ -169,6 +188,57 @@ export const TheoryViewer: React.FC<TheoryViewerProps> = ({
           <code>{theory.syntax}</code>
         </pre>
       </div>
+
+      {/* TAB 0: Submodule Specific Theory Notes */}
+      {activeTab === 'submodules' && subModules && subModules.length > 0 && (
+        <div className="space-y-4">
+          {/* Submodule Navigation Switcher */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {subModules.map((sm, smIdx) => (
+              <button
+                key={sm.id || smIdx}
+                onClick={() => setSelectedSubmoduleIndex(smIdx)}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-2 ${
+                  selectedSubmoduleIndex === smIdx
+                    ? 'bg-cyan-950/70 border border-cyan-500/60 text-cyan-300 font-bold shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                    : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                }`}
+              >
+                <span className="w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] flex items-center justify-center font-bold">
+                  {smIdx + 1}
+                </span>
+                <span>{sm.title}</span>
+                {sm.duration && <span className="text-[10px] text-slate-500 font-mono">({sm.duration})</span>}
+              </button>
+            ))}
+          </div>
+
+          {/* Submodule Notes Content Card */}
+          {(() => {
+            const currentSub = subModules[selectedSubmoduleIndex] || subModules[0];
+            const notesText = currentSub.notes || currentSub.summary || 'Detailed theory notes, syntax rules, and examples for this submodule.';
+            return (
+              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div>
+                    <span className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider">Submodule Notes</span>
+                    <h3 className="text-base font-extrabold text-white mt-0.5">{currentSub.title}</h3>
+                  </div>
+                  {currentSub.duration && (
+                    <span className="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 font-mono">
+                      ~{currentSub.duration}
+                    </span>
+                  )}
+                </div>
+
+                <div className="prose prose-invert max-w-none text-xs text-slate-300 space-y-3 leading-relaxed whitespace-pre-wrap font-sans bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl">
+                  {notesText}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
 
       {/* TAB 1: Point-to-Point Detailed Explanation */}
       {activeTab === 'points' && (

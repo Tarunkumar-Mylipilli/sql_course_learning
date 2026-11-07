@@ -77,6 +77,7 @@ export interface SubModule {
   title: string;
   duration?: string;
   summary?: string;
+  notes?: string; // Specific theory notes, syntax rules, and explanations for this submodule
   videoUrl?: string;
 }
 

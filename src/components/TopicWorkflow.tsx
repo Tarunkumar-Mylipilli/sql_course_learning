@@ -284,6 +284,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
         {currentStep === 'theory' && (
           <TheoryViewer
             theory={topic.theory}
+            subModules={topic.subModules}
             isRead={topicProgress.theoryRead}
             onMarkRead={() => onMarkTheoryRead(topic.id)}
             onProceedToQuiz={() => setCurrentStep('quiz')}

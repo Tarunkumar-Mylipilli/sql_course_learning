@@ -803,7 +803,8 @@ const html = `<!DOCTYPE html>
         order: topic.subModules.length + 1,
         title: subTitle.trim(),
         duration: '10 mins',
-        summary: \`Focused sub-topic practice on \${subTitle.trim()}\`
+        summary: \`Focused sub-topic practice on \${subTitle.trim()}\`,
+        notes: \`### \${subTitle.trim()} Notes & Syntax Rules\\n- Master core definitions and query logic.\\n- Common interview mistakes to avoid.\\n- Real-world production query pattern.\`
       };
 
       topic.subModules.push(newSub);
@@ -934,23 +935,36 @@ const html = `<!DOCTYPE html>
 
       subList.forEach((sub, sIdx) => {
         const item = document.createElement('div');
-        item.className = 'inner-card rounded-xl p-4 flex items-center justify-between gap-3 border border-slate-800/80 hover:border-slate-700 transition';
+        item.className = 'inner-card rounded-xl p-4.5 space-y-3 border border-slate-800/80 hover:border-slate-700 transition';
         item.innerHTML = \`
-          <div class="flex items-center gap-3 flex-1 min-w-0">
-            <span class="w-7 h-7 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 font-mono text-xs font-bold flex items-center justify-center shrink-0">
-              \${topic.order}.\${sIdx + 1}
-            </span>
-            <div class="flex-1 min-w-0 space-y-1">
-              <input type="text" value="\${sub.title || ''}" onchange="updateSubmoduleField(\${sIdx}, 'title', this.value)" class="text-xs font-bold text-white bg-transparent border-b border-transparent hover:border-slate-700 focus:border-cyan-500 outline-none w-full" />
-              <input type="text" value="\${sub.summary || ''}" onchange="updateSubmoduleField(\${sIdx}, 'summary', this.value)" placeholder="Submodule short description" class="text-[11px] text-slate-400 bg-transparent border-b border-transparent hover:border-slate-800 focus:border-cyan-500 outline-none w-full" />
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 flex-1 min-w-0">
+              <span class="w-7 h-7 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 font-mono text-xs font-bold flex items-center justify-center shrink-0">
+                \${topic.order}.\${sIdx + 1}
+              </span>
+              <input type="text" value="\${sub.title || ''}" onchange="updateSubmoduleField(\${sIdx}, 'title', this.value)" placeholder="Submodule Title" class="text-xs font-bold text-white bg-transparent border-b border-transparent hover:border-slate-700 focus:border-cyan-500 outline-none w-full" />
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <input type="text" value="\${sub.duration || '10 mins'}" onchange="updateSubmoduleField(\${sIdx}, 'duration', this.value)" title="Duration" class="w-20 bg-[#040810] border border-slate-800 rounded px-2 py-1 text-[11px] text-slate-300 font-mono text-center" />
+              <button onclick="deleteSubmodule(\${sIdx})" title="Delete Submodule" class="text-slate-500 hover:text-red-400 p-1.5 rounded transition cursor-pointer">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
             </div>
           </div>
 
-          <div class="flex items-center gap-2 shrink-0">
-            <input type="text" value="\${sub.duration || '10 mins'}" onchange="updateSubmoduleField(\${sIdx}, 'duration', this.value)" class="w-20 bg-[#040810] border border-slate-800 rounded px-2 py-1 text-[11px] text-slate-300 font-mono text-center" />
-            <button onclick="deleteSubmodule(\${sIdx})" title="Delete Submodule" class="text-slate-500 hover:text-red-400 p-1.5 rounded transition cursor-pointer">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
+          <div class="space-y-1">
+            <input type="text" value="\${sub.summary || ''}" onchange="updateSubmoduleField(\${sIdx}, 'summary', this.value)" placeholder="Short summary / syllabus bullet" class="text-[11px] text-slate-400 bg-[#040810] border border-slate-800 rounded-lg px-2.5 py-1.5 w-full focus:outline-none focus:border-cyan-500/50" />
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-semibold text-cyan-400 flex items-center gap-1">
+                <i data-lucide="file-text" class="w-3 h-3"></i> Submodule Specific Notes & Markdown Syntax
+              </label>
+              <span class="text-[10px] text-slate-500">Rendered in student theory portal</span>
+            </div>
+            <textarea rows="3" onchange="updateSubmoduleField(\${sIdx}, 'notes', this.value)" placeholder="Add comprehensive notes, syntax rules, formulas, or markdown specifically for this submodule..." class="w-full bg-[#040810] border border-slate-800 rounded-lg p-2.5 text-xs text-sky-200 font-mono focus:outline-none focus:border-cyan-500/50 leading-relaxed">\${sub.notes || ''}</textarea>
           </div>
         \`;
         container.appendChild(item);
