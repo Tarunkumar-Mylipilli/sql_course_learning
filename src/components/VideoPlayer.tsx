@@ -217,6 +217,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       ? watchedSubmoduleIndices.includes(selectedSubmoduleIdx)
       : watchedCreatorIndices.includes(selectedCreatorIdx);
 
+  const hasVerifiedWatched = hasCurrentVideoWatched;
+
   // Submodules compulsory check
   const totalSubmodulesCount = submoduleList.length;
   const completedSubmodulesCount = watchedSubmoduleIndices.length;
@@ -590,11 +592,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </ul>
 
           {/* Submodule Completion Status Pill */}
-          {totalSubmoduleVideosCount > 0 && (
+          {totalSubmodulesCount > 0 && (
             <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
               <span className="text-slate-400">Submodules Completed:</span>
-              <span className={`font-mono font-bold ${completedSubmoduleVideosCount === totalSubmoduleVideosCount ? 'text-emerald-400' : 'text-cyan-400'}`}>
-                {completedSubmoduleVideosCount} / {totalSubmoduleVideosCount} Submodules Watched
+              <span className={`font-mono font-bold ${completedSubmodulesCount === totalSubmodulesCount ? 'text-emerald-400' : 'text-cyan-400'}`}>
+                {completedSubmodulesCount} / {totalSubmodulesCount} Submodules Watched
               </span>
             </div>
           )}
