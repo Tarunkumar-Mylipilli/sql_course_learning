@@ -132,7 +132,7 @@ INSERT INTO staff_salaries VALUES
           sampleData: [{ id: 1, first_name: 'Emma', salary: 7200 }, { id: 5, first_name: 'Alan', salary: 9800 }],
         },
       ],
-      starterSql: `SELECT first_name, last_name, salary FROM staff_salaries WHERE salary > (SELECT AVG(salary) FROM staff_salaries) ORDER BY salary DESC;`,
+      starterSql: '-- Write your SQL query here\n',
       solutionSql: `SELECT first_name, last_name, salary FROM staff_salaries WHERE salary > (SELECT AVG(salary) FROM staff_salaries) ORDER BY salary DESC;`,
       expectedColumns: ['first_name', 'last_name', 'salary'],
       hints: ['Use scalar subquery in WHERE: WHERE salary > (SELECT AVG(salary) FROM staff_salaries)'],
@@ -148,7 +148,7 @@ INSERT INTO staff_salaries VALUES
 CREATE TABLE staff_salaries (id INT PRIMARY KEY, first_name VARCHAR(50), last_name VARCHAR(50), salary INT);
 INSERT INTO staff_salaries VALUES (1, 'Emma', 'Watson', 7200), (2, 'Daniel', 'Radcliffe', 6000), (4, 'Tom', 'Felton', 8500), (5, 'Alan', 'Rickman', 9800);`,
         tables: [{ name: 'staff_salaries', columns: [{ name: 'first_name', type: 'VARCHAR(50)' }, { name: 'salary', type: 'INT' }], sampleData: [{ first_name: 'Alan', salary: 9800 }] }],
-        starterSql: `SELECT first_name, last_name, salary FROM staff_salaries WHERE salary > (SELECT AVG(salary) FROM staff_salaries) ORDER BY salary DESC;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT first_name, last_name, salary FROM staff_salaries WHERE salary > (SELECT AVG(salary) FROM staff_salaries) ORDER BY salary DESC;`,
         expectedColumns: ['first_name', 'last_name', 'salary'],
         hints: ['WHERE salary > (SELECT AVG(salary) FROM staff_salaries)'],
@@ -178,14 +178,7 @@ INSERT INTO tree VALUES
             sampleData: [{ id: 1, p_id: null }, { id: 2, p_id: 1 }, { id: 4, p_id: 2 }],
           },
         ],
-        starterSql: `SELECT id,
-  CASE 
-    WHEN p_id IS NULL THEN 'Root'
-    WHEN id IN (SELECT p_id FROM tree WHERE p_id IS NOT NULL) THEN 'Inner'
-    ELSE 'Leaf'
-  END AS type
-FROM tree
-ORDER BY id;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT id, CASE WHEN p_id IS NULL THEN 'Root' WHEN id IN (SELECT p_id FROM tree WHERE p_id IS NOT NULL) THEN 'Inner' ELSE 'Leaf' END AS type FROM tree ORDER BY id;`,
         expectedColumns: ['id', 'type'],
         hints: ['Remember to filter out NULLs when checking: WHEN id IN (SELECT p_id FROM tree WHERE p_id IS NOT NULL)'],
@@ -209,14 +202,7 @@ INSERT INTO employee VALUES (1, 'Joe', 70000, 1), (2, 'Jim', 90000, 1), (3, 'Hen
             sampleData: [{ name: 'Jim', salary: 90000 }, { name: 'Max', salary: 90000 }],
           },
         ],
-        starterSql: `SELECT d.name AS Department, e.name AS Employee, e.salary AS Salary
-FROM employee e
-JOIN department d ON e.departmentId = d.id
-WHERE (e.departmentId, e.salary) IN (
-  SELECT departmentId, MAX(salary)
-  FROM employee
-  GROUP BY departmentId
-);`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT d.name AS Department, e.name AS Employee, e.salary AS Salary FROM employee e JOIN department d ON e.departmentId = d.id WHERE (e.departmentId, e.salary) IN (SELECT departmentId, MAX(salary) FROM employee GROUP BY departmentId);`,
         expectedColumns: ['Department', 'Employee', 'Salary'],
         hints: ['Use tuple subquery: WHERE (e.departmentId, e.salary) IN (SELECT departmentId, MAX(salary) FROM employee GROUP BY departmentId)'],
@@ -330,7 +316,7 @@ INSERT INTO corp_employees VALUES
           sampleData: [{ first_name: 'Tony', department: 'Engineering', salary: 12000 }],
         },
       ],
-      starterSql: `SELECT first_name, department, salary, DENSE_RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS salary_rank FROM corp_employees ORDER BY department ASC, salary_rank ASC;`,
+      starterSql: '-- Write your SQL query here\n',
       solutionSql: `SELECT first_name, department, salary, DENSE_RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS salary_rank FROM corp_employees ORDER BY department ASC, salary_rank ASC;`,
       expectedColumns: ['first_name', 'department', 'salary', 'salary_rank'],
       hints: ['DENSE_RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS salary_rank'],
@@ -346,7 +332,7 @@ INSERT INTO corp_employees VALUES
 CREATE TABLE corp_employees (id INT PRIMARY KEY, first_name VARCHAR(50), department VARCHAR(50), salary INT);
 INSERT INTO corp_employees VALUES (1, 'Tony', 'Engineering', 12000), (2, 'Bruce', 'Engineering', 12000), (3, 'Peter', 'Engineering', 7000);`,
         tables: [{ name: 'corp_employees', columns: [{ name: 'first_name', type: 'VARCHAR(50)' }, { name: 'salary', type: 'INT' }], sampleData: [{ first_name: 'Tony', salary: 12000 }] }],
-        starterSql: `SELECT first_name, department, salary, DENSE_RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS salary_rank FROM corp_employees ORDER BY department ASC, salary_rank ASC;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT first_name, department, salary, DENSE_RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS salary_rank FROM corp_employees ORDER BY department ASC, salary_rank ASC;`,
         expectedColumns: ['first_name', 'department', 'salary', 'salary_rank'],
         hints: ['DENSE_RANK() OVER (PARTITION BY department ORDER BY salary DESC)'],
@@ -377,9 +363,7 @@ INSERT INTO scores VALUES
             sampleData: [{ id: 3, score: 4.00 }, { id: 5, score: 4.00 }, { id: 4, score: 3.85 }],
           },
         ],
-        starterSql: `SELECT score, DENSE_RANK() OVER (ORDER BY score DESC) AS "rank"
-FROM scores
-ORDER BY score DESC;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT score, DENSE_RANK() OVER (ORDER BY score DESC) AS "rank" FROM scores ORDER BY score DESC;`,
         expectedColumns: ['score', 'rank'],
         hints: ['Use DENSE_RANK() OVER (ORDER BY score DESC) AS "rank" ORDER BY score DESC;'],
@@ -411,17 +395,7 @@ INSERT INTO queue VALUES
             sampleData: [{ person_name: 'Alice', weight: 250, turn: 1 }, { person_name: 'Bob', weight: 175, turn: 2 }],
           },
         ],
-        starterSql: `WITH running_weight AS (
-  SELECT 
-    person_name,
-    SUM(weight) OVER (ORDER BY turn) AS total_weight
-  FROM queue
-)
-SELECT person_name
-FROM running_weight
-WHERE total_weight <= 1000
-ORDER BY total_weight DESC
-LIMIT 1;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `WITH running_weight AS (SELECT person_name, SUM(weight) OVER (ORDER BY turn) AS total_weight FROM queue) SELECT person_name FROM running_weight WHERE total_weight <= 1000 ORDER BY total_weight DESC LIMIT 1;`,
         expectedColumns: ['person_name'],
         hints: ['Compute running sum: SUM(weight) OVER (ORDER BY turn) AS total_weight, then filter <= 1000 and take LIMIT 1 ordered by total_weight DESC'],
@@ -508,7 +482,7 @@ INSERT INTO staff_tiers VALUES
           sampleData: [{ first_name: 'Luke', salary: 10500 }, { first_name: 'Chewbacca', salary: 6800 }],
         },
       ],
-      starterSql: `SELECT first_name, salary, CASE WHEN salary >= 9000 THEN 'High' WHEN salary >= 7000 THEN 'Medium' ELSE 'Low' END AS salary_tier FROM staff_tiers ORDER BY salary DESC;`,
+      starterSql: '-- Write your SQL query here\n',
       solutionSql: `SELECT first_name, salary, CASE WHEN salary >= 9000 THEN 'High' WHEN salary >= 7000 THEN 'Medium' ELSE 'Low' END AS salary_tier FROM staff_tiers ORDER BY salary DESC;`,
       expectedColumns: ['first_name', 'salary', 'salary_tier'],
       hints: ['Use CASE WHEN salary >= 9000 THEN \'High\' WHEN salary >= 7000 THEN \'Medium\' ELSE \'Low\' END AS salary_tier'],
@@ -524,7 +498,7 @@ INSERT INTO staff_tiers VALUES
 CREATE TABLE staff_tiers (id INT PRIMARY KEY, first_name VARCHAR(50), salary INT);
 INSERT INTO staff_tiers VALUES (1, 'Luke', 10500), (2, 'Leia', 9200), (3, 'Han', 8100), (4, 'Chewbacca', 6800), (5, 'Lando', 5400);`,
         tables: [{ name: 'staff_tiers', columns: [{ name: 'first_name', type: 'VARCHAR(50)' }, { name: 'salary', type: 'INT' }], sampleData: [{ first_name: 'Luke', salary: 10500 }] }],
-        starterSql: `SELECT first_name, salary, CASE WHEN salary >= 9000 THEN 'High' WHEN salary >= 7000 THEN 'Medium' ELSE 'Low' END AS salary_tier FROM staff_tiers ORDER BY salary DESC;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT first_name, salary, CASE WHEN salary >= 9000 THEN 'High' WHEN salary >= 7000 THEN 'Medium' ELSE 'Low' END AS salary_tier FROM staff_tiers ORDER BY salary DESC;`,
         expectedColumns: ['first_name', 'salary', 'salary_tier'],
         hints: ['CASE WHEN salary >= 9000 THEN \'High\' ...'],
@@ -554,15 +528,7 @@ INSERT INTO seat VALUES
             sampleData: [{ id: 1, student: 'Abbot' }, { id: 2, student: 'Doris' }, { id: 5, student: 'Jeames' }],
           },
         ],
-        starterSql: `SELECT 
-  CASE 
-    WHEN id % 2 = 1 AND id = (SELECT COUNT(*) FROM seat) THEN id
-    WHEN id % 2 = 1 THEN id + 1
-    ELSE id - 1
-  END AS id,
-  student
-FROM seat
-ORDER BY id ASC;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT CASE WHEN id % 2 = 1 AND id = (SELECT COUNT(*) FROM seat) THEN id WHEN id % 2 = 1 THEN id + 1 ELSE id - 1 END AS id, student FROM seat ORDER BY id ASC;`,
         expectedColumns: ['id', 'student'],
         hints: ['Check modulo: odd numbers increment (id + 1) unless it\'s the last student, even numbers decrement (id - 1).'],
@@ -591,11 +557,7 @@ INSERT INTO accounts VALUES
             sampleData: [{ account_id: 3, income: 108939 }, { account_id: 2, income: 12747 }],
           },
         ],
-        starterSql: `SELECT 'Low Salary' AS category, COUNT(*) AS accounts_count FROM accounts WHERE income < 20000
-UNION ALL
-SELECT 'Average Salary' AS category, COUNT(*) AS accounts_count FROM accounts WHERE income BETWEEN 20000 AND 50000
-UNION ALL
-SELECT 'High Salary' AS category, COUNT(*) AS accounts_count FROM accounts WHERE income > 50000;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT 'Low Salary' AS category, COUNT(*) AS accounts_count FROM accounts WHERE income < 20000 UNION ALL SELECT 'Average Salary' AS category, COUNT(*) AS accounts_count FROM accounts WHERE income BETWEEN 20000 AND 50000 UNION ALL SELECT 'High Salary' AS category, COUNT(*) AS accounts_count FROM accounts WHERE income > 50000;`,
         expectedColumns: ['category', 'accounts_count'],
         hints: ['Use three separate SELECT ... UNION ALL blocks so every category is guaranteed to be present with its count.'],

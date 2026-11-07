@@ -87,10 +87,7 @@ LEFT JOIN employees m ON e.manager_id = m.id;`,
 CREATE TABLE employee (id INT PRIMARY KEY, name VARCHAR(50), salary INT, managerId INT);
 INSERT INTO employee VALUES (1, 'Joe', 70000, 3), (2, 'Henry', 80000, 4), (3, 'Sam', 60000, NULL), (4, 'Max', 90000, NULL);`,
       tables: [{ name: 'employee', columns: [{ name: 'name', type: 'VARCHAR(50)' }, { name: 'salary', type: 'INT' }, { name: 'managerId', type: 'INT' }], sampleData: [{ name: 'Joe', salary: 70000, managerId: 3 }] }],
-      starterSql: `SELECT e.name AS Employee
-FROM employee e
-JOIN employee m ON e.managerId = m.id
-WHERE e.salary > m.salary;`,
+      starterSql: '-- Write your SQL query here\n',
       solutionSql: `SELECT e.name AS Employee FROM employee e JOIN employee m ON e.managerId = m.id WHERE e.salary > m.salary;`,
       expectedColumns: ['Employee'],
       hints: ['JOIN employee m ON e.managerId = m.id WHERE e.salary > m.salary'],
@@ -105,7 +102,7 @@ WHERE e.salary > m.salary;`,
         instructions: 'Find employees who earn strictly more than their managers. Return `Employee`.',
         schemaSql: `CREATE TABLE employee (id INT PRIMARY KEY, name VARCHAR(50), salary INT, managerId INT); INSERT INTO employee VALUES (1, 'Joe', 70000, 3), (2, 'Henry', 80000, 4), (3, 'Sam', 60000, NULL), (4, 'Max', 90000, NULL);`,
         tables: [{ name: 'employee', columns: [{ name: 'name', type: 'VARCHAR(50)' }, { name: 'salary', type: 'INT' }], sampleData: [{ name: 'Joe', salary: 70000 }] }],
-        starterSql: `SELECT e.name AS Employee FROM employee e JOIN employee m ON e.managerId = m.id WHERE e.salary > m.salary;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT e.name AS Employee FROM employee e JOIN employee m ON e.managerId = m.id WHERE e.salary > m.salary;`,
         expectedColumns: ['Employee'],
         hints: ['JOIN employee m ON e.managerId = m.id WHERE e.salary > m.salary'],

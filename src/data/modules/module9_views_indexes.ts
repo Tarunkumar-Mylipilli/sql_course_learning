@@ -112,10 +112,7 @@ INSERT INTO students VALUES
 (3, 'Siva', 72.5, 0),
 (4, 'Sai', 91.0, 1);`,
       tables: [{ name: 'students', columns: [{ name: 'name', type: 'VARCHAR(50)' }, { name: 'marks', type: 'FLOAT' }, { name: 'is_active', type: 'INT' }], sampleData: [{ name: 'Rohith', marks: 95.5, is_active: 1 }] }],
-      starterSql: `CREATE VIEW active_students AS
-SELECT id, name, marks FROM students WHERE is_active = 1;
-
-SELECT id, name, marks FROM active_students ORDER BY marks DESC;`,
+      starterSql: '-- Write your SQL query here\n',
       solutionSql: `CREATE VIEW active_students AS SELECT id, name, marks FROM students WHERE is_active = 1; SELECT id, name, marks FROM active_students ORDER BY marks DESC;`,
       expectedColumns: ['id', 'name', 'marks'],
       hints: ['CREATE VIEW active_students AS SELECT id, name, marks FROM students WHERE is_active = 1; followed by SELECT * FROM active_students ORDER BY marks DESC;'],
@@ -129,7 +126,7 @@ SELECT id, name, marks FROM active_students ORDER BY marks DESC;`,
         instructions: 'Create a view `active_students` where `is_active = 1`, and query it ordered by `marks` descending.',
         schemaSql: `CREATE TABLE students (id INT PRIMARY KEY, name VARCHAR(50), marks FLOAT, is_active INT); INSERT INTO students VALUES (1, 'Rohith', 95.5, 1), (2, 'Surya', 88.0, 1), (3, 'Siva', 72.5, 0), (4, 'Sai', 91.0, 1);`,
         tables: [{ name: 'students', columns: [{ name: 'id', type: 'INT' }, { name: 'name', type: 'VARCHAR(50)' }, { name: 'marks', type: 'FLOAT' }], sampleData: [{ name: 'Rohith', marks: 95.5 }] }],
-        starterSql: `CREATE VIEW active_students AS SELECT id, name, marks FROM students WHERE is_active = 1; SELECT id, name, marks FROM active_students ORDER BY marks DESC;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `CREATE VIEW active_students AS SELECT id, name, marks FROM students WHERE is_active = 1; SELECT id, name, marks FROM active_students ORDER BY marks DESC;`,
         expectedColumns: ['id', 'name', 'marks'],
         hints: ['CREATE VIEW active_students AS SELECT id, name, marks FROM students WHERE is_active = 1;'],

@@ -21,7 +21,8 @@ export const Interview50Hub: React.FC = () => {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const currentQ = INTERVIEW_50_QUESTIONS[selectedIdx] || INTERVIEW_50_QUESTIONS[0];
 
-  const [userSql, setUserSql] = useState(currentQ.starterSql);
+  // Editor starts completely empty so the student writes the code themselves
+  const [userSql, setUserSql] = useState<string>('');
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
@@ -31,8 +32,7 @@ export const Interview50Hub: React.FC = () => {
 
   const handleSelectQuestion = (index: number) => {
     setSelectedIdx(index);
-    const q = INTERVIEW_50_QUESTIONS[index];
-    setUserSql(q.starterSql);
+    setUserSql('');
     setQueryResult(null);
     setValidationResult(null);
   };

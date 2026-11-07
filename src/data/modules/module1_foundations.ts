@@ -197,7 +197,7 @@ INSERT INTO employees VALUES
           ],
         },
       ],
-      starterSql: `SELECT first_name, last_name, department, salary FROM employees WHERE ;`,
+      starterSql: '-- Write your SQL query here\n',
       solutionSql: `SELECT first_name, last_name, department, salary FROM employees WHERE department = 'Engineering' AND salary > 8000;`,
       expectedColumns: ['first_name', 'last_name', 'department', 'salary'],
       hints: [
@@ -239,7 +239,7 @@ INSERT INTO employees VALUES
             ],
           },
         ],
-        starterSql: `SELECT first_name, last_name, department, salary FROM employees WHERE department = 'Engineering' AND salary > 8000;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT first_name, last_name, department, salary FROM employees WHERE department = 'Engineering' AND salary > 8000;`,
         expectedColumns: ['first_name', 'last_name', 'department', 'salary'],
         hints: ['Use WHERE department = \'Engineering\' AND salary > 8000'],
@@ -279,10 +279,7 @@ INSERT INTO customer VALUES
             ],
           },
         ],
-        starterSql: `-- Remember to handle NULL values explicitly using IS NULL
-SELECT name
-FROM customer
-WHERE referee_id != 2 OR referee_id IS NULL;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT name FROM customer WHERE referee_id != 2 OR referee_id IS NULL;`,
         expectedColumns: ['name'],
         hints: ['In SQL, NULL != 2 evaluates to UNKNOWN! You must write: referee_id != 2 OR referee_id IS NULL'],
@@ -323,9 +320,7 @@ INSERT INTO world VALUES
             ],
           },
         ],
-        starterSql: `SELECT name, population, area
-FROM world
-WHERE area >= 3000000 OR population >= 25000000;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT name, population, area FROM world WHERE area >= 3000000 OR population >= 25000000;`,
         expectedColumns: ['name', 'population', 'area'],
         hints: ['Use: WHERE area >= 3000000 OR population >= 25000000'],
@@ -474,7 +469,7 @@ INSERT INTO staff VALUES
           ],
         },
       ],
-      starterSql: `SELECT first_name, last_name, salary FROM staff ORDER BY salary DESC LIMIT 3;`,
+      starterSql: '-- Write your SQL query here\n',
       solutionSql: `SELECT first_name, last_name, salary FROM staff ORDER BY salary DESC LIMIT 3;`,
       expectedColumns: ['first_name', 'last_name', 'salary'],
       hints: [
@@ -515,7 +510,7 @@ INSERT INTO staff VALUES
             sampleData: [{ id: 5, first_name: 'Chandler', last_name: 'Bing', salary: 9500 }],
           },
         ],
-        starterSql: `SELECT first_name, last_name, salary FROM staff ORDER BY salary DESC LIMIT 3;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT first_name, last_name, salary FROM staff ORDER BY salary DESC LIMIT 3;`,
         expectedColumns: ['first_name', 'last_name', 'salary'],
         hints: ['ORDER BY salary DESC LIMIT 3'],
@@ -550,13 +545,7 @@ INSERT INTO employee VALUES
             ],
           },
         ],
-        starterSql: `-- LeetCode 176: Return 2nd highest distinct salary or NULL
-SELECT (
-  SELECT DISTINCT salary 
-  FROM employee 
-  ORDER BY salary DESC 
-  LIMIT 1 OFFSET 1
-) AS second_highest_salary;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT (SELECT DISTINCT salary FROM employee ORDER BY salary DESC LIMIT 1 OFFSET 1) AS second_highest_salary;`,
         expectedColumns: ['second_highest_salary'],
         hints: ['Wrapping a LIMIT 1 OFFSET 1 query inside a scalar SELECT (subquery) automatically converts empty results to NULL!'],

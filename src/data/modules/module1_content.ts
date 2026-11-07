@@ -405,9 +405,7 @@ INSERT INTO Employees VALUES
         ],
       },
     ],
-    starterSql: `-- Write a query to find each employee's name and salary
-SELECT 
-FROM Employees;`,
+    starterSql: '-- Write your SQL query here\n',
     solutionSql: `SELECT name, salary FROM Employees;`,
     expectedColumns: ['name', 'salary'],
     expectedOutputData: [
@@ -458,9 +456,7 @@ INSERT INTO Employees VALUES
         ],
       },
     ],
-    starterSql: `-- Calculate annual compensation = salary * 12
-SELECT name, 
-FROM Employees;`,
+    starterSql: '-- Write your SQL query here\n',
     solutionSql: `SELECT name, salary * 12 AS annual_compensation FROM Employees;`,
     expectedColumns: ['name', 'annual_compensation'],
     expectedOutputData: [
@@ -510,9 +506,7 @@ INSERT INTO Products VALUES
         ],
       },
     ],
-    starterSql: `-- Project product_name, price, stock, and total_stock_value
-SELECT 
-FROM Products;`,
+    starterSql: '-- Write your SQL query here\n',
     solutionSql: `SELECT product_name, price, stock, price * stock AS total_stock_value FROM Products;`,
     expectedColumns: ['product_name', 'price', 'stock', 'total_stock_value'],
     expectedOutputData: [
@@ -562,9 +556,7 @@ INSERT INTO Employees VALUES
         ],
       },
     ],
-    starterSql: `-- Select unique department names aliased as department_name
-SELECT 
-FROM Employees;`,
+    starterSql: '-- Write your SQL query here\n',
     solutionSql: `SELECT DISTINCT department AS department_name FROM Employees;`,
     expectedColumns: ['department_name'],
     expectedOutputData: [
@@ -613,9 +605,7 @@ INSERT INTO Products VALUES
         ],
       },
     ],
-    starterSql: `-- Select product_name, stock, and literal 'IN_STOCK' AS inventory_status
-SELECT 
-FROM Products;`,
+    starterSql: '-- Write your SQL query here\n',
     solutionSql: `SELECT product_name, stock, 'IN_STOCK' AS inventory_status FROM Products;`,
     expectedColumns: ['product_name', 'stock', 'inventory_status'],
     expectedOutputData: [

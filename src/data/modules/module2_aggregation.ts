@@ -159,7 +159,7 @@ INSERT INTO team_members VALUES
           ],
         },
       ],
-      starterSql: `SELECT department, COUNT(*) AS total_employees, ROUND(AVG(salary)) AS avg_salary FROM team_members GROUP BY department HAVING COUNT(*) >= 2 ORDER BY total_employees DESC;`,
+      starterSql: '-- Write your SQL query here\n',
       solutionSql: `SELECT department, COUNT(*) AS total_employees, ROUND(AVG(salary)) AS avg_salary FROM team_members GROUP BY department HAVING COUNT(*) >= 2 ORDER BY total_employees DESC;`,
       expectedColumns: ['department', 'total_employees', 'avg_salary'],
       hints: ['Use GROUP BY department HAVING COUNT(*) >= 2 ORDER BY total_employees DESC'],
@@ -197,7 +197,7 @@ INSERT INTO team_members VALUES
             sampleData: [{ id: 1, name: 'Alice', department: 'Engineering', salary: 9000 }],
           },
         ],
-        starterSql: `SELECT department, COUNT(*) AS total_employees, ROUND(AVG(salary)) AS avg_salary FROM team_members GROUP BY department HAVING COUNT(*) >= 2 ORDER BY total_employees DESC;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT department, COUNT(*) AS total_employees, ROUND(AVG(salary)) AS avg_salary FROM team_members GROUP BY department HAVING COUNT(*) >= 2 ORDER BY total_employees DESC;`,
         expectedColumns: ['department', 'total_employees', 'avg_salary'],
         hints: ['GROUP BY department HAVING COUNT(*) >= 2 ORDER BY total_employees DESC'],
@@ -228,11 +228,7 @@ INSERT INTO courses VALUES
             sampleData: [{ student: 'A', class: 'Math' }, { student: 'B', class: 'English' }],
           },
         ],
-        starterSql: `-- Report classes that have >= 5 students
-SELECT class
-FROM courses
-GROUP BY class
-HAVING COUNT(student) >= 5;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT class FROM courses GROUP BY class HAVING COUNT(student) >= 5;`,
         expectedColumns: ['class'],
         hints: ['Use GROUP BY class HAVING COUNT(student) >= 5;'],
@@ -270,15 +266,7 @@ INSERT INTO transactions VALUES
             sampleData: [{ id: 121, country: 'US', state: 'approved', amount: 1000, trans_date: '2018-12-18' }],
           },
         ],
-        starterSql: `SELECT 
-  strftime('%Y-%m', trans_date) AS month,
-  country,
-  COUNT(*) AS trans_count,
-  SUM(CASE WHEN state = 'approved' THEN 1 ELSE 0 END) AS approved_count,
-  SUM(amount) AS trans_total_amount,
-  SUM(CASE WHEN state = 'approved' THEN amount ELSE 0 END) AS approved_total_amount
-FROM transactions
-GROUP BY month, country;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT strftime('%Y-%m', trans_date) AS month, country, COUNT(*) AS trans_count, SUM(CASE WHEN state = 'approved' THEN 1 ELSE 0 END) AS approved_count, SUM(amount) AS trans_total_amount, SUM(CASE WHEN state = 'approved' THEN amount ELSE 0 END) AS approved_total_amount FROM transactions GROUP BY month, country;`,
         expectedColumns: ['month', 'country', 'trans_count', 'approved_count', 'trans_total_amount', 'approved_total_amount'],
         hints: ['Use strftime(\'%Y-%m\', trans_date) AS month and SUM(CASE WHEN state = \'approved\' THEN 1 ELSE 0 END)'],
@@ -435,7 +423,7 @@ INSERT INTO orders VALUES
           sampleData: [{ order_id: 101, customer_id: 1, amount: 250 }],
         },
       ],
-      starterSql: `SELECT c.name, COALESCE(SUM(o.amount), 0) AS total_spent FROM customers c LEFT JOIN orders o ON c.id = o.customer_id GROUP BY c.name ORDER BY total_spent DESC;`,
+      starterSql: '-- Write your SQL query here\n',
       solutionSql: `SELECT c.name, COALESCE(SUM(o.amount), 0) AS total_spent FROM customers c LEFT JOIN orders o ON c.id = o.customer_id GROUP BY c.name ORDER BY total_spent DESC;`,
       expectedColumns: ['name', 'total_spent'],
       hints: ['LEFT JOIN orders o ON c.id = o.customer_id GROUP BY c.name ORDER BY total_spent DESC'],
@@ -459,7 +447,7 @@ INSERT INTO orders VALUES (101, 1, 250), (102, 1, 150), (103, 2, 400), (104, 3, 
             sampleData: [{ id: 1, name: 'Alice Smith' }, { id: 4, name: 'Diana Prince' }],
           },
         ],
-        starterSql: `SELECT c.name, COALESCE(SUM(o.amount), 0) AS total_spent FROM customers c LEFT JOIN orders o ON c.id = o.customer_id GROUP BY c.name ORDER BY total_spent DESC;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT c.name, COALESCE(SUM(o.amount), 0) AS total_spent FROM customers c LEFT JOIN orders o ON c.id = o.customer_id GROUP BY c.name ORDER BY total_spent DESC;`,
         expectedColumns: ['name', 'total_spent'],
         hints: ['Use LEFT JOIN so customers with 0 orders are preserved.'],
@@ -498,12 +486,7 @@ INSERT INTO employee VALUES
             sampleData: [{ id: 101, name: 'John', manager_id: null }, { id: 102, name: 'Dan', manager_id: 101 }],
           },
         ],
-        starterSql: `-- Self join: match manager_id of employee with id of manager
-SELECT m.name
-FROM employee e
-JOIN employee m ON e.manager_id = m.id
-GROUP BY m.id, m.name
-HAVING COUNT(*) >= 5;`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT m.name FROM employee e JOIN employee m ON e.manager_id = m.id GROUP BY m.id, m.name HAVING COUNT(*) >= 5;`,
         expectedColumns: ['name'],
         hints: ['Join employee e with employee m ON e.manager_id = m.id and GROUP BY m.id, m.name HAVING COUNT(*) >= 5'],
@@ -542,11 +525,7 @@ INSERT INTO customer VALUES
             sampleData: [{ product_key: 5 }, { product_key: 6 }],
           },
         ],
-        starterSql: `-- Group by customer and verify distinct products count equals total products
-SELECT customer_id
-FROM customer
-GROUP BY customer_id
-HAVING COUNT(DISTINCT product_key) = (SELECT COUNT(*) FROM product);`,
+        starterSql: '-- Write your SQL query here\n',
         solutionSql: `SELECT customer_id FROM customer GROUP BY customer_id HAVING COUNT(DISTINCT product_key) = (SELECT COUNT(*) FROM product);`,
         expectedColumns: ['customer_id'],
         hints: ['Relational Division: HAVING COUNT(DISTINCT product_key) = (SELECT COUNT(*) FROM product)'],
