@@ -61,155 +61,159 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
 
   const stepsConfig: {
     id: TopicStep;
-    label: string;
-    sublabel: string;
-    icon: React.ReactNode;
+    stepNumber: number;
+    title: string;
     isCompleted: boolean;
     isUnlocked: boolean;
   }[] = [
     {
       id: 'video',
-      label: 'Step 1: Video',
-      sublabel: 'Watch Lecture',
-      icon: <Video className="w-4 h-4" />,
+      stepNumber: 1,
+      title: 'Video',
       isCompleted: topicProgress.videoWatched,
       isUnlocked: true,
     },
     {
       id: 'theory',
-      label: 'Step 2: Theory',
-      sublabel: 'Learn Syntax & Rules',
-      icon: <BookOpen className="w-4 h-4" />,
+      stepNumber: 2,
+      title: 'Theory',
       isCompleted: topicProgress.theoryRead,
       isUnlocked: isStepUnlocked(topic.id, 'theory', progress),
     },
     {
       id: 'quiz',
-      label: 'Step 3: Quiz',
-      sublabel: 'Pass Mastery Check',
-      icon: <HelpCircle className="w-4 h-4" />,
+      stepNumber: 3,
+      title: 'Quiz',
       isCompleted: topicProgress.quizPassed,
       isUnlocked: isStepUnlocked(topic.id, 'quiz', progress),
     },
     {
       id: 'coding',
-      label: 'Step 4: SQL Coding',
-      sublabel: 'Real Query Challenge',
-      icon: <Code2 className="w-4 h-4" />,
+      stepNumber: 4,
+      title: 'SQL Playground',
       isCompleted: topicProgress.codingCompleted,
-      isUnlocked: isStepUnlocked(topic.id, 'coding', progress), // Strictly locked unless Quiz is passed!
+      isUnlocked: isStepUnlocked(topic.id, 'coding', progress),
     },
   ];
 
+  const currentStepIndex = stepsConfig.findIndex((s) => s.id === currentStep);
+
   return (
     <div className="space-y-6">
-      {/* Topic Title & Navigation Header */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
-              Module {topic.order}
-            </span>
-            <span className="text-xs text-slate-400 font-medium">{topic.level}</span>
-            <span className="text-xs text-slate-500">•</span>
-            <span className="text-xs text-slate-400">~{topic.estimatedMinutes} mins</span>
+      {/* Subheader: Module Tag + Title + Navigation Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+        <div className="space-y-1.5">
+          {/* Module tag pill */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-[#0b1220] border border-slate-800 text-slate-400">
+            <span>Module {topic.order}</span>
+            <span className="text-slate-600">•</span>
+            <span className="text-cyan-400 font-medium">{topic.level}</span>
+            <span className="text-slate-600">•</span>
+            <span>{topic.estimatedMinutes || 20} mins</span>
           </div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">{topic.title}</h1>
-          <p className="text-xs text-slate-400 mt-1 max-w-2xl">{topic.overview}</p>
+
+          {/* Large Title */}
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            {topic.order}. {topic.title}
+          </h1>
         </div>
 
-        {/* Prev / Next Topic Controls */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Navigation Buttons: < Prev & Next > */}
+        <div className="flex items-center gap-1.5 bg-[#0b1220] p-1 rounded-xl border border-slate-800 self-start sm:self-center">
           <button
             onClick={onPreviousTopic}
             disabled={!hasPreviousTopic}
-            className={`p-2 rounded-xl border flex items-center gap-1 text-xs font-medium transition cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1 ${
               hasPreviousTopic
-                ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
-                : 'bg-slate-900 border-slate-800 text-slate-600 cursor-not-allowed'
+                ? 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+                : 'text-slate-600 cursor-not-allowed'
             }`}
-            title="Previous Topic"
           >
-            <ChevronLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Prev Topic</span>
+            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>Prev</span>
           </button>
+
           <button
             onClick={onProceedToNextTopic}
             disabled={!hasNextTopic || !topicProgress.codingCompleted}
-            className={`p-2 rounded-xl border flex items-center gap-1 text-xs font-medium transition cursor-pointer ${
+            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
               hasNextTopic && topicProgress.codingCompleted
-                ? 'bg-sky-600 border-sky-500 text-white hover:bg-sky-500 shadow-md'
-                : 'bg-slate-900 border-slate-800 text-slate-600 cursor-not-allowed'
+                ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-sm'
+                : hasNextTopic
+                ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+                : 'text-slate-600 cursor-not-allowed'
             }`}
-            title={
-              !topicProgress.codingCompleted
-                ? 'Complete coding challenge to unlock next topic'
-                : 'Next Topic'
-            }
           >
-            <span className="hidden sm:inline">Next Topic</span>
-            <ChevronRight className="w-4 h-4" />
+            <span>Next</span>
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* 4-Step Stepper Navigation Bar */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {stepsConfig.map((s) => {
-          const isActive = currentStep === s.id;
-          return (
-            <button
-              key={s.id}
-              disabled={!s.isUnlocked}
-              onClick={() => setCurrentStep(s.id)}
-              className={`p-3.5 rounded-2xl border text-left transition flex items-start gap-3 relative overflow-hidden cursor-pointer ${
-                isActive
-                  ? 'bg-slate-800/90 border-sky-500/80 shadow-lg shadow-sky-500/10'
-                  : s.isUnlocked
-                  ? 'bg-slate-900/40 border-slate-800 hover:border-slate-700 hover:bg-slate-900/80'
-                  : 'bg-slate-950/40 border-slate-900 opacity-50 cursor-not-allowed'
-              }`}
-            >
-              {/* Step Icon */}
-              <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
-                  s.isCompleted
-                    ? 'bg-emerald-500/20 text-emerald-400'
-                    : isActive
-                    ? 'bg-sky-500 text-slate-950 font-bold'
-                    : s.isUnlocked
-                    ? 'bg-slate-800 text-slate-300'
-                    : 'bg-slate-900 text-slate-600'
-                }`}
-              >
-                {s.isCompleted ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : s.isUnlocked ? s.icon : <Lock className="w-3.5 h-3.5 text-slate-500" />}
-              </div>
+      {/* 4-Step Stepped Progression Bar with Connected Glowing Beam */}
+      <div className="w-full overflow-x-auto py-2">
+        <div className="min-w-[620px] flex items-center justify-between relative px-2">
+          {stepsConfig.map((s, idx) => {
+            const isActive = currentStep === s.id;
+            const isPassed = s.isCompleted;
+            const hasNext = idx < stepsConfig.length - 1;
+            // The connector beam glows cyan if this step is active or completed
+            const isConnectorGlowing = idx < currentStepIndex || (isActive && idx === 0);
 
-              {/* Step Info */}
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className={`text-xs font-bold truncate ${
-                      isActive ? 'text-sky-300' : 'text-slate-200'
-                    }`}
-                  >
-                    {s.label}
+            return (
+              <React.Fragment key={s.id}>
+                {/* Step Pill */}
+                <button
+                  disabled={!s.isUnlocked}
+                  onClick={() => setCurrentStep(s.id)}
+                  className={`relative z-10 transition-all flex items-center gap-2 cursor-pointer select-none ${
+                    isActive
+                      ? 'px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-[0_0_22px_rgba(34,211,238,0.45)]'
+                      : isPassed
+                      ? 'px-5 py-2 rounded-full bg-[#0b1322] border border-cyan-500/40 text-cyan-300 text-xs sm:text-sm font-medium hover:bg-slate-800'
+                      : s.isUnlocked
+                      ? 'px-5 py-2 rounded-full bg-[#0b1322] border border-slate-800 text-slate-300 text-xs sm:text-sm font-medium hover:border-slate-700'
+                      : 'px-5 py-2 rounded-full bg-[#090f1d] border border-slate-800/70 text-slate-500 text-xs sm:text-sm font-medium cursor-not-allowed'
+                  }`}
+                >
+                  <span>
+                    {s.stepNumber}. {s.title}
                   </span>
-                </div>
-                <p className="text-[11px] text-slate-400 truncate">{s.sublabel}</p>
-                {!s.isUnlocked && (
-                  <span className="text-[10px] text-rose-400/80 block mt-0.5">
-                    🔒 Locked
-                  </span>
+                  {isActive ? (
+                    s.id === 'video' ? (
+                      <span className="text-xs">🎥</span>
+                    ) : s.id === 'coding' ? (
+                      <Code2 className="w-3.5 h-3.5" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )
+                  ) : isPassed ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                  ) : !s.isUnlocked ? (
+                    <Lock className="w-3.5 h-3.5 text-slate-500" />
+                  ) : null}
+                </button>
+
+                {/* Connecting Line / Beam between steps */}
+                {hasNext && (
+                  <div className="flex-1 mx-2 relative flex items-center">
+                    <div
+                      className={`w-full h-1 rounded-full transition-all duration-500 ${
+                        isConnectorGlowing
+                          ? 'bg-gradient-to-r from-cyan-400 to-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.85)]'
+                          : 'bg-slate-800/80 h-0.5'
+                      }`}
+                    />
+                  </div>
                 )}
-              </div>
-            </button>
-          );
-        })}
+              </React.Fragment>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Step Content Active Area */}
-      <div className="mt-6">
+      {/* Step Content Area */}
+      <div className="mt-4">
         {currentStep === 'video' && (
           <VideoPlayer
             video={topic.video}
@@ -218,6 +222,9 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
             isWatched={topicProgress.videoWatched}
             onMarkWatched={() => onMarkVideoWatched(topic.id)}
             onProceedToTheory={() => setCurrentStep('theory')}
+            topicTitle={topic.title}
+            topicOverview={topic.overview}
+            theorySyntax={topic.theory?.syntax}
           />
         )}
 
