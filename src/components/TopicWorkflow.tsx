@@ -272,6 +272,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
             video={topic.video}
             alternativeVideos={topic.alternativeVideos}
             addonVideos={topic.addonVideos}
+            subModules={topic.subModules}
             isWatched={topicProgress.videoWatched}
             onMarkWatched={() => onMarkVideoWatched(topic.id)}
             onProceedToTheory={() => setCurrentStep('theory')}

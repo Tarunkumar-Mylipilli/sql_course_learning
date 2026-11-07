@@ -28,6 +28,7 @@ interface VideoPlayerProps {
   video: TopicVideo;
   alternativeVideos?: TopicVideo[];
   addonVideos?: TopicVideo[];
+  subModules?: import('../types').SubModule[];
   isWatched: boolean;
   onMarkWatched: () => void;
   onProceedToTheory: () => void;
@@ -40,13 +41,26 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   video,
   alternativeVideos = [],
   addonVideos = [],
+  subModules = [],
   isWatched,
   onMarkWatched,
   onProceedToTheory,
   topicTitle = 'SQL Basics & The SELECT Statement',
   theorySyntax,
 }) => {
-  const allVideos = [video, ...(alternativeVideos || []), ...(addonVideos || [])].filter(Boolean);
+  // Convert any submodules with videoUrl into playable video options as well
+  const submoduleVideos: TopicVideo[] = (subModules || [])
+    .filter((sm) => sm.videoUrl && sm.videoUrl.trim().length > 0)
+    .map((sm, smIdx) => ({
+      title: sm.title,
+      embedUrl: sm.videoUrl || '',
+      duration: sm.duration || '10:00',
+      channel: `Submodule ${smIdx + 1}`,
+      language: 'English',
+      summaryPoints: [sm.title, sm.summary || 'Submodule video tutorial', 'Focused concepts walkthrough']
+    }));
+
+  const allVideos = [video, ...(alternativeVideos || []), ...(addonVideos || []), ...submoduleVideos].filter(Boolean);
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
