@@ -115,16 +115,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <FileText className="w-3.5 h-3.5" />
             <span>Notes</span>
           </button>
-
-          {/* + Add Topic */}
-          <button
-            onClick={onOpenAddTopic}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 border border-slate-800 bg-slate-900/50 hover:bg-slate-800 hover:text-white flex items-center gap-1.5 transition cursor-pointer"
-            title="Create or customize course modules"
-          >
-            <Plus className="w-3.5 h-3.5 text-slate-400" />
-            <span>Add Topic</span>
-          </button>
         </nav>
 
         {/* Right: Search, Go Pro, Notifications, Profile */}

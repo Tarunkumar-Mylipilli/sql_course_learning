@@ -16,6 +16,7 @@ import {
   BarChart2,
   Globe,
   Layers,
+  ExternalLink,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { TopicVideo } from '../types';
@@ -42,7 +43,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   topicTitle = 'SQL Basics & The SELECT Statement',
   theorySyntax,
 }) => {
-  const allVideos = [video, ...(alternativeVideos || []), ...(addonVideos || [])];
+  const allVideos = [video, ...(alternativeVideos || []), ...(addonVideos || [])].filter(Boolean);
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
@@ -64,16 +65,46 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     ],
   };
 
-  const videoId = activeVideo.embedUrl?.split('/embed/')[1]?.split('?')[0] || '';
-  const currentEmbedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`;
+  // Robust YouTube video ID extractor supporting all YouTube link variants
+  const extractYoutubeId = (url: string) => {
+    if (!url) return 'A9TOuDZTPDU';
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 11) {
+      return match[2];
+    }
+    if (url.includes('/embed/')) {
+      const parts = url.split('/embed/')[1]?.split('?')[0];
+      if (parts && parts.length === 11) return parts;
+    }
+    return 'A9TOuDZTPDU';
+  };
 
-  // Clean creator tabs configuration
-  const creatorTabs = [
-    { label: 'Alex', icon: <Play className="w-3 h-3 fill-current" /> },
-    { label: 'Mosh', icon: <Layers className="w-3 h-3" /> },
-    { label: 'CodeBasics', icon: <Code2 className="w-3 h-3" /> },
-    { label: 'Telugu', icon: <Globe className="w-3 h-3" /> },
-  ];
+  const videoId = extractYoutubeId(activeVideo.embedUrl);
+  // Standard embed URL with proper parameters for third-party embeds
+  const currentEmbedUrl = `https://www.youtube.com/embed/${videoId}?rel=0&enablejsapi=1&origin=${encodeURIComponent(
+    typeof window !== 'undefined' ? window.location.origin : 'https://tarunkumar-mylipilli.github.io'
+  )}`;
+  const directWatchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+  // Dynamically derive creator tabs from available allVideos
+  const getTabInfo = (v: TopicVideo, idx: number) => {
+    const ch = (v.channel || '').toLowerCase();
+    const lang = (v.language || '').toLowerCase();
+    if (lang === 'telugu' || ch.includes('telugu')) {
+      return { label: 'Telugu', icon: <Globe className="w-3 h-3" /> };
+    }
+    if (ch.includes('mosh')) {
+      return { label: 'Mosh', icon: <Layers className="w-3 h-3" /> };
+    }
+    if (ch.includes('codebasics') || ch.includes('basics') || ch.includes('campusx')) {
+      return { label: 'CodeBasics', icon: <Code2 className="w-3 h-3" /> };
+    }
+    if (ch.includes('alex') || idx === 0) {
+      return { label: 'Alex', icon: <Play className="w-3 h-3 fill-current" /> };
+    }
+    return { label: v.channel.split(' ')[0] || `Video ${idx + 1}`, icon: <Play className="w-3 h-3" /> };
+  };
 
   const handleUnlockTheory = () => {
     onMarkWatched();
@@ -106,40 +137,49 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         {/* Video Canvas Container (16:9 ratio) */}
         <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-[#050811] border border-slate-800/80 shadow-inner group">
           {isPlaying ? (
-            <iframe
-              src={`${currentEmbedUrl}&autoplay=1`}
-              title={activeVideo.title}
-              className="w-full h-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
+            <div className="w-full h-full relative">
+              <iframe
+                src={`${currentEmbedUrl}&autoplay=1`}
+                title={activeVideo.title}
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+              {/* Floating Quick Action: Open on YouTube directly in case of embed restrictions */}
+              <a
+                href={directWatchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute top-2.5 right-2.5 px-3 py-1 rounded-lg bg-black/80 hover:bg-black text-[11px] font-semibold text-slate-200 hover:text-cyan-300 border border-slate-700/80 backdrop-blur-md flex items-center gap-1.5 shadow-lg transition opacity-80 hover:opacity-100 cursor-pointer"
+                title="If YouTube blocks playback inside your browser, click to watch directly on YouTube"
+              >
+                <span>Watch on YouTube</span>
+                <ExternalLink className="w-3 h-3 text-cyan-400" />
+              </a>
+            </div>
           ) : (
             /* Interactive SQL Architecture Diagram Preview State */
             <div className="w-full h-full relative flex items-center justify-center select-none bg-gradient-to-b from-[#070e1c] via-[#050914] to-[#04060d]">
               {/* Background glowing connection lines */}
               <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-50">
-                {/* Curve from Database (top left) to Center Database Cylinder */}
                 <path
                   d="M 210 100 C 260 100, 270 170, 320 170"
                   fill="none"
                   stroke="#00d2ff"
                   strokeWidth="2"
                 />
-                {/* Curve from SELECT (bottom left) to Center Database Cylinder */}
                 <path
                   d="M 210 240 C 260 240, 270 170, 320 170"
                   fill="none"
                   stroke="#00d2ff"
                   strokeWidth="2"
                 />
-                {/* Curve from Table (top right) to Center Database Cylinder */}
                 <path
                   d="M 430 100 C 380 100, 370 170, 320 170"
                   fill="none"
                   stroke="#00d2ff"
                   strokeWidth="2"
                 />
-                {/* Curve from Conditions (bottom right) to Center Database Cylinder */}
                 <path
                   d="M 430 240 C 380 240, 370 170, 320 170"
                   fill="none"
@@ -174,23 +214,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
               {/* Center Glowing Database Cylinder & Circular Play Button */}
               <div className="relative z-10 flex flex-col items-center">
-                {/* Database Cylinder Illustration with glowing blue discs */}
                 <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
-                  {/* Concentric cyan neon rings */}
                   <div className="absolute inset-0 rounded-full bg-cyan-500/10 border-2 border-cyan-400/40 shadow-[0_0_30px_rgba(6,182,212,0.35)] animate-pulse" />
                   
-                  {/* Cylinder stack SVG */}
                   <svg className="w-20 h-20 text-cyan-400 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <ellipse cx="12" cy="5" rx="9" ry="3" />
                     <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
                     <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
                   </svg>
 
-                  {/* Centered Circular Glass Play Button */}
                   <button
                     onClick={() => setIsPlaying(true)}
                     className="absolute w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-slate-900/85 backdrop-blur-md border border-cyan-400/60 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:scale-110 active:scale-95 transition cursor-pointer group"
-                    title="Play Video"
+                    title="Play Video Lecture"
                   >
                     <Play className="w-6 h-6 sm:w-7 sm:h-7 text-white fill-white ml-0.5 group-hover:text-cyan-300 group-hover:fill-cyan-300 transition" />
                   </button>
@@ -221,9 +257,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 </div>
               </div>
 
-              {/* Bottom Media Controls Scrubber Bar */}
+              {/* Bottom Media Controls Bar */}
               <div className="absolute bottom-0 inset-x-0 h-10 bg-slate-950/90 backdrop-blur-md border-t border-slate-800/80 px-4 flex items-center justify-between gap-3 text-slate-400">
-                {/* Play button & Time */}
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setIsPlaying(true)}
@@ -231,22 +266,29 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
                   </button>
-                  <span className="text-[11px] font-mono text-slate-400">0:00 / 20:00</span>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    {activeVideo.duration || '20:00'}
+                  </span>
                 </div>
 
-                {/* Progress Bar / Scrubber */}
                 <div className="flex-1 mx-3 flex items-center">
                   <div className="relative w-full h-1 bg-slate-800 rounded-full cursor-pointer overflow-hidden">
                     <div className="w-1/4 h-full bg-cyan-400 rounded-full shadow-[0_0_8px_#22d3ee]" />
                   </div>
                 </div>
 
-                {/* Right controls: volume, CC, fullscreen */}
                 <div className="flex items-center gap-3">
+                  <a
+                    href={directWatchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] text-slate-400 hover:text-cyan-300 flex items-center gap-1 transition"
+                    title="Watch on YouTube"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    <span className="hidden sm:inline">YouTube</span>
+                  </a>
                   <Volume2 className="w-3.5 h-3.5 hover:text-white transition cursor-pointer" />
-                  <span className="text-[10px] font-bold border border-slate-700 px-1 rounded text-slate-400 hover:text-white transition cursor-pointer">
-                    CC
-                  </span>
                   <Maximize2
                     onClick={() => setIsPlaying(true)}
                     className="w-3.5 h-3.5 hover:text-white transition cursor-pointer"
@@ -259,14 +301,15 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
         {/* Creator Switcher Tabs (Alex | Mosh | CodeBasics | Telugu) */}
         <div className="w-full flex items-center justify-start sm:justify-center gap-2 overflow-x-auto py-1">
-          {creatorTabs.map((tab, idx) => {
+          {allVideos.map((v, idx) => {
             const isTabActive = selectedVideoIndex === idx;
+            const tab = getTabInfo(v, idx);
 
             return (
               <button
                 key={idx}
                 onClick={() => {
-                  setSelectedVideoIndex(idx < allVideos.length ? idx : 0);
+                  setSelectedVideoIndex(idx);
                   setIsPlaying(false);
                 }}
                 className={`px-5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
@@ -287,7 +330,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       <div className="lg:col-span-4 space-y-4">
         {/* Card 1: Lesson Overview */}
         <div className="bg-[#0a101f] border border-slate-800/80 rounded-2xl p-6 shadow-xl relative overflow-hidden space-y-3">
-          {/* 3D Stack of books graphic in top right */}
           <div className="absolute top-4 right-4 opacity-75 pointer-events-none">
             <svg className="w-16 h-16 text-cyan-500" viewBox="0 0 24 24" fill="currentColor">
               <path opacity="0.3" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -311,7 +353,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             ))}
           </ul>
 
-          {/* Large Amber Gradient CTA Button: 🔒 Verify & Unlock Step 2: Theory */}
+          {/* Large Amber Gradient CTA Button */}
           <button
             onClick={handleUnlockTheory}
             className="w-full mt-4 py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-extrabold text-sm shadow-[0_0_22px_rgba(245,158,11,0.3)] transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 cursor-pointer"
@@ -349,7 +391,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             </div>
             <p className="text-slate-400 text-[10px]">Snippets & useful syntax</p>
 
-            {/* Code Box with line numbers */}
             <div className="bg-[#050811] border border-slate-800/80 rounded-xl p-2.5 font-mono text-[11px] leading-relaxed space-y-0.5">
               <div className="flex items-center gap-2">
                 <span className="text-slate-600 select-none text-[10px]">1</span>

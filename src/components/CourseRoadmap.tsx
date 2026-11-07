@@ -162,18 +162,12 @@ export const CourseRoadmap: React.FC<CourseRoadmapProps> = ({
         })}
       </div>
 
-      {/* Add Topic Footer CTA */}
-      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 text-center space-y-3">
-        <h3 className="text-base font-bold text-white">Want to expand the curriculum?</h3>
+      {/* Practice Motivation CTA */}
+      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 text-center space-y-2">
+        <h3 className="text-base font-bold text-white">Consistent Daily Practice Leads to SQL Mastery</h3>
         <p className="text-xs text-slate-400 max-w-md mx-auto">
-          You can create and add custom SQL modules with your own YouTube video, custom notes, interactive quiz questions, and hands-on SQLite challenges.
+          Complete each topic in sequence: watch the lecture, study the theory, pass the mastery quiz, and solve real queries in the SQL playground.
         </p>
-        <button
-          onClick={onOpenAddTopic}
-          className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow-md transition cursor-pointer"
-        >
-          + Add New SQL Topic
-        </button>
       </div>
     </div>
   );

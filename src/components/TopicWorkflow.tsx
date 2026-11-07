@@ -157,30 +157,8 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
           </h1>
         </div>
 
-        {/* Right side: Edit/Delete + Prev/Next Topic Navigation */}
+        {/* Right side: Prev/Next Topic Navigation */}
         <div className="flex items-center gap-2 self-start sm:self-center">
-          {/* Edit Module */}
-          {onEditTopic && (
-            <button
-              onClick={() => onEditTopic(topic)}
-              className="p-2 rounded-xl bg-[#0b1220] border border-slate-800 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/40 transition cursor-pointer"
-              title="Edit Topic Content & Questions"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-            </button>
-          )}
-
-          {/* Delete Module */}
-          {onDeleteTopic && (
-            <button
-              onClick={handleDelete}
-              className="p-2 rounded-xl bg-[#0b1220] border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition cursor-pointer"
-              title="Delete Topic"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          )}
-
           {/* Navigation Buttons: ← Prev & Next → */}
           <div className="flex items-center gap-1.5 bg-[#0b1220] p-1 rounded-xl border border-slate-800">
             <button

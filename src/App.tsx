@@ -276,8 +276,7 @@ export default function App() {
         activeView={activeView}
         setActiveView={setActiveView}
         onOpenAddTopic={() => {
-          setEditingTopic(null);
-          setIsTopicModalOpen(true);
+          window.location.href = './admin.html';
         }}
         onResetProgress={handleResetProgress}
         onOpenAITutor={() => {
@@ -315,11 +314,6 @@ export default function App() {
               onPreviousTopic={handlePreviousTopic}
               hasPreviousTopic={hasPreviousTopic}
               hasNextTopic={hasNextTopic}
-              onEditTopic={(t) => {
-                setEditingTopic(t);
-                setIsTopicModalOpen(true);
-              }}
-              onDeleteTopic={handleDeleteTopic}
               onOpenAITutorWithContext={handleOpenAITutorWithContext}
             />
           )}
@@ -330,8 +324,7 @@ export default function App() {
               progress={progress}
               onSelectTopic={handleSelectTopic}
               onOpenAddTopic={() => {
-                setEditingTopic(null);
-                setIsTopicModalOpen(true);
+                window.location.href = './admin.html';
               }}
             />
           )}
@@ -348,18 +341,6 @@ export default function App() {
         onClose={() => setIsAITutorOpen(false)}
         currentTopic={currentTopic}
         context={aiTutorContext}
-      />
-
-      {/* Topic Creator & Editor Modal (Full CRUD, Multiple Quiz Questions & Multiple Coding Challenges) */}
-      <AddTopicModal
-        isOpen={isTopicModalOpen}
-        onClose={() => {
-          setIsTopicModalOpen(false);
-          setEditingTopic(null);
-        }}
-        onSaveTopic={handleSaveTopic}
-        initialTopic={editingTopic}
-        nextOrder={topics.length + 1}
       />
     </div>
   );
