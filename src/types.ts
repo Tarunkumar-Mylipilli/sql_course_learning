@@ -60,6 +60,26 @@ export interface TopicVideo {
   summaryPoints: string[];
 }
 
+export interface TopicProgress {
+  videoWatched: boolean;
+  videoWatchedSeconds?: number;
+  theoryRead: boolean;
+  quizPassed: boolean;
+  quizScore: number; // percentage
+  codingCompleted: boolean;
+  solvedChallengeIds?: string[];
+  userSql?: string;
+}
+
+export interface SubModule {
+  id: string;
+  order: number;
+  title: string;
+  duration?: string;
+  summary?: string;
+  videoUrl?: string;
+}
+
 export interface Topic {
   id: string;
   order: number;
@@ -69,6 +89,7 @@ export interface Topic {
   estimatedMinutes: number;
   badge: string;
   overview: string;
+  subModules?: SubModule[]; // Child sub-modules / syllabus topics under this module
   video: TopicVideo; // Short, focused topic tutorial (5-12 mins) with exercise explanation
   alternativeVideos?: TopicVideo[]; // Alternative short creator options
   addonVideos?: TopicVideo[]; // Long full-course masterclasses & Telugu full lectures for deep understanding
@@ -79,16 +100,6 @@ export interface Topic {
   };
   challenge: CodingChallenge; // Primary challenge
   challenges?: CodingChallenge[]; // Extended practice bank (W3Resource, LeetCode, DataLemur)
-}
-
-export interface TopicProgress {
-  videoWatched: boolean;
-  theoryRead: boolean;
-  quizPassed: boolean;
-  quizScore: number; // percentage
-  codingCompleted: boolean;
-  solvedChallengeIds?: string[];
-  userSql?: string;
 }
 
 export interface CourseProgress {

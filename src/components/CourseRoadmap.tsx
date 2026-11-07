@@ -100,6 +100,20 @@ export const CourseRoadmap: React.FC<CourseRoadmapProps> = ({
                       {t.title}
                     </h3>
                     <p className="text-xs text-slate-400 line-clamp-1">{t.overview}</p>
+                    
+                    {/* Submodules mini badges */}
+                    {t.subModules && t.subModules.length > 0 && (
+                      <div className="flex items-center gap-1.5 pt-1.5 flex-wrap">
+                        {t.subModules.map((sm, smIdx) => (
+                          <span
+                            key={sm.id || smIdx}
+                            className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800/90 text-cyan-300 border border-slate-700/80 font-medium"
+                          >
+                            ↳ {sm.title}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

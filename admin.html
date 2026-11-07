@@ -87,7 +87,7 @@
   <!-- 1. LEFT SIDEBAR NAVIGATION RAIL                                           -->
   <!-- ========================================================================= -->
   <aside class="w-64 bg-[#0A0F1D] border-r border-slate-800/80 flex flex-col justify-between p-4 shrink-0 z-20">
-    <div class="space-y-6">
+    <div class="space-y-5">
       <!-- Brand & Admin Badge -->
       <div class="flex items-center justify-between px-2 pt-1">
         <div class="flex items-center gap-2.5">
@@ -103,11 +103,16 @@
         </div>
       </div>
 
-      <!-- Action: Add New Module Button in Sidebar -->
-      <div class="px-1">
+      <!-- Action Buttons: Add Module & Add Submodule -->
+      <div class="space-y-2 px-1">
         <button onclick="promptAddNewModule()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/40 text-cyan-300 hover:text-white hover:border-cyan-400 font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(0,210,255,0.15)] transition cursor-pointer">
           <i data-lucide="folder-plus" class="w-4 h-4 text-[#00D2FF]"></i>
           <span>+ Add New Module</span>
+        </button>
+
+        <button onclick="promptAddNewSubModule()" class="w-full py-2 px-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-slate-300 hover:text-cyan-300 hover:border-cyan-500/50 font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer">
+          <i data-lucide="git-branch" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>+ Add Submodule</span>
         </button>
       </div>
 
@@ -115,30 +120,35 @@
       <nav class="space-y-1">
         <a href="#" onclick="switchMainTab('videos')" id="nav-videos" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-cyan-950/40 border border-cyan-500/50 text-[#00D2FF] shadow-[0_0_15px_rgba(0,210,255,0.2)] transition">
           <i data-lucide="film" class="w-4 h-4"></i>
-          <span>1. Video Lectures</span>
+          <span>1. Video Lessons & Verification</span>
         </a>
 
-        <a href="#" onclick="switchMainTab('theory')" id="nav-theory" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900/60 transition">
+        <a href="#" onclick="switchMainTab('submodules')" id="nav-submodules" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900/60 transition">
+          <i data-lucide="git-branch" class="w-4 h-4"></i>
+          <span>2. Submodules (<span id="nav-submodules-count">0</span>)</span>
+        </a>
+
+        <a href="#" onclick="switchMainTab('theory')" id="nav-theory" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900/60 transition">
           <i data-lucide="file-text" class="w-4 h-4"></i>
-          <span>2. Notes & Theory</span>
+          <span>3. Notes & Theory</span>
         </a>
 
-        <a href="#" onclick="switchMainTab('mindmap')" id="nav-mindmap" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900/60 transition">
+        <a href="#" onclick="switchMainTab('mindmap')" id="nav-mindmap" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900/60 transition">
           <i data-lucide="network" class="w-4 h-4"></i>
-          <span>3. Mind Map Tree</span>
+          <span>4. Mind Map Tree</span>
         </a>
 
-        <a href="#" onclick="switchMainTab('quiz')" id="nav-quiz" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900/60 transition">
+        <a href="#" onclick="switchMainTab('quiz')" id="nav-quiz" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900/60 transition">
           <i data-lucide="help-circle" class="w-4 h-4"></i>
-          <span>4. Quiz Builder</span>
+          <span>5. Quiz Builder (<span id="nav-quiz-count">1</span>)</span>
         </a>
 
-        <a href="#" onclick="switchMainTab('sql')" id="nav-sql" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900/60 transition">
+        <a href="#" onclick="switchMainTab('sql')" id="nav-sql" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900/60 transition">
           <i data-lucide="code-2" class="w-4 h-4"></i>
-          <span>5. Coding Sandbox</span>
+          <span>6. Coding Sandbox (<span id="nav-coding-count">1</span>)</span>
         </a>
 
-        <a href="#" onclick="switchMainTab('manage')" id="nav-manage" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900/60 transition">
+        <a href="#" onclick="switchMainTab('manage')" id="nav-manage" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900/60 transition">
           <i data-lucide="layers" class="w-4 h-4"></i>
           <span>All Modules List</span>
         </a>
@@ -196,9 +206,9 @@
         <span id="breadcrumb-module" class="text-slate-300 font-semibold">Module 1</span>
         <span class="text-slate-600">&gt;</span>
         
-        <!-- Module Dropdown (All 13 Modules + Added Modules) -->
+        <!-- Module Dropdown (All Modules) -->
         <select id="topic-select" onchange="handleTopicSelectChange(this.value)" class="bg-[#0b1220] border border-cyan-500/50 rounded-lg px-3 py-1.5 text-xs text-[#00D2FF] font-bold outline-none cursor-pointer max-w-xs truncate">
-          <!-- Populated by JavaScript with all modules -->
+          <!-- Populated by JavaScript -->
         </select>
 
         <!-- Edit Module Title / Delete Module Actions -->
@@ -238,25 +248,28 @@
       </div>
     </header>
 
-    <!-- 5-Tab Content Builder Header -->
+    <!-- Multi-Tab Content Builder Header -->
     <div class="px-6 pt-3 pb-1 border-b border-slate-800/80 bg-[#060A12] flex items-center gap-2 select-none overflow-x-auto">
       <button onclick="switchMainTab('videos')" id="tab-btn-videos" class="py-2 px-4 rounded-xl text-xs font-bold text-[#00D2FF] bg-cyan-950/40 border border-cyan-500/40 transition cursor-pointer whitespace-nowrap">
         1. Video Lessons
       </button>
+      <button onclick="switchMainTab('submodules')" id="tab-btn-submodules" class="py-2 px-4 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer whitespace-nowrap">
+        2. Submodules (<span id="badge-submodules-count">0</span>)
+      </button>
       <button onclick="switchMainTab('theory')" id="tab-btn-theory" class="py-2 px-4 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer whitespace-nowrap">
-        2. Theory & Notes
+        3. Theory & Notes
       </button>
       <button onclick="switchMainTab('mindmap')" id="tab-btn-mindmap" class="py-2 px-4 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer whitespace-nowrap">
-        3. Mind Map Tree
+        4. Mind Map Tree
       </button>
       <button onclick="switchMainTab('quiz')" id="tab-btn-quiz" class="py-2 px-4 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer whitespace-nowrap">
-        4. Quiz Manager (<span id="badge-quiz-count">1</span>)
+        5. Quiz Manager (<span id="badge-quiz-count">1</span>)
       </button>
       <button onclick="switchMainTab('sql')" id="tab-btn-sql" class="py-2 px-4 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer whitespace-nowrap">
-        5. Coding Challenges (<span id="badge-coding-count">1</span>)
+        6. Coding Challenges (<span id="badge-coding-count">1</span>)
       </button>
       <button onclick="switchMainTab('manage')" id="tab-btn-manage" class="py-2 px-4 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer whitespace-nowrap">
-        Manage All Modules
+        All Modules
       </button>
     </div>
 
@@ -276,7 +289,7 @@
               </h2>
               <p class="text-[11px] text-slate-400">Manage multiple YouTube instructors (Alex, Mosh, CodeBasics, Telugu, etc.)</p>
             </div>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">4 Creators</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">Watch Tracking Active</span>
           </div>
 
           <!-- Video Cards Container -->
@@ -359,7 +372,31 @@
         </div>
       </div>
 
-      <!-- TAB 2: THEORY & NOTES EDITOR WITH REAL-TIME PREVIEW -->
+      <!-- TAB 2: SUBMODULES MANAGER (CREATE & MANAGE SUBMODULES PER TOPIC) -->
+      <div id="view-submodules-tab" class="hidden max-w-5xl mx-auto space-y-4">
+        <div class="glass-card rounded-2xl p-6 shadow-2xl space-y-5">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <i data-lucide="git-branch" class="w-5 h-5 text-cyan-400"></i>
+                Module Submodules & Topic Breakdown
+              </h2>
+              <p class="text-xs text-slate-400">Create granular submodules under this module (e.g. "1.1 Basic SELECT", "1.2 Column Aliases", "1.3 DISTINCT Projections").</p>
+            </div>
+            <button onclick="promptAddNewSubModule()" class="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/40 text-[#00D2FF] hover:bg-cyan-500/20 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>+ Add Submodule</span>
+            </button>
+          </div>
+
+          <!-- Dynamic Submodules List -->
+          <div id="submodules-list-container" class="space-y-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: THEORY & NOTES EDITOR WITH REAL-TIME PREVIEW -->
       <div id="view-theory-tab" class="hidden max-w-7xl mx-auto space-y-4">
         <div class="glass-card rounded-2xl p-6 shadow-2xl space-y-4">
           <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -390,7 +427,7 @@
         </div>
       </div>
 
-      <!-- TAB 3: MIND MAP TREE EDITOR & VISUALIZER -->
+      <!-- TAB 4: MIND MAP TREE EDITOR & VISUALIZER -->
       <div id="view-mindmap-tab" class="hidden max-w-7xl mx-auto space-y-4">
         <div class="glass-card rounded-2xl p-6 shadow-2xl space-y-4">
           <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -419,7 +456,7 @@
         </div>
       </div>
 
-      <!-- TAB 4: QUIZ MANAGER (ADD AS MANY MCQS AS YOU WANT) -->
+      <!-- TAB 5: QUIZ MANAGER (ADD AS MANY MCQS AS YOU WANT) -->
       <div id="view-quiz-tab" class="hidden max-w-5xl mx-auto space-y-4">
         <div class="glass-card rounded-2xl p-6 shadow-2xl space-y-5">
           <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -440,7 +477,7 @@
         </div>
       </div>
 
-      <!-- TAB 5: SQL CHALLENGE SANDBOX (MULTI-CODING CHALLENGES) -->
+      <!-- TAB 6: SQL CHALLENGE SANDBOX (MULTI-CODING CHALLENGES) -->
       <div id="view-sql-tab" class="hidden max-w-5xl mx-auto space-y-4">
         <div class="glass-card rounded-2xl p-6 shadow-2xl space-y-5">
           <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -461,7 +498,7 @@
         </div>
       </div>
 
-      <!-- TAB 6: MANAGE ALL MODULES VIEW (ADD / REORDER / DELETE MODULES) -->
+      <!-- TAB 7: MANAGE ALL MODULES VIEW (ADD / REORDER / DELETE MODULES) -->
       <div id="view-manage-tab" class="hidden max-w-5xl mx-auto space-y-4">
         <div class="glass-card rounded-2xl p-6 shadow-2xl space-y-5">
           <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -503,11 +540,19 @@
         <!-- Video Preview -->
         <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
           <h3 class="text-xs font-bold text-sky-300 flex items-center gap-1.5">
-            <i data-lucide="film" class="w-3.5 h-3.5"></i> Video Player Preview
+            <i data-lucide="film" class="w-3.5 h-3.5"></i> Video Player Preview (Watch Tracking Verified)
           </h3>
           <div class="aspect-video w-full rounded-xl overflow-hidden bg-black border border-slate-800">
             <iframe id="preview-iframe" class="w-full h-full border-0" allowfullscreen></iframe>
           </div>
+        </div>
+
+        <!-- Submodules Preview -->
+        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
+          <h3 class="text-xs font-bold text-sky-300 flex items-center gap-1.5">
+            <i data-lucide="git-branch" class="w-3.5 h-3.5"></i> Module Submodules
+          </h3>
+          <div id="preview-submodules-content" class="flex flex-wrap gap-2 text-xs"></div>
         </div>
 
         <!-- Theory Preview -->
@@ -541,7 +586,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 5. DEFAULT SEED CURRICULUM DATA (ALL 13 PEDAGOGICAL MODULES)               -->
+  <!-- 5. DEFAULT SEED CURRICULUM DATA                                           -->
   <!-- ========================================================================= -->
   <script>
     const DEFAULT_SEED_TOPICS = [
@@ -4782,7 +4827,6 @@
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            // If previous cached copy had only 1 module, upgrade to the full seed curriculum
             if (parsed.length === 1 && DEFAULT_SEED_TOPICS.length > 1) {
               topics = DEFAULT_SEED_TOPICS;
               saveTopicsToStorage();
@@ -4849,10 +4893,26 @@
         level: 'Intermediate',
         estimatedMinutes: 25,
         overview: `Master ${title.trim()} concepts with hands-on practice, video tutorials, and interactive verification.`,
+        subModules: [
+          {
+            id: `sub-${Date.now()}-1`,
+            order: 1,
+            title: `${title.trim()} Overview`,
+            duration: '8 mins',
+            summary: 'Core introduction and basic clause setup'
+          },
+          {
+            id: `sub-${Date.now()}-2`,
+            order: 2,
+            title: `${title.trim()} Deep Dive`,
+            duration: '15 mins',
+            summary: 'Practical queries and real-world patterns'
+          }
+        ],
         video: {
           title: `${title.trim()} Tutorial`,
           embedUrl: 'https://www.youtube.com/embed/A9TOuDZTPDU',
-          duration: '15:00',
+          duration: '20:00',
           channel: 'Alex The Analyst',
           language: 'English',
           summaryPoints: ['Understand core concepts', 'Learn syntactical rules', 'Apply to realistic data problems']
@@ -4936,6 +4996,28 @@
       alert(`✓ Module "${newModule.title}" successfully added!`);
     }
 
+    // Add New Submodule to current module
+    function promptAddNewSubModule() {
+      const topic = topics[currentTopicIndex];
+      if (!topic) return;
+      const subTitle = prompt(`Enter Submodule Title for Module ${topic.order} (e.g. "Sub-topic: Column Aliases & Arithmetic"):`);
+      if (!subTitle || !subTitle.trim()) return;
+
+      if (!topic.subModules) topic.subModules = [];
+      const newSub = {
+        id: `sub-${Date.now()}-${topic.subModules.length + 1}`,
+        order: topic.subModules.length + 1,
+        title: subTitle.trim(),
+        duration: '10 mins',
+        summary: `Focused sub-topic practice on ${subTitle.trim()}`
+      };
+
+      topic.subModules.push(newSub);
+      saveTopicsToStorage();
+      renderSubmodulesList(topic);
+      alert(`✓ Submodule "${newSub.title}" added to Module ${topic.order}!`);
+    }
+
     // Rename current module title
     function promptEditCurrentModuleTitle() {
       const topic = topics[currentTopicIndex];
@@ -4981,16 +5063,25 @@
       document.getElementById('topic-select').value = currentTopicIndex;
 
       // Badges
+      const subCount = topic.subModules?.length || 0;
       const qCount = topic.quiz?.questions?.length || 0;
       const cCount = (topic.challenges && topic.challenges.length > 0) ? topic.challenges.length : 1;
+
+      document.getElementById('badge-submodules-count').textContent = subCount;
+      document.getElementById('nav-submodules-count').textContent = subCount;
       document.getElementById('badge-quiz-count').textContent = qCount;
+      document.getElementById('nav-quiz-count').textContent = qCount;
       document.getElementById('badge-coding-count').textContent = cCount;
+      document.getElementById('nav-coding-count').textContent = cCount;
       document.getElementById('quick-quiz-count').textContent = qCount;
 
       // 1. Render Videos Column
       renderInstructorCards(topic);
 
-      // 2. Render Quick Challenge & Quiz
+      // 2. Render Submodules Tab
+      renderSubmodulesList(topic);
+
+      // 3. Render Quick Challenge & Quiz
       const ch = topic.challenge || (topic.challenges && topic.challenges[0]) || {
         instructions: 'Write a SQL query that retrieves all records.',
         schemaSql: 'CREATE TABLE students (id INT, name VARCHAR(50));',
@@ -5009,23 +5100,88 @@
         document.getElementById('quick-opt-1').checked = qList[0].correctIndex === 1;
       }
 
-      // 3. Render Theory Markdown Tab
+      // 4. Render Theory Markdown Tab
       const theoryMd = topic.theory?.summary || '# Lesson Notes\nMaster SQL queries and data manipulation.';
       document.getElementById('theory-markdown-input').value = theoryMd;
       renderMarkdownPreview(theoryMd);
 
-      // 4. Render Mindmap Tab
+      // 5. Render Mindmap Tab
       const mindmapCode = topic.theory?.mermaidMindmap || `mindmap\n  root((${topic.title}))\n    Concepts\n      Core Clauses\n      Execution Pipeline\n    Syntax\n      Keywords\n      Expressions`;
       document.getElementById('mindmap-code-input').value = mindmapCode;
       renderMindmapPreview(mindmapCode);
 
-      // 5. Render Tab 4 Quiz Manager
+      // 6. Render Tab 5 Quiz Manager
       renderFullQuizList(topic);
 
-      // 6. Render Tab 5 Coding Challenges Bank
+      // 7. Render Tab 6 Coding Challenges Bank
       renderCodingChallengesList(topic);
 
       lucide.createIcons();
+    }
+
+    // Render Submodules List
+    function renderSubmodulesList(topic) {
+      const container = document.getElementById('submodules-list-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const subList = topic.subModules || [];
+      if (subList.length === 0) {
+        container.innerHTML = `
+          <div class="inner-card rounded-xl p-6 text-center border border-dashed border-slate-800 space-y-2">
+            <p class="text-xs text-slate-400">No submodules added yet for Module ${topic.order}.</p>
+            <button onclick="promptAddNewSubModule()" class="px-3.5 py-1.5 rounded-lg bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 text-xs font-bold hover:bg-cyan-900/60 transition cursor-pointer">
+              + Create First Submodule
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      subList.forEach((sub, sIdx) => {
+        const item = document.createElement('div');
+        item.className = 'inner-card rounded-xl p-4 flex items-center justify-between gap-3 border border-slate-800/80 hover:border-slate-700 transition';
+        item.innerHTML = `
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <span class="w-7 h-7 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 font-mono text-xs font-bold flex items-center justify-center shrink-0">
+              ${topic.order}.${sIdx + 1}
+            </span>
+            <div class="flex-1 min-w-0 space-y-1">
+              <input type="text" value="${sub.title || ''}" onchange="updateSubmoduleField(${sIdx}, 'title', this.value)" class="text-xs font-bold text-white bg-transparent border-b border-transparent hover:border-slate-700 focus:border-cyan-500 outline-none w-full" />
+              <input type="text" value="${sub.summary || ''}" onchange="updateSubmoduleField(${sIdx}, 'summary', this.value)" placeholder="Submodule short description" class="text-[11px] text-slate-400 bg-transparent border-b border-transparent hover:border-slate-800 focus:border-cyan-500 outline-none w-full" />
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <input type="text" value="${sub.duration || '10 mins'}" onchange="updateSubmoduleField(${sIdx}, 'duration', this.value)" class="w-20 bg-[#040810] border border-slate-800 rounded px-2 py-1 text-[11px] text-slate-300 font-mono text-center" />
+            <button onclick="deleteSubmodule(${sIdx})" title="Delete Submodule" class="text-slate-500 hover:text-red-400 p-1.5 rounded transition cursor-pointer">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+      lucide.createIcons();
+    }
+
+    function updateSubmoduleField(sIdx, field, val) {
+      const topic = topics[currentTopicIndex];
+      if (!topic?.subModules?.[sIdx]) return;
+      topic.subModules[sIdx][field] = val;
+      saveTopicsToStorage();
+    }
+
+    function deleteSubmodule(sIdx) {
+      const topic = topics[currentTopicIndex];
+      if (!topic?.subModules) return;
+      if (confirm('Delete this submodule?')) {
+        topic.subModules.splice(sIdx, 1);
+        saveTopicsToStorage();
+        renderSubmodulesList(topic);
+        const subCount = topic.subModules.length;
+        document.getElementById('badge-submodules-count').textContent = subCount;
+        document.getElementById('nav-submodules-count').textContent = subCount;
+      }
     }
 
     // Render Instructor Video Cards
@@ -5052,16 +5208,14 @@
         card.innerHTML = `
           <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-900 shrink-0 border border-slate-800">
             <img src="${avatarUrls[idx % avatarUrls.length]}" alt="${v.channel}" class="w-full h-full object-cover" />
-            <span class="absolute bottom-1 right-1 text-[9px] font-mono font-bold bg-slate-950/85 text-white px-1 rounded">
-              ${v.duration || '15:00'}
-            </span>
+            <input type="text" value="${v.duration || '20:00'}" onchange="updateVideoDuration(${idx}, this.value)" title="Required Watch Duration (e.g. 20:00)" class="absolute bottom-1 right-1 text-[9px] font-mono font-bold bg-slate-950/90 text-white px-1 py-0.5 rounded border border-slate-700/80 w-12 text-center outline-none" />
           </div>
 
           <div class="flex-1 min-w-0 space-y-1.5">
             <div class="flex items-center justify-between">
               <input type="text" value="${v.channel || 'Instructor ' + (idx + 1)}" onchange="updateVideoChannel(${idx}, this.value)" class="text-xs font-bold text-slate-200 bg-transparent border-b border-transparent hover:border-slate-700 focus:border-cyan-500 outline-none truncate w-40" />
               <div class="flex items-center gap-1.5 text-[10px] text-emerald-400 font-medium">
-                <span>Active</span>
+                <span>Verified Watch Check</span>
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
               </div>
             </div>
@@ -5078,6 +5232,22 @@
         `;
         container.appendChild(card);
       });
+    }
+
+    function updateVideoDuration(videoIdx, newDuration) {
+      const topic = topics[currentTopicIndex];
+      if (!topic) return;
+      if (videoIdx === 0 && topic.video) {
+        topic.video.duration = newDuration;
+      } else {
+        const altLen = topic.alternativeVideos?.length || 0;
+        if (videoIdx <= altLen && topic.alternativeVideos) {
+          topic.alternativeVideos[videoIdx - 1].duration = newDuration;
+        } else if (topic.addonVideos) {
+          topic.addonVideos[videoIdx - 1 - altLen].duration = newDuration;
+        }
+      }
+      saveTopicsToStorage();
     }
 
     function updateVideoChannel(videoIdx, newChannel) {
@@ -5119,7 +5289,7 @@
       topic.alternativeVideos.push({
         title: `${topic.title} Additional Tutorial`,
         embedUrl: 'https://www.youtube.com/embed/A9TOuDZTPDU',
-        duration: '15:00',
+        duration: '20:00',
         channel: 'New Instructor',
         language: 'English',
         summaryPoints: ['Clear explanation', 'Live demonstration']
@@ -5291,7 +5461,7 @@
       handleMindmapCodeChange(code);
     }
 
-    // Tab 4 Quiz Manager (Multiple MCQs)
+    // Tab 5 Quiz Manager (Multiple MCQs)
     function renderFullQuizList(topic) {
       const list = document.getElementById('full-quiz-questions-list');
       list.innerHTML = '';
@@ -5359,6 +5529,7 @@
       saveTopicsToStorage();
       renderFullQuizList(topic);
       document.getElementById('badge-quiz-count').textContent = topic.quiz.questions.length;
+      document.getElementById('nav-quiz-count').textContent = topic.quiz.questions.length;
     }
 
     function removeQuizQuestion(qIdx) {
@@ -5372,6 +5543,7 @@
       saveTopicsToStorage();
       renderFullQuizList(topic);
       document.getElementById('badge-quiz-count').textContent = topic.quiz.questions.length;
+      document.getElementById('nav-quiz-count').textContent = topic.quiz.questions.length;
     }
 
     function updateFullQuizQuestion(qIdx, field, val) {
@@ -5388,7 +5560,7 @@
       saveTopicsToStorage();
     }
 
-    // Tab 5: Coding Challenges Bank (Multiple Challenges per Module)
+    // Tab 6: Coding Challenges Bank (Multiple Challenges per Module)
     function renderCodingChallengesList(topic) {
       const container = document.getElementById('full-coding-challenges-list');
       container.innerHTML = '';
@@ -5474,6 +5646,7 @@
       saveTopicsToStorage();
       renderCodingChallengesList(topic);
       document.getElementById('badge-coding-count').textContent = topic.challenges.length;
+      document.getElementById('nav-coding-count').textContent = topic.challenges.length;
     }
 
     function removeCodingChallenge(chIdx) {
@@ -5488,6 +5661,7 @@
       saveTopicsToStorage();
       renderCodingChallengesList(topic);
       document.getElementById('badge-coding-count').textContent = topic.challenges.length;
+      document.getElementById('nav-coding-count').textContent = topic.challenges.length;
     }
 
     function updateChallengeField(chIdx, field, val) {
@@ -5498,7 +5672,7 @@
       saveTopicsToStorage();
     }
 
-    // Tab 6: Manage All Modules List
+    // Tab 7: Manage All Modules List
     function renderAllModulesManagementList() {
       const container = document.getElementById('all-modules-management-list');
       if (!container) return;
@@ -5513,6 +5687,7 @@
           switchMainTab('videos');
         };
 
+        const subCount = t.subModules?.length || 0;
         const qCount = t.quiz?.questions?.length || 0;
         const cCount = t.challenges?.length || 1;
 
@@ -5523,7 +5698,7 @@
             </span>
             <div>
               <p class="text-xs font-bold text-white">${t.title}</p>
-              <p class="text-[11px] text-slate-400">${t.level || 'Beginner'} &bull; ${qCount} Quizzes &bull; ${cCount} Coding Challenges</p>
+              <p class="text-[11px] text-slate-400">${t.level || 'Beginner'} &bull; ${subCount} Submodules &bull; ${qCount} Quizzes &bull; ${cCount} Challenges</p>
             </div>
           </div>
 
@@ -5540,7 +5715,7 @@
 
     // Switch Main Tabs
     function switchMainTab(tab) {
-      const tabs = ['videos', 'theory', 'mindmap', 'quiz', 'sql', 'manage'];
+      const tabs = ['videos', 'submodules', 'theory', 'mindmap', 'quiz', 'sql', 'manage'];
       tabs.forEach(t => {
         const btn = document.getElementById(`tab-btn-${t}`);
         const nav = document.getElementById(`nav-${t}`);
@@ -5556,6 +5731,7 @@
       });
 
       document.getElementById('view-combined-studio').style.display = tab === 'videos' ? 'grid' : 'none';
+      document.getElementById('view-submodules-tab').style.display = tab === 'submodules' ? 'block' : 'none';
       document.getElementById('view-theory-tab').style.display = tab === 'theory' ? 'block' : 'none';
       document.getElementById('view-mindmap-tab').style.display = tab === 'mindmap' ? 'block' : 'none';
       document.getElementById('view-quiz-tab').style.display = tab === 'quiz' ? 'block' : 'none';
@@ -5570,7 +5746,7 @@
       try {
         confetti({ particleCount: 75, spread: 65, origin: { y: 0.15 } });
       } catch (e) {}
-      alert('✓ All curriculum changes have been published to local database and are live for students!');
+      alert('✓ All curriculum changes (including submodules and verified video durations) are live!');
     }
 
     // Export JSON
@@ -5616,6 +5792,14 @@
 
       document.getElementById('preview-modal-title').textContent = `Preview: ${topic.title}`;
       document.getElementById('preview-iframe').src = topic.video?.embedUrl || 'https://www.youtube.com/embed/A9TOuDZTPDU';
+
+      const subHtml = (topic.subModules || []).map(s => `
+        <span class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-cyan-300">
+          ↳ ${s.title} (${s.duration || '10 mins'})
+        </span>
+      `).join('');
+      document.getElementById('preview-submodules-content').innerHTML = subHtml || '<span class="text-slate-500">No submodules configured.</span>';
+
       document.getElementById('preview-theory-content').innerHTML = `
         <div class="font-bold text-white">${topic.theory?.title || topic.title}</div>
         <p>${topic.theory?.summary || ''}</p>

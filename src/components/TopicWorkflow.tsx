@@ -155,6 +155,24 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
             {topic.order}. {formatTitle(topic.title)}
           </h1>
+
+          {/* Sub-modules Pills Bar if present */}
+          {topic.subModules && topic.subModules.length > 0 && (
+            <div className="flex items-center gap-2 pt-1 flex-wrap">
+              <span className="text-[11px] font-bold text-slate-400">Submodules:</span>
+              {topic.subModules.map((sub, sIdx) => (
+                <div
+                  key={sub.id || sIdx}
+                  className="px-2.5 py-1 rounded-lg bg-cyan-950/30 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+                  title={sub.summary || sub.title}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  <span>{sub.title}</span>
+                  {sub.duration && <span className="text-[10px] text-slate-400 font-mono">({sub.duration})</span>}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right side: Prev/Next Topic Navigation */}

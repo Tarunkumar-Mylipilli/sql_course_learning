@@ -17,6 +17,9 @@ import {
   Globe,
   Layers,
   ExternalLink,
+  Clock,
+  AlertCircle,
+  Unlock,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { TopicVideo } from '../types';
@@ -48,10 +51,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
 
-  useEffect(() => {
-    setSelectedVideoIndex(0);
-    setIsPlaying(false);
-  }, [video?.embedUrl]);
+  // Watch Time Verification Tracker (ensures students watch required duration)
+  const parseDurationToSeconds = (durStr?: string): number => {
+    if (!durStr) return 120;
+    const parts = durStr.trim().split(':').map(Number);
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      return (parts[0] * 60) + parts[1];
+    } else if (parts.length === 3) {
+      return (parts[0] * 3600) + (parts[1] * 60) + parts[2];
+    }
+    return 120;
+  };
 
   const activeVideo = allVideos[selectedVideoIndex] || video || {
     title: 'Select Statement in MySQL',
@@ -64,6 +74,50 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       'Retrieve data from single tables',
     ],
   };
+
+  const fullVideoSeconds = parseDurationToSeconds(activeVideo.duration);
+  // Verification requirement: watch for at least 2 minutes (120s) or full duration if shorter
+  const requiredSeconds = Math.min(fullVideoSeconds, 120);
+
+  const [watchProgressSeconds, setWatchProgressSeconds] = useState<number>(() => isWatched ? requiredSeconds : 0);
+  const [hasVerifiedWatched, setHasVerifiedWatched] = useState<boolean>(Boolean(isWatched));
+  const [watchWarning, setWatchWarning] = useState<string>('');
+
+  useEffect(() => {
+    setSelectedVideoIndex(0);
+    setIsPlaying(false);
+  }, [video?.embedUrl]);
+
+  // Timer loop tracking real watch time while video plays
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (isPlaying && !hasVerifiedWatched) {
+      interval = setInterval(() => {
+        setWatchProgressSeconds((prev) => {
+          const next = prev + 1;
+          if (next >= requiredSeconds) {
+            setHasVerifiedWatched(true);
+            onMarkWatched();
+            try {
+              confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } });
+            } catch (_) {}
+          }
+          return next;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlaying, hasVerifiedWatched, requiredSeconds, onMarkWatched]);
+
+  // Sync state if isWatched changes externally
+  useEffect(() => {
+    if (isWatched) {
+      setHasVerifiedWatched(true);
+      setWatchProgressSeconds(requiredSeconds);
+    }
+  }, [isWatched, requiredSeconds]);
 
   // Robust YouTube video ID extractor supporting all YouTube link variants
   const extractYoutubeId = (url: string) => {
@@ -107,6 +161,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const handleUnlockTheory = () => {
+    if (!hasVerifiedWatched) {
+      const remaining = Math.max(0, requiredSeconds - watchProgressSeconds);
+      const remainingMin = Math.ceil(remaining / 60);
+      setWatchWarning(`⚠️ Video Watch Verification: Please watch the video tutorial for at least ${remainingMin > 1 ? remainingMin + ' minutes' : remaining + ' seconds'} to verify completion before unlocking Theory.`);
+      return;
+    }
+    setWatchWarning('');
     onMarkWatched();
     try {
       confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } });
@@ -353,13 +414,54 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             ))}
           </ul>
 
+          {/* Watch Verification Progress Bar */}
+          <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-400 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-cyan-400" /> Watch Verification:
+              </span>
+              <span className={`font-mono font-bold ${hasVerifiedWatched ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {hasVerifiedWatched
+                  ? '✓ Verified Complete'
+                  : `${Math.floor(watchProgressSeconds / 60)}:${(watchProgressSeconds % 60).toString().padStart(2, '0')} / ${Math.floor(requiredSeconds / 60)}:${(requiredSeconds % 60).toString().padStart(2, '0')}`}
+              </span>
+            </div>
+            <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+              <div
+                className={`h-full transition-all duration-300 ${hasVerifiedWatched ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'}`}
+                style={{ width: `${Math.min(100, (watchProgressSeconds / requiredSeconds) * 100)}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Warning notice if attempted to unlock before watching */}
+          {watchWarning && (
+            <div className="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/40 flex items-start gap-2 text-amber-300 text-[11px] leading-relaxed">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <span>{watchWarning}</span>
+            </div>
+          )}
+
           {/* Large Amber Gradient CTA Button */}
           <button
             onClick={handleUnlockTheory}
-            className="w-full mt-4 py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-extrabold text-sm shadow-[0_0_22px_rgba(245,158,11,0.3)] transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 cursor-pointer"
+            className={`w-full mt-4 py-3.5 px-4 rounded-xl font-extrabold text-sm transition transform flex items-center justify-center gap-2 cursor-pointer ${
+              hasVerifiedWatched
+                ? 'bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 text-slate-950 shadow-[0_0_22px_rgba(16,185,129,0.35)] hover:from-emerald-300 hover:to-cyan-400 hover:-translate-y-0.5'
+                : 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 shadow-[0_0_22px_rgba(245,158,11,0.3)] hover:-translate-y-0.5'
+            }`}
           >
-            <Lock className="w-4 h-4 text-slate-950" />
-            <span>Verify & Unlock Step 2: Theory</span>
+            {hasVerifiedWatched ? (
+              <>
+                <Unlock className="w-4 h-4 text-slate-950" />
+                <span>Verified! Proceed to Step 2: Theory</span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-4 h-4 text-slate-950" />
+                <span>Verify & Unlock Step 2: Theory</span>
+              </>
+            )}
           </button>
         </div>
 
