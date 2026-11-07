@@ -31,10 +31,22 @@ export class ErrorBoundary extends Component<Props, State> {
     try {
       localStorage.removeItem('sqlmastery_course_progress_v2');
       localStorage.removeItem('sqlmastery_custom_topics_v1');
+      sessionStorage.clear();
+      if ('caches' in window) {
+        caches.keys().then((names) => {
+          names.forEach((name) => caches.delete(name));
+        });
+      }
     } catch (e) {
       console.error(e);
     }
-    window.location.reload();
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.location.replace(cleanUrl + '?t=' + Date.now());
+  };
+
+  private handleReload = () => {
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.location.replace(cleanUrl + '?t=' + Date.now());
   };
 
   public render() {
@@ -61,7 +73,7 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
             <div className="flex gap-3 justify-center pt-2">
               <button
-                onClick={() => window.location.reload()}
+                onClick={this.handleReload}
                 className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />

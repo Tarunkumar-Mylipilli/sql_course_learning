@@ -10,6 +10,20 @@ const distDir = path.resolve(__dirname, '..', 'dist');
 // Ensure .nojekyll exists
 fs.writeFileSync(path.join(distDir, '.nojekyll'), '');
 
+// Also preserve aliases for legacy hashed bundles so stale browser caches do not crash
+const assetsDir = path.join(distDir, 'assets');
+if (fs.existsSync(assetsDir)) {
+  const mainFiles = fs.readdirSync(assetsDir).filter(f => f.startsWith('main-') && f.endsWith('.js'));
+  if (mainFiles.length > 0) {
+    const latestMain = path.join(assetsDir, mainFiles[0]);
+    const legacyAliases = ['main-BliVB3h0.js'];
+    legacyAliases.forEach(alias => {
+      fs.copyFileSync(latestMain, path.join(assetsDir, alias));
+      console.log(`Created compatibility bundle: ${alias}`);
+    });
+  }
+}
+
 console.log('Deploying dist directory to gh-pages branch...');
 try {
   execSync('git init', { cwd: distDir, stdio: 'inherit' });
