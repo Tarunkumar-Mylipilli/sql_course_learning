@@ -12,6 +12,8 @@ import {
   LayoutDashboard,
 } from 'lucide-react';
 import { CourseProgress, Topic } from '../types';
+import { AuthUser } from '../lib/auth';
+import { LogOut, Shield } from 'lucide-react';
 
 interface NavbarProps {
   topics: Topic[];
@@ -23,6 +25,8 @@ interface NavbarProps {
   onOpenAITutor: () => void;
   searchQuery?: string;
   setSearchQuery?: (q: string) => void;
+  currentUser?: AuthUser | null;
+  onLogout?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -35,6 +39,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAITutor,
   searchQuery = '',
   setSearchQuery,
+  currentUser,
+  onLogout,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-[#070d19]/95 backdrop-blur-md border-b border-slate-800/80 select-none">
@@ -162,20 +168,29 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="w-2 h-2 rounded-full bg-cyan-400 absolute top-1 right-1 shadow-[0_0_6px_#22d3ee]" />
           </div>
 
-          {/* User Profile Avatar */}
-          <div
-            onClick={onResetProgress}
-            className="w-8 h-8 rounded-full ring-2 ring-slate-800 overflow-hidden bg-slate-800 flex items-center justify-center cursor-pointer hover:ring-cyan-500/50 transition"
-            title="User Profile (click to reset course data if needed)"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-              alt="User"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
+          {/* User Profile / Logout */}
+          <div className="flex items-center gap-2 pl-1 border-l border-slate-800">
+            <div
+              className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300"
+              title={`Logged in as ${currentUser?.username || 'Tarunkumar'}`}
+            >
+              <div className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-[10px]">
+                {currentUser?.username?.[0] || 'T'}
+              </div>
+              <span className="font-semibold text-slate-200 hidden sm:inline">
+                {currentUser?.username || 'Tarunkumar'}
+              </span>
+            </div>
+
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 border border-transparent hover:border-rose-500/30 transition cursor-pointer"
+                title="Log out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
       </div>

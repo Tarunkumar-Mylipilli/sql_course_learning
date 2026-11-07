@@ -4875,11 +4875,41 @@
   <!-- ========================================================================= -->
   <script>
     const STORAGE_KEY = 'sqlmastery_all_topics_v2';
+    const AUTH_KEY = 'sqlmastery_auth_user_v1';
     let topics = [];
     let currentTopicIndex = 0;
 
+    // Strict Authentication Guard
+    function checkAdminAuth() {
+      try {
+        const raw = localStorage.getItem(AUTH_KEY) || sessionStorage.getItem(AUTH_KEY);
+        if (!raw) return false;
+        const u = JSON.parse(raw);
+        return Boolean(u && u.username && u.username.toLowerCase() === 'tarunkumar');
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function requireAuth() {
+      if (!checkAdminAuth()) {
+        const u = prompt('Enter Admin Username:');
+        const p = prompt('Enter Admin Password:');
+        if (u && u.trim().toLowerCase() === 'tarunkumar' && p === 'Tarun@1999') {
+          const authData = { username: 'Tarunkumar', role: 'admin', authenticatedAt: new Date().toISOString() };
+          localStorage.setItem(AUTH_KEY, JSON.stringify(authData));
+        } else {
+          alert('Access denied. Redirecting to Student portal.');
+          window.location.href = './index.html';
+          return false;
+        }
+      }
+      return true;
+    }
+
     // Initialize application on page load
     window.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth()) return;
       loadTopicsFromStorage();
       populateTopicDropdown();
       renderCurrentTopic();

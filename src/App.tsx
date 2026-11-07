@@ -17,8 +17,12 @@ import { Interview50Hub } from './components/Interview50Hub';
 import { AITutorModal } from './components/AITutorModal';
 import { AddTopicModal } from './components/AddTopicModal';
 import { StudentDashboard } from './components/StudentDashboard';
+import { LoginModal } from './components/LoginModal';
+import { getStoredUser, logoutUser, AuthUser } from './lib/auth';
 
 export default function App() {
+  // Authentication state
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => getStoredUser());
   // Load topics from storage (with core curriculum and user customizations)
   const [topics, setTopics] = useState<Topic[]>(() => {
     return loadAllTopics(SQL_TOPICS);
@@ -293,10 +297,20 @@ export default function App() {
     setIsAITutorOpen(true);
   };
 
+  // If not logged in, render the secure LoginModal gate
+  if (!currentUser) {
+    return <LoginModal onLoginSuccess={(u) => setCurrentUser(u)} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#040814] text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
       {/* Top Header Navbar */}
       <Navbar
+        currentUser={currentUser}
+        onLogout={() => {
+          logoutUser();
+          setCurrentUser(null);
+        }}
         topics={topics}
         progress={progress}
         activeView={activeView}

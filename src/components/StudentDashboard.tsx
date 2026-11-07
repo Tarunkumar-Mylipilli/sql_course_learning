@@ -137,19 +137,68 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               </p>
             </div>
 
-            {/* Step progress pills */}
+            {/* Step progress pills - strictly shows locked vs unlocked */}
             <div className="grid grid-cols-4 gap-1.5 pt-1 text-[10px] text-center font-mono">
-              <div className={`p-1.5 rounded-lg border ${currentTopicProg.videoWatched ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
-                Video
+              <div
+                className={`p-1.5 rounded-lg border flex items-center justify-center gap-1 ${
+                  currentTopicProg.videoWatched
+                    ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                    : 'bg-cyan-950/40 border-cyan-500/30 text-cyan-300'
+                }`}
+              >
+                {currentTopicProg.videoWatched ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Play className="w-2.5 h-2.5" />}
+                <span>Video</span>
               </div>
-              <div className={`p-1.5 rounded-lg border ${currentTopicProg.theoryRead ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
-                Theory
+
+              <div
+                className={`p-1.5 rounded-lg border flex items-center justify-center gap-1 ${
+                  currentTopicProg.theoryRead
+                    ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                    : currentTopicProg.videoWatched
+                    ? 'bg-slate-900 border-slate-700 text-slate-300'
+                    : 'bg-slate-950/80 border-slate-900 text-slate-600 opacity-60'
+                }`}
+              >
+                {currentTopicProg.theoryRead ? (
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                ) : !currentTopicProg.videoWatched ? (
+                  <Lock className="w-2.5 h-2.5 text-slate-500" />
+                ) : null}
+                <span>Theory</span>
               </div>
-              <div className={`p-1.5 rounded-lg border ${currentTopicProg.quizPassed ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
-                Quiz
+
+              <div
+                className={`p-1.5 rounded-lg border flex items-center justify-center gap-1 ${
+                  currentTopicProg.quizPassed
+                    ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                    : currentTopicProg.theoryRead
+                    ? 'bg-slate-900 border-slate-700 text-slate-300'
+                    : 'bg-slate-950/80 border-slate-900 text-slate-600 opacity-60'
+                }`}
+              >
+                {currentTopicProg.quizPassed ? (
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                ) : !currentTopicProg.theoryRead ? (
+                  <Lock className="w-2.5 h-2.5 text-slate-500" />
+                ) : null}
+                <span>Quiz</span>
               </div>
-              <div className={`p-1.5 rounded-lg border ${currentTopicProg.codingCompleted ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
-                Code
+
+              <div
+                className={`p-1.5 rounded-lg border flex items-center justify-center gap-1 ${
+                  currentTopicProg.codingCompleted
+                    ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                    : currentTopicProg.quizPassed
+                    ? 'bg-slate-900 border-slate-700 text-slate-300'
+                    : 'bg-slate-950/80 border-slate-900 text-slate-600 opacity-60'
+                }`}
+              >
+                {currentTopicProg.codingCompleted ? (
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                ) : !currentTopicProg.quizPassed ? (
+                  <Lock className="w-2.5 h-2.5 text-slate-500" />
+                ) : null}
+                <span>Code</span>
               </div>
             </div>
 
