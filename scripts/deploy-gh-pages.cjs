@@ -16,7 +16,7 @@ if (fs.existsSync(assetsDir)) {
   const mainFiles = fs.readdirSync(assetsDir).filter(f => f.startsWith('main-') && f.endsWith('.js'));
   if (mainFiles.length > 0) {
     const latestMain = path.join(assetsDir, mainFiles[0]);
-    const legacyAliases = ['main-BliVB3h0.js', 'main-CrMHivBn.js', 'main-D5H91F2R.js'];
+    const legacyAliases = ['main-BliVB3h0.js', 'main-CrMHivBn.js', 'main-D5H91F2R.js', 'main-CB0xQj4d.js'];
     legacyAliases.forEach(alias => {
       fs.copyFileSync(latestMain, path.join(assetsDir, alias));
       console.log(`Created compatibility bundle: ${alias}`);

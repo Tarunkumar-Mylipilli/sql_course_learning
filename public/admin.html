@@ -241,10 +241,13 @@
         </button>
 
         <!-- Publish Changes Button -->
-        <button onclick="publishCurriculumChanges()" class="cyan-glow-button px-5 py-1.5 rounded-xl font-extrabold text-xs flex items-center gap-1.5 cursor-pointer">
-          <i data-lucide="sparkles" class="w-3.5 h-3.5 fill-current"></i>
-          <span>Publish Changes</span>
-        </button>
+        <div class="flex items-center gap-3">
+          <span id="save-status-bar" class="text-xs font-semibold text-emerald-400" aria-live="polite" aria-atomic="true"></span>
+          <button onclick="publishCurriculumChanges()" class="cyan-glow-button px-5 py-1.5 rounded-xl font-extrabold text-xs flex items-center gap-1.5 cursor-pointer" aria-label="Publish all curriculum changes">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 fill-current" aria-hidden="true"></i>
+            <span>Publish Changes</span>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -4846,11 +4849,34 @@
     function saveTopicsToStorage() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(topics));
+        showSaveStatus('saved');
       } catch (e) {
         console.error('Storage write error:', e);
+        showSaveStatus('error');
       }
     }
 
+    // Save-state indicator
+    let _saveStatusTimer = null;
+    function showSaveStatus(state) {
+      const el = document.getElementById('save-status-bar');
+      if (!el) return;
+      if (_saveStatusTimer) clearTimeout(_saveStatusTimer);
+      if (state === 'saved') {
+        el.textContent = '✓ All changes saved';
+        el.className = 'text-emerald-400 text-xs font-semibold transition-opacity';
+      } else if (state === 'unsaved') {
+        el.textContent = '● Unsaved changes';
+        el.className = 'text-amber-400 text-xs font-semibold';
+        return; // Keep visible until saved
+      } else {
+        el.textContent = '⚠ Save failed — check storage';
+        el.className = 'text-rose-400 text-xs font-semibold';
+      }
+      _saveStatusTimer = setTimeout(() => { el.textContent = ''; }, 4000);
+    }
+
+    function markUnsaved() { showSaveStatus('unsaved'); }
     function resetToOfficialCurriculum() {
       if (confirm('Reset course curriculum to the official 13 structured SQL modules? Any unsaved edits will be refreshed.')) {
         topics = JSON.parse(JSON.stringify(DEFAULT_SEED_TOPICS));

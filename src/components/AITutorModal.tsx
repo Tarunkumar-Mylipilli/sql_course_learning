@@ -40,8 +40,19 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
 
     const userPrompt = `Challenge Goal:\n${challengeDescription}\n\nStudent's Current Code:\n${userCode ? userCode : '(No code written yet)'}`;
 
-    // 1. Client-Side Puter.js AI Call
+    // 1. Client-Side Puter.js AI Call — script loaded lazily on first modal open
     try {
+      // Lazy-load Puter.js only when this modal is actually used
+      if (typeof (window as any).puter === 'undefined') {
+        await new Promise<void>((resolve, reject) => {
+          if (document.querySelector('script[src*="puter.com"]')) { resolve(); return; }
+          const s = document.createElement('script');
+          s.src = 'https://js.puter.com/v2/';
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error('Puter.js failed to load'));
+          document.head.appendChild(s);
+        });
+      }
       const puter = (window as any).puter;
       if (puter && puter.ai && typeof puter.ai.chat === 'function') {
         const response = await puter.ai.chat(
@@ -96,24 +107,30 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ai-tutor-title"
+    >
       <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-sky-500 flex items-center justify-center shadow-md">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-sky-500 flex items-center justify-center shadow-md" aria-hidden="true">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Socratic AI SQL Tutor</h3>
+              <h3 id="ai-tutor-title" className="text-base font-bold text-white">Socratic AI SQL Tutor</h3>
               <p className="text-xs text-slate-400">Guiding you to the solution without giving away direct answers</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            aria-label="Close AI Tutor"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
