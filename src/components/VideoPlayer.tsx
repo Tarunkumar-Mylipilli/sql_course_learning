@@ -48,24 +48,29 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   topicTitle = 'SQL Basics & The SELECT Statement',
   theorySyntax,
 }) => {
-  // Convert any submodules with videoUrl into playable video options as well
+  // Primary module video is always default and index 0
+  // Any submodule with videoUrl is added cleanly with its title
   const submoduleVideos: TopicVideo[] = (subModules || [])
     .filter((sm) => sm.videoUrl && sm.videoUrl.trim().length > 0)
     .map((sm, smIdx) => ({
       title: sm.title,
       embedUrl: sm.videoUrl || '',
       duration: sm.duration || '10:00',
-      channel: `Submodule ${smIdx + 1}`,
+      channel: sm.title,
       language: 'English',
       summaryPoints: [sm.title, sm.summary || 'Submodule video tutorial', 'Focused concepts walkthrough']
     }));
 
+  // Build clean video list: Primary Module Video first, alternative creators, then custom submodules
   const allVideos = [video, ...(alternativeVideos || []), ...(addonVideos || []), ...submoduleVideos].filter(Boolean);
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
 
-  // Watch Time Verification Tracker (ensures students watch required duration)
+  // Track completed videos by index
+  const [watchedVideoIndices, setWatchedVideoIndices] = useState<number[]>(() => isWatched ? [0] : []);
+
+  // Watch Time Verification Tracker
   const parseDurationToSeconds = (durStr?: string): number => {
     if (!durStr) return 120;
     const parts = durStr.trim().split(':').map(Number);
@@ -90,27 +95,44 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const fullVideoSeconds = parseDurationToSeconds(activeVideo.duration);
-  // Verification requirement: watch for at least 2 minutes (120s) or full duration if shorter
   const requiredSeconds = Math.min(fullVideoSeconds, 120);
 
+  // Per-video watch tracker
   const [watchProgressSeconds, setWatchProgressSeconds] = useState<number>(() => isWatched ? requiredSeconds : 0);
-  const [hasVerifiedWatched, setHasVerifiedWatched] = useState<boolean>(Boolean(isWatched));
   const [watchWarning, setWatchWarning] = useState<string>('');
 
+  // Switch to primary video on topic load
   useEffect(() => {
     setSelectedVideoIndex(0);
     setIsPlaying(false);
+    setWatchProgressSeconds(isWatched ? 120 : 0);
   }, [video?.embedUrl]);
 
-  // Timer loop tracking real watch time while video plays
+  // When switching videos within the same topic, pause and reset timer
+  const handleSelectVideo = (idx: number) => {
+    setSelectedVideoIndex(idx);
+    setIsPlaying(false); // Stop playing previous video
+    setWatchProgressSeconds(watchedVideoIndices.includes(idx) ? requiredSeconds : 0);
+    setWatchWarning('');
+  };
+
+  // Timer loop: ONLY advances when video is actively playing (isPlaying === true)
+  // If the user pauses or stops, timer completely halts!
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    if (isPlaying && !hasVerifiedWatched) {
+    const isCurrentVerified = watchedVideoIndices.includes(selectedVideoIndex);
+
+    if (isPlaying && !isCurrentVerified) {
       interval = setInterval(() => {
         setWatchProgressSeconds((prev) => {
           const next = prev + 1;
           if (next >= requiredSeconds) {
-            setHasVerifiedWatched(true);
+            setWatchedVideoIndices((prevIndices) => {
+              if (!prevIndices.includes(selectedVideoIndex)) {
+                return [...prevIndices, selectedVideoIndex];
+              }
+              return prevIndices;
+            });
             onMarkWatched();
             try {
               confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } });
@@ -123,15 +145,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPlaying, hasVerifiedWatched, requiredSeconds, onMarkWatched]);
+  }, [isPlaying, selectedVideoIndex, watchedVideoIndices, requiredSeconds, onMarkWatched]);
 
-  // Sync state if isWatched changes externally
-  useEffect(() => {
-    if (isWatched) {
-      setHasVerifiedWatched(true);
-      setWatchProgressSeconds(requiredSeconds);
-    }
-  }, [isWatched, requiredSeconds]);
+  const hasVerifiedWatched = watchedVideoIndices.includes(selectedVideoIndex) || Boolean(isWatched);
+
+  // Check if all submodules with videos have been completed
+  const totalSubmoduleVideosCount = submoduleVideos.length;
+  const completedSubmoduleVideosCount = submoduleVideos.filter((_, sIdx) => {
+    const originalIdx = allVideos.length - submoduleVideos.length + sIdx;
+    return watchedVideoIndices.includes(originalIdx);
+  }).length;
 
   // Robust YouTube video ID extractor supporting all YouTube link variants
   const extractYoutubeId = (url: string) => {
@@ -175,12 +198,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const handleUnlockTheory = () => {
+    // Check if current video watched
     if (!hasVerifiedWatched) {
       const remaining = Math.max(0, requiredSeconds - watchProgressSeconds);
       const remainingMin = Math.ceil(remaining / 60);
       setWatchWarning(`⚠️ Video Watch Verification: Please watch the video tutorial for at least ${remainingMin > 1 ? remainingMin + ' minutes' : remaining + ' seconds'} to verify completion before unlocking Theory.`);
       return;
     }
+
+    // Check if submodules with videos exist and if they are watched
+    if (totalSubmoduleVideosCount > 0 && completedSubmoduleVideosCount < totalSubmoduleVideosCount) {
+      setWatchWarning(`⚠️ Please complete watching all submodule videos (${completedSubmoduleVideosCount}/${totalSubmoduleVideosCount} completed) to unlock Step 2: Theory.`);
+      return;
+    }
+
     setWatchWarning('');
     onMarkWatched();
     try {
@@ -374,26 +405,28 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           )}
         </div>
 
-        {/* Creator Switcher Tabs (Alex | Mosh | CodeBasics | Telugu) */}
+        {/* Creator & Submodule Switcher Tabs */}
         <div className="w-full flex items-center justify-start sm:justify-center gap-2 overflow-x-auto py-1">
           {allVideos.map((v, idx) => {
             const isTabActive = selectedVideoIndex === idx;
+            const isVideoVerified = watchedVideoIndices.includes(idx);
             const tab = getTabInfo(v, idx);
 
             return (
               <button
                 key={idx}
-                onClick={() => {
-                  setSelectedVideoIndex(idx);
-                  setIsPlaying(false);
-                }}
-                className={`px-5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
+                onClick={() => handleSelectVideo(idx)}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
                   isTabActive
                     ? 'bg-cyan-950/60 text-cyan-300 font-bold border border-cyan-500/50 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
                 }`}
               >
-                {tab.icon}
+                {isVideoVerified ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  tab.icon
+                )}
                 <span>{tab.label}</span>
               </button>
             );
@@ -427,6 +460,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               </li>
             ))}
           </ul>
+
+          {/* Submodule Completion Status Pill */}
+          {totalSubmoduleVideosCount > 0 && (
+            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+              <span className="text-slate-400">Submodules Completed:</span>
+              <span className={`font-mono font-bold ${completedSubmoduleVideosCount === totalSubmoduleVideosCount ? 'text-emerald-400' : 'text-cyan-400'}`}>
+                {completedSubmoduleVideosCount} / {totalSubmoduleVideosCount} Submodules Watched
+              </span>
+            </div>
+          )}
 
           {/* Watch Verification Progress Bar */}
           <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
