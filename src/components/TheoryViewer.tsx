@@ -13,6 +13,9 @@ import {
   ShieldAlert,
   Building2,
   ListOrdered,
+  Download,
+  Bookmark,
+  Printer,
 } from 'lucide-react';
 import { TopicTheory } from '../types';
 import { MindmapViewer } from './MindmapViewer';
@@ -23,6 +26,8 @@ interface TheoryViewerProps {
   isRead: boolean;
   onMarkRead: () => void;
   onProceedToQuiz: () => void;
+  isBookmarked?: boolean;
+  onToggleBookmark?: () => void;
 }
 
 export const TheoryViewer: React.FC<TheoryViewerProps> = ({
@@ -31,6 +36,8 @@ export const TheoryViewer: React.FC<TheoryViewerProps> = ({
   isRead,
   onMarkRead,
   onProceedToQuiz,
+  isBookmarked = false,
+  onToggleBookmark,
 }) => {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'points' | 'submodules' | 'mindmap' | 'execution' | 'pitfalls' | 'enterprise'>(
@@ -38,6 +45,39 @@ export const TheoryViewer: React.FC<TheoryViewerProps> = ({
   );
   const [reviewedPoints, setReviewedPoints] = useState<number[]>([]);
   const [selectedSubmoduleIndex, setSelectedSubmoduleIndex] = useState<number>(0);
+
+  const handleDownloadNotes = () => {
+    let md = `# ${theory.title}\n\n`;
+    md += `## Summary\n${theory.summary}\n\n`;
+    md += `## Syntax\n\`\`\`sql\n${theory.syntax}\n\`\`\`\n\n`;
+    md += `## Key Architectural Rules & Concepts\n`;
+    theory.keyRules.forEach((r, i) => {
+      md += `${i + 1}. ${r}\n`;
+    });
+    md += `\n## Core Lesson Points\n`;
+    theory.explanation.forEach((p, i) => {
+      md += `* **Point ${i + 1}:** ${p}\n`;
+    });
+    md += `\n## Real-World Enterprise Example\n\`\`\`sql\n${theory.exampleQuery}\n\`\`\`\n${theory.exampleExplanation}\n\n`;
+    md += `## Common Traps & Mistakes\n`;
+    theory.commonMistakes.forEach((m, i) => {
+      md += `${i + 1}. ${m}\n`;
+    });
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${theory.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-notes.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrintNotes = () => {
+    window.print();
+  };
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -70,22 +110,52 @@ export const TheoryViewer: React.FC<TheoryViewerProps> = ({
       {/* Header */}
       <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
               <BookOpen className="w-3 h-3" /> Step 2: Website Theory & Point-to-Point Notes
             </span>
+            {onToggleBookmark && (
+              <button
+                onClick={onToggleBookmark}
+                className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border flex items-center gap-1 transition cursor-pointer ${
+                  isBookmarked
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:text-slate-200'
+                }`}
+                title="Bookmark this lesson"
+              >
+                <Bookmark className={`w-3 h-3 ${isBookmarked ? 'fill-amber-400 text-amber-400' : ''}`} />
+                <span>{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
+              </button>
+            )}
+            <button
+              onClick={handleDownloadNotes}
+              className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-600 flex items-center gap-1 transition cursor-pointer"
+              title="Download Notes as Markdown"
+            >
+              <Download className="w-3 h-3 text-cyan-400" />
+              <span>Download (.md)</span>
+            </button>
+            <button
+              onClick={handlePrintNotes}
+              className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-600 flex items-center gap-1 transition cursor-pointer"
+              title="Print or Save as PDF"
+            >
+              <Printer className="w-3 h-3 text-slate-400" />
+              <span>Print / PDF</span>
+            </button>
           </div>
           <h2 className="text-xl font-bold text-white tracking-tight">{theory.title}</h2>
           <p className="text-sm text-slate-300 mt-1">{theory.summary}</p>
         </div>
 
         {isRead ? (
-          <div className="flex items-center gap-2 px-3.5 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs font-semibold self-start md:self-center">
+          <div className="flex items-center gap-2 px-3.5 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs font-semibold self-start md:self-center shrink-0">
             <CheckCircle className="w-4 h-4 text-emerald-400" />
             <span>Theory Mastered</span>
           </div>
         ) : (
-          <div className="flex items-center gap-2 px-3.5 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-300 text-xs font-medium self-start md:self-center">
+          <div className="flex items-center gap-2 px-3.5 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-300 text-xs font-medium self-start md:self-center shrink-0">
             <Lightbulb className="w-4 h-4 text-indigo-400" />
             <span>Review all points to unlock Quiz</span>
           </div>

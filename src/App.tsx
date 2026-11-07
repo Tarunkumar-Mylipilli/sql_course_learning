@@ -16,6 +16,7 @@ import { NotesHub } from './components/NotesHub';
 import { Interview50Hub } from './components/Interview50Hub';
 import { AITutorModal } from './components/AITutorModal';
 import { AddTopicModal } from './components/AddTopicModal';
+import { StudentDashboard } from './components/StudentDashboard';
 
 export default function App() {
   // Load topics from storage (with core curriculum and user customizations)
@@ -24,7 +25,7 @@ export default function App() {
   });
 
   const [progress, setProgress] = useState<CourseProgress>(() => loadProgress(topics));
-  const [activeView, setActiveView] = useState<'course' | 'roadmap' | 'notes' | 'interview50'>('course');
+  const [activeView, setActiveView] = useState<'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50'>('dashboard');
   const [currentTopicId, setCurrentTopicId] = useState<string>(
     progress.currentTopicId || topics[0]?.id || 'topic-1-select'
   );
@@ -170,6 +171,31 @@ export default function App() {
     }
   };
 
+  // Toggle bookmark on a topic
+  const handleToggleBookmark = (topicId: string) => {
+    setProgress((prev) => {
+      const existing = prev.topics[topicId] || {
+        videoWatched: false,
+        theoryRead: false,
+        quizPassed: false,
+        quizScore: 0,
+        codingCompleted: false,
+        userSql: '',
+      };
+      const isBookmarked = !existing.bookmarked;
+      return {
+        ...prev,
+        topics: {
+          ...prev.topics,
+          [topicId]: {
+            ...existing,
+            bookmarked: isBookmarked,
+          },
+        },
+      };
+    });
+  };
+
   // Direct selection of topic
   const handleSelectTopic = (topic: Topic) => {
     setCurrentTopicId(topic.id);
@@ -300,6 +326,22 @@ export default function App() {
 
         {/* Central Learning Canvas */}
         <main className="flex-1 overflow-y-auto max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7">
+          {activeView === 'dashboard' && (
+            <StudentDashboard
+              topics={filteredTopics}
+              progress={progress}
+              onSelectTopic={handleSelectTopic}
+              onStartDailyPractice={() => {
+                const dayIdx = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+                const target = topics[dayIdx % Math.max(1, topics.length)] || topics[0];
+                handleSelectTopic(target);
+              }}
+              onOpenRoadmap={() => setActiveView('roadmap')}
+              onOpenInterview50={() => setActiveView('interview50')}
+              onOpenNotes={() => setActiveView('notes')}
+            />
+          )}
+
           {activeView === 'course' && currentTopic && (
             <TopicWorkflow
               topic={currentTopic}
@@ -314,6 +356,7 @@ export default function App() {
               onPreviousTopic={handlePreviousTopic}
               hasPreviousTopic={hasPreviousTopic}
               hasNextTopic={hasNextTopic}
+              onToggleBookmark={handleToggleBookmark}
               onOpenAITutorWithContext={handleOpenAITutorWithContext}
             />
           )}

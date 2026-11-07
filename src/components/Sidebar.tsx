@@ -1,9 +1,9 @@
 import React from 'react';
-import { Home, Code2, BarChart2, Bookmark, Settings, Rocket, ArrowRight } from 'lucide-react';
+import { Home, Code2, BarChart2, Bookmark, Settings, Rocket, ArrowRight, LayoutDashboard } from 'lucide-react';
 
 interface SidebarProps {
-  activeView: 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice';
-  setActiveView: (view: 'course' | 'roadmap' | 'notes' | 'interview50') => void;
+  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50';
+  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50') => void;
   onOpenUpgradeModal?: () => void;
 }
 
@@ -16,7 +16,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside className="w-20 shrink-0 hidden lg:flex flex-col items-center justify-between py-6 px-2 bg-[#060c18] border-r border-slate-800/80 min-h-[calc(100vh-4rem)] select-none">
       {/* Top Nav Rail Icons */}
       <div className="flex flex-col items-center gap-3 w-full">
-        {/* Dashboard / Learn */}
+        {/* Dashboard / Home */}
+        <button
+          onClick={() => setActiveView('dashboard')}
+          className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition cursor-pointer ${
+            activeView === 'dashboard'
+              ? 'bg-cyan-950/50 border border-cyan-500/50 text-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.3)]'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+          }`}
+          title="Home Dashboard"
+        >
+          <LayoutDashboard className="w-5 h-5" />
+          <span>Home</span>
+        </button>
+
+        {/* Course / Active Lesson */}
         <button
           onClick={() => setActiveView('course')}
           className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition cursor-pointer ${
@@ -24,10 +38,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               ? 'bg-cyan-950/50 border border-cyan-500/50 text-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.3)]'
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
           }`}
-          title="Dashboard / Learn"
+          title="Active Lesson & Modules"
         >
           <Home className="w-5 h-5" />
-          <span>Dashboard</span>
+          <span>Lesson</span>
         </button>
 
         {/* Practice (Interview 50 & Practice Arena) */}

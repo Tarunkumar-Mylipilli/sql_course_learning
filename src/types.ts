@@ -69,6 +69,8 @@ export interface TopicProgress {
   codingCompleted: boolean;
   solvedChallengeIds?: string[];
   userSql?: string;
+  bookmarked?: boolean; // Bookmark lesson for fast access
+  completedAt?: string;
 }
 
 export interface SubModule {
@@ -90,6 +92,7 @@ export interface Topic {
   estimatedMinutes: number;
   badge: string;
   overview: string;
+  learningObjectives?: string[]; // Clear bulleted learning objectives
   subModules?: SubModule[]; // Child sub-modules / syllabus topics under this module
   video: TopicVideo; // Short, focused topic tutorial (5-12 mins) with exercise explanation
   alternativeVideos?: TopicVideo[]; // Alternative short creator options
@@ -108,4 +111,5 @@ export interface CourseProgress {
   topics: Record<string, TopicProgress>;
   streakDays: number;
   lastActiveDate: string;
+  bookmarkedTopicIds?: string[];
 }

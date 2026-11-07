@@ -33,6 +33,7 @@ interface TopicWorkflowProps {
   onPreviousTopic: () => void;
   hasPreviousTopic: boolean;
   hasNextTopic: boolean;
+  onToggleBookmark?: (topicId: string) => void;
   onEditTopic?: (topic: Topic) => void;
   onDeleteTopic?: (topicId: string) => void;
   onOpenAITutorWithContext: (context: {
@@ -55,6 +56,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
   onPreviousTopic,
   hasPreviousTopic,
   hasNextTopic,
+  onToggleBookmark,
   onEditTopic,
   onDeleteTopic,
   onOpenAITutorWithContext,
@@ -289,6 +291,8 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
             isRead={topicProgress.theoryRead}
             onMarkRead={() => onMarkTheoryRead(topic.id)}
             onProceedToQuiz={() => setCurrentStep('quiz')}
+            isBookmarked={Boolean(topicProgress.bookmarked)}
+            onToggleBookmark={() => onToggleBookmark && onToggleBookmark(topic.id)}
           />
         )}
 
@@ -316,6 +320,39 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
             onOpenAITutorWithContext={onOpenAITutorWithContext}
           />
         )}
+      </div>
+
+      {/* Lesson Quick Footer Navigation */}
+      <div className="pt-6 border-t border-slate-800/80 flex items-center justify-between text-xs">
+        <button
+          onClick={onPreviousTopic}
+          disabled={!hasPreviousTopic}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition ${
+            hasPreviousTopic
+              ? 'bg-[#080d19] border-slate-700 text-slate-200 hover:text-white hover:border-slate-600 cursor-pointer shadow-sm'
+              : 'bg-slate-900/40 border-slate-800 text-slate-600 cursor-not-allowed'
+          }`}
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Previous Lesson</span>
+        </button>
+
+        <span className="text-slate-500 font-mono text-[11px] hidden sm:inline">
+          Module {topic.order} of {progress ? Object.keys(progress.topics).length : 13}
+        </span>
+
+        <button
+          onClick={onProceedToNextTopic}
+          disabled={!hasNextTopic}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition ${
+            hasNextTopic
+              ? 'bg-[#080d19] border-slate-700 text-slate-200 hover:text-white hover:border-slate-600 cursor-pointer shadow-sm'
+              : 'bg-slate-900/40 border-slate-800 text-slate-600 cursor-not-allowed'
+          }`}
+        >
+          <span>Next Lesson</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

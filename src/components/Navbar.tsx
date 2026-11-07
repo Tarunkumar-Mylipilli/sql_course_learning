@@ -9,14 +9,15 @@ import {
   Search,
   Crown,
   Bell,
+  LayoutDashboard,
 } from 'lucide-react';
 import { CourseProgress, Topic } from '../types';
 
 interface NavbarProps {
   topics: Topic[];
   progress: CourseProgress;
-  activeView: 'course' | 'roadmap' | 'notes' | 'interview50';
-  setActiveView: (view: 'course' | 'roadmap' | 'notes' | 'interview50') => void;
+  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50';
+  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50') => void;
   onOpenAddTopic: () => void;
   onResetProgress: () => void;
   onOpenAITutor: () => void;
@@ -64,6 +65,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Center: Top Navigation Tabs */}
         <nav className="hidden md:flex items-center gap-2">
+          {/* Dashboard */}
+          <button
+            onClick={() => setActiveView('dashboard')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+              activeView === 'dashboard'
+                ? 'bg-cyan-950/60 border border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+            }`}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            <span>Dashboard</span>
+          </button>
+
           {/* Learn */}
           <button
             onClick={() => setActiveView('course')}
@@ -74,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Home className="w-3.5 h-3.5" />
-            <span>Learn</span>
+            <span>Lessons</span>
           </button>
 
           {/* Curriculum */}
