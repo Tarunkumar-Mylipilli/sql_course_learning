@@ -1,35 +1,35 @@
 :root {
-  --color-bg-canvas:         #040814;
-  --color-bg-surface:        #090d16;
-  --color-bg-elevated:       #0d1422;
+  --color-bg-canvas:         rgb(4, 8, 20);
+  --color-bg-surface:        rgb(9, 13, 22);
+  --color-bg-elevated:       rgb(13, 20, 34);
   --color-bg-overlay:        rgba(4, 8, 20, 0.8);
-  --color-content-primary:   #f8fafc;
-  --color-content-secondary: #94a3b8;
-  --color-content-muted:     #64748b;
-  --color-border-subtle:     #0f172a;
-  --color-border-default:    #1e293b;
-  --color-border-strong:     #334155;
-  --color-accent-500:        #06b6d4;
-  --color-accent-600:        #0891b2;
-  --color-danger:            #ef4444;
-  --color-success:           #22c55e;
+  --color-content-primary:   rgb(248, 250, 252);
+  --color-content-secondary: rgb(148, 163, 184);
+  --color-content-muted:     rgb(100, 116, 139);
+  --color-border-subtle:     rgb(15, 23, 42);
+  --color-border-default:    rgb(30, 41, 59);
+  --color-border-strong:     rgb(51, 65, 85);
+  --color-accent-500:        rgb(6, 182, 212);
+  --color-accent-600:        rgb(8, 145, 178);
+  --color-danger:            rgb(239, 68, 68);
+  --color-success:           rgb(34, 197, 94);
 }
 
 [data-theme="light"] {
-  --color-bg-canvas:         #ffffff;
-  --color-bg-surface:        #f8fafc;
-  --color-bg-elevated:       #f1f5f9;
+  --color-bg-canvas:         rgb(255, 255, 255);
+  --color-bg-surface:        rgb(248, 250, 252);
+  --color-bg-elevated:       rgb(241, 245, 249);
   --color-bg-overlay:        rgba(15, 23, 42, 0.4);
-  --color-content-primary:   #0f172a;
-  --color-content-secondary: #475569;
-  --color-content-muted:     #64748b;
-  --color-border-subtle:     #e2e8f0;
-  --color-border-default:    #cbd5e1;
-  --color-border-strong:     #94a3b8;
-  --color-accent-500:        #0891b2;
-  --color-accent-600:        #0e7490;
-  --color-danger:            #dc2626;
-  --color-success:           #16a34a;
+  --color-content-primary:   rgb(15, 23, 42);
+  --color-content-secondary: rgb(71, 85, 105);
+  --color-content-muted:     rgb(100, 116, 139);
+  --color-border-subtle:     rgb(226, 232, 240);
+  --color-border-default:    rgb(203, 213, 225);
+  --color-border-strong:     rgb(148, 163, 184);
+  --color-accent-500:        rgb(8, 145, 178);
+  --color-accent-600:        rgb(14, 116, 144);
+  --color-danger:            rgb(220, 38, 38);
+  --color-success:           rgb(22, 163, 74);
 }
 
 body {
