@@ -11,3 +11,4 @@ export * from './EmptyState';
 export * from './ErrorState';
 export * from './ProgressBar';
 export * from './Tabs';
+export * from './Toast';

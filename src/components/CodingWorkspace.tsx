@@ -702,57 +702,61 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
 
           {/* Query Execution Result Grid */}
           {queryResult && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
-                  <Database className="w-4 h-4 text-sky-400" />
-                  <span>Query Execution Result</span>
-                  {queryResult.rowCount !== undefined && (
-                    <span className="text-slate-400 text-[11px]">({queryResult.rowCount} rows)</span>
+            <div role="status" aria-live="polite">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
+                    <Database className="w-4 h-4 text-sky-400" />
+                    <span>Query Execution Result</span>
+                    {queryResult.rowCount !== undefined && (
+                      <span className="text-slate-400 text-[11px]">({queryResult.rowCount} rows)</span>
+                    )}
+                  </div>
+                  {queryResult.executionTimeMs !== undefined && (
+                    <div className="flex items-center gap-1 text-[11px] text-slate-400">
+                      <Clock className="w-3 h-3 text-slate-400" />
+                      <span>{queryResult.executionTimeMs.toFixed(1)} ms</span>
+                    </div>
                   )}
                 </div>
-                {queryResult.executionTimeMs !== undefined && (
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400">
-                    <Clock className="w-3 h-3 text-slate-400" />
-                    <span>{queryResult.executionTimeMs.toFixed(1)} ms</span>
+
+                {queryResult.error ? (
+                  <div role="alert" aria-live="assertive">
+                    <div className="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl font-mono text-xs text-rose-300">
+                      ⚠️ {queryResult.error}
+                    </div>
+                  </div>
+                ) : queryResult.values.length === 0 ? (
+                  <div className="p-4 text-center text-xs text-slate-400 italic bg-slate-950/50 rounded-xl">
+                    Query executed successfully, but returned 0 rows.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-slate-800 max-h-60 overflow-y-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-950 text-slate-300 font-mono sticky top-0 border-b border-slate-800 text-[11px]">
+                        <tr>
+                          {queryResult.columns.map((col, idx) => (
+                            <th key={idx} className="p-2.5">
+                              {col}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/80 bg-slate-950/50 font-mono text-slate-300">
+                        {queryResult.values.map((row, rIdx) => (
+                          <tr key={rIdx} className="hover:bg-slate-900/60">
+                            {row.map((val: any, cIdx: number) => (
+                              <td key={cIdx} className="p-2.5 truncate max-w-[160px]">
+                                {val !== null && val !== undefined ? String(val) : <span className="text-slate-500">NULL</span>}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
-
-              {queryResult.error ? (
-                <div className="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl font-mono text-xs text-rose-300">
-                  ⚠️ {queryResult.error}
-                </div>
-              ) : queryResult.values.length === 0 ? (
-                <div className="p-4 text-center text-xs text-slate-400 italic bg-slate-950/50 rounded-xl">
-                  Query executed successfully, but returned 0 rows.
-                </div>
-              ) : (
-                <div className="overflow-x-auto rounded-xl border border-slate-800 max-h-60 overflow-y-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-950 text-slate-300 font-mono sticky top-0 border-b border-slate-800 text-[11px]">
-                      <tr>
-                        {queryResult.columns.map((col, idx) => (
-                          <th key={idx} className="p-2.5">
-                            {col}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/80 bg-slate-950/50 font-mono text-slate-300">
-                      {queryResult.values.map((row, rIdx) => (
-                        <tr key={rIdx} className="hover:bg-slate-900/60">
-                          {row.map((val: any, cIdx: number) => (
-                            <td key={cIdx} className="p-2.5 truncate max-w-[160px]">
-                              {val !== null && val !== undefined ? String(val) : <span className="text-slate-500">NULL</span>}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
           )}
         </div>
