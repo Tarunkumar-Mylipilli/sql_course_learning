@@ -185,25 +185,37 @@ export const Interview50Hub: React.FC = () => {
           )}
 
           {activeTab === 'schema' && (
-            <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl overflow-x-auto">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="text-[10px] text-slate-400 border-b border-slate-800">
-                  <tr>
-                    <th className="p-2">Column</th>
-                    <th className="p-2">Type</th>
-                    <th className="p-2">Key</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {currentQ.tables[0]?.columns.map((c, i) => (
-                    <tr key={i}>
-                      <td className="p-2 text-sky-300">{c.name}</td>
-                      <td className="p-2 text-slate-400">{c.type}</td>
-                      <td className="p-2">{c.isPk ? 'PK' : ''}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="space-y-4">
+              {currentQ.tables.map((tbl, tblIdx) => (
+                <div key={tblIdx} className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl overflow-x-auto space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-sky-400">
+                    <Table className="w-3.5 h-3.5" />
+                    <span>Table: {tbl.name}</span>
+                    {tbl.description && <span className="text-[11px] text-slate-400 font-normal">({tbl.description})</span>}
+                  </div>
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead className="text-[10px] text-slate-400 border-b border-slate-800">
+                      <tr>
+                        <th className="p-2">Column</th>
+                        <th className="p-2">Type</th>
+                        <th className="p-2">Key</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {(tbl.columns || []).map((c, i) => (
+                        <tr key={i}>
+                          <td className="p-2 text-sky-300 font-medium">{c.name}</td>
+                          <td className="p-2 text-slate-400">{c.type}</td>
+                          <td className="p-2">
+                            {c.isPk && <span className="px-1.5 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold">PK</span>}
+                            {c.isFk && <span className="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-purple-500/10 text-purple-400 border border-purple-500/20 font-bold">FK</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
             </div>
           )}
 
