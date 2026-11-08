@@ -72,8 +72,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent-500 cursor-pointer ${
                   isActive
-                    ? 'bg-accent-50 text-accent-700 dark:bg-accent-950 dark:text-accent-300 font-bold'
-                    : 'text-content-secondary hover:text-content-primary hover:bg-elevated'
+                    ? 'bg-surface text-content-primary border-l-2 border-accent-500 font-bold'
+                    : 'text-content-secondary hover:text-content-primary hover:bg-surface/50 border-l-2 border-transparent'
                 }`}
               >
                 {item.icon}

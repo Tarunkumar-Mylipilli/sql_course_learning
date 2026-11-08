@@ -85,7 +85,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search SQL topics, clauses, exercises..."
-            className="w-full bg-canvas text-content-primary placeholder:text-content-subtle border border-border-default rounded-md pl-9 pr-3 py-1.5 text-xs font-ui outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+            className="w-full bg-canvas text-content-primary placeholder:text-content-muted border border-border-default rounded-md pl-9 pr-3 py-1.5 text-xs font-ui focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500"
           />
         </div>
       </div>

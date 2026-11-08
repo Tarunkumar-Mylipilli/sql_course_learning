@@ -204,7 +204,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
             <button
               onClick={() => onSelectTopic(currentTopic)}
-              className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-400 to-sky-500 hover:from-cyan-300 hover:to-sky-400 text-slate-950 flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition cursor-pointer"
+              className="inline-flex w-auto py-3 px-6 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-400 to-sky-500 hover:from-cyan-300 hover:to-sky-400 text-slate-950 items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition cursor-pointer"
             >
               <span>Resume Lesson</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -270,8 +270,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         {/* Daily SQL Practice Highlight */}
         <div className="lg:col-span-5 bg-gradient-to-br from-canvas to-surface border border-amber-500/30 rounded-2xl p-6 shadow-xl space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider">
-              <Calendar className="w-4 h-4" />
+            <span className="text-xs font-bold text-content-primary flex items-center gap-1.5 uppercase tracking-wider">
+              <Calendar className="w-4 h-4 text-amber-400" />
               Daily SQL Challenge
             </span>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold">
