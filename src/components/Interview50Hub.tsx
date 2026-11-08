@@ -62,8 +62,7 @@ export const Interview50Hub: React.FC = () => {
       const validation = await validateSolution(
         currentQ.schemaSql,
         userSql,
-        currentQ.solutionSql,
-        currentQ.expectedColumns
+        currentQ.solutionSql
       );
       setValidationResult(validation);
       if (validation.userResult) setQueryResult(validation.userResult);

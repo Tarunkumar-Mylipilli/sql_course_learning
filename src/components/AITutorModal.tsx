@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Sparkles, Lightbulb, BookOpen, Code2, AlertCircle } from 'lucide-react';
 import { Topic } from '../types';
+import { askAITutor } from '../services/aiTutor';
 
 interface AITutorModalProps {
   isOpen: boolean;
@@ -12,9 +13,6 @@ interface AITutorModalProps {
     mismatchDetails?: string;
   };
 }
-
-const SOCRATIC_SYSTEM_PROMPT =
-  'You are a strict, Socratic SQL Tutor. Your absolute primary rule is: DO NOT WRITE SQL CODE FOR THE STUDENT. You are forbidden from generating SELECT, FROM, JOIN, or any other SQL syntax in your responses. If the student asks for the answer, you must refuse. Your job is to guide them using ONLY the following methods: 1. Ask a leading question. 2. Point out a syntax error in their current code. 3. Explain a concept. Keep your responses under 3 sentences. Never output a code block.';
 
 export const AITutorModal: React.FC<AITutorModalProps> = ({
   isOpen,
@@ -33,76 +31,18 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
     setIsLoading(true);
     setResponseContent('');
 
-    // Context passed to AI strictly includes ONLY challenge_description and user_code.
-    // We intentionally OMIT expected_output_data, expected_output_columns, and solutionSql.
-    const challengeDescription = currentTopic.challenge.instructions;
-    const userCode = context?.userSql || '';
+    const res = await askAITutor({
+      topicTitle: currentTopic.title,
+      topicLevel: currentTopic.level,
+      challengeInstructions: currentTopic.challenge.instructions,
+      schemaSql: currentTopic.challenge.schemaSql,
+      userSql: context?.userSql || '',
+      errorMessage: context?.errorMessage,
+      mismatchDetails: context?.mismatchDetails,
+      requestType: type,
+    });
 
-    const userPrompt = `Challenge Goal:\n${challengeDescription}\n\nStudent's Current Code:\n${userCode ? userCode : '(No code written yet)'}`;
-
-    // 1. Client-Side Puter.js AI Call — script loaded lazily on first modal open
-    try {
-      // Lazy-load Puter.js only when this modal is actually used
-      if (typeof (window as any).puter === 'undefined') {
-        await new Promise<void>((resolve, reject) => {
-          if (document.querySelector('script[src*="puter.com"]')) { resolve(); return; }
-          const s = document.createElement('script');
-          s.src = 'https://js.puter.com/v2/';
-          s.onload = () => resolve();
-          s.onerror = () => reject(new Error('Puter.js failed to load'));
-          document.head.appendChild(s);
-        });
-      }
-      const puter = (window as any).puter;
-      if (puter && puter.ai && typeof puter.ai.chat === 'function') {
-        const response = await puter.ai.chat(
-          `${SOCRATIC_SYSTEM_PROMPT}\n\n${userPrompt}`,
-          { model: 'claude-3-5-sonnet' }
-        );
-
-        let textOutput =
-          typeof response === 'string'
-            ? response
-            : response?.message?.content || response?.text || '';
-
-        // Strip any code blocks just in case model attempted to generate one
-        textOutput = textOutput.replace(/```[\s\S]*?```/g, '').trim();
-
-        if (textOutput) {
-          setResponseContent(textOutput);
-          setIsLoading(false);
-          return;
-        }
-      }
-    } catch (puterErr) {
-      console.warn('Puter.js AI tutor unavailable, using deterministic Socratic fallback:', puterErr);
-    }
-
-    // 2. Offline / Fallback Socratic Guidance (strictly adheres to rule: NO direct SQL syntax)
-    if (type === 'hint') {
-      if (!userCode.trim()) {
-        setResponseContent(
-          'What table holds the data described in the challenge goal? Start by writing down which table you need to query in the FROM clause.'
-        );
-      } else if (context?.errorMessage) {
-        setResponseContent(
-          'Take a close look at how your column names are separated. Did you include all required commas, and ensure there is no extra comma before the table name?'
-        );
-      } else {
-        setResponseContent(
-          'Which specific attributes does the challenge ask you to display? Verify whether your current projection includes every requested field.'
-        );
-      }
-    } else if (type === 'concept_breakdown') {
-      setResponseContent(
-        `${currentTopic.theory.summary} Remember that the database engine locates the target table first before filtering or selecting columns.`
-      );
-    } else {
-      setResponseContent(
-        'Start by writing the table identifier in the FROM clause, then list only the necessary attributes and column aliases in the projection.'
-      );
-    }
-
+    setResponseContent(res.content);
     setIsLoading(false);
   };
 

@@ -1,5 +1,5 @@
-// SQL Execution Engine for In-Browser Interactive Learning
-// Uses sql.js WebAssembly SQLite engine with fallback error handling
+// High-level Client Pool & Dispatcher for sqlWorker
+// Enforces max execution timeout (5000ms), worker recreation on freeze, and input caps
 
 export interface QueryResult {
   columns: string[];
@@ -7,6 +7,7 @@ export interface QueryResult {
   error?: string;
   rowCount: number;
   executionTimeMs: number;
+  truncated?: boolean;
 }
 
 export interface ValidationResult {
@@ -17,242 +18,142 @@ export interface ValidationResult {
   mismatchReason?: string;
 }
 
-let sqlJsModule: any = null;
-let sqlJsLoadingPromise: Promise<any> | null = null;
-
-// Dynamically load sql.js in the browser
-export async function getSqlEngine(): Promise<any> {
-  if (sqlJsModule) return sqlJsModule;
-  if (sqlJsLoadingPromise) return sqlJsLoadingPromise;
-
-  sqlJsLoadingPromise = (async () => {
-    try {
-      // First check if window.initSqlJs is already loaded via CDN script
-      if (typeof window !== 'undefined' && (window as any).initSqlJs) {
-        sqlJsModule = await (window as any).initSqlJs({
-          locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}`,
-        });
-        return sqlJsModule;
-      }
-
-      // Try importing from node_modules or CDN
-      try {
-        const initSqlJs = (await import('sql.js')).default;
-        sqlJsModule = await initSqlJs({
-          locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}`,
-        });
-        return sqlJsModule;
-      } catch (importErr) {
-        // Fallback: inject script tag
-        await new Promise<void>((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.js';
-          script.onload = () => resolve();
-          script.onerror = () => reject(new Error('Failed to load sql-wasm.js from CDN'));
-          document.head.appendChild(script);
-        });
-
-        if ((window as any).initSqlJs) {
-          sqlJsModule = await (window as any).initSqlJs({
-            locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}`,
-          });
-          return sqlJsModule;
-        }
-      }
-    } catch (err) {
-      console.error('SQL Engine init error:', err);
-    }
-    return null;
-  })();
-
-  return sqlJsLoadingPromise;
-}
-
-// Execute query against schema in an isolated in-memory SQLite database
-export async function executeQuery(schemaSql: string, userSql: string): Promise<QueryResult> {
-  const startTime = performance.now();
-  const SQL = await getSqlEngine();
-
-  if (!SQL) {
-    return {
-      columns: [],
-      values: [],
-      error: 'SQL engine is initializing or failed to load WebAssembly. Please refresh or check connection.',
-      rowCount: 0,
-      executionTimeMs: 0,
-    };
+const DEFAULT_TIMEOUT_MS = 5000;
+let workerInstance: Worker | null = null;
+let currentRequestId = 0;
+const pendingRequests = new Map<
+  string,
+  {
+    resolve: (val: any) => void;
+    reject: (err: any) => void;
+    timer: any;
   }
+>();
 
-  let db: any = null;
-  try {
-    db = new SQL.Database();
+function createWorker(): Worker {
+  // Vite worker instantiation
+  const worker = new Worker(new URL('../workers/sqlWorker.ts', import.meta.url), {
+    type: 'module',
+  });
 
-    // 1. Initialize schema and sample seed rows
-    if (schemaSql && schemaSql.trim()) {
-      db.run(schemaSql);
-    }
+  worker.onmessage = (e: MessageEvent) => {
+    const { id, result, validation, error, success } = e.data;
+    const req = pendingRequests.get(id);
+    if (!req) return;
 
-    // Clean user SQL (remove trailing comments or spaces)
-    const trimmedSql = userSql.trim();
-    if (!trimmedSql) {
-      return {
+    clearTimeout(req.timer);
+    pendingRequests.delete(id);
+
+    if (validation !== undefined) {
+      req.resolve(validation);
+    } else if (result !== undefined) {
+      req.resolve(result);
+    } else if (error) {
+      req.resolve({
         columns: [],
         values: [],
-        error: 'Please enter a SQL query to execute.',
+        error,
         rowCount: 0,
         executionTimeMs: 0,
-      };
+      });
+    } else {
+      req.resolve({ success });
     }
+  };
 
-    // 2. Execute user query
-    const results = db.exec(trimmedSql);
-    const endTime = performance.now();
+  worker.onerror = (err) => {
+    console.error('SQL Worker internal error:', err);
+    // Terminate and reject all active requests
+    terminateWorker('SQL execution worker crashed. Recreating engine...');
+  };
 
-    if (!results || results.length === 0) {
-      // May be an INSERT/UPDATE or query returning 0 rows
-      return {
-        columns: [],
-        values: [],
-        rowCount: 0,
-        executionTimeMs: Math.round(endTime - startTime),
-      };
-    }
-
-    const firstResult = results[0];
-    return {
-      columns: firstResult.columns || [],
-      values: firstResult.values || [],
-      rowCount: firstResult.values?.length || 0,
-      executionTimeMs: Math.round(endTime - startTime),
-    };
-  } catch (err: any) {
-    const endTime = performance.now();
-    return {
-      columns: [],
-      values: [],
-      error: err?.message || String(err),
-      rowCount: 0,
-      executionTimeMs: Math.round(endTime - startTime),
-    };
-  } finally {
-    if (db) {
-      try {
-        db.close();
-      } catch (_) {}
-    }
-  }
+  return worker;
 }
 
-// Compare user query result against expected solution
+function getWorker(): Worker {
+  if (!workerInstance) {
+    workerInstance = createWorker();
+  }
+  return workerInstance;
+}
+
+function terminateWorker(reason: string) {
+  if (workerInstance) {
+    try {
+      workerInstance.terminate();
+    } catch {}
+    workerInstance = null;
+  }
+  pendingRequests.forEach(({ resolve, timer }) => {
+    clearTimeout(timer);
+    resolve({
+      columns: [],
+      values: [],
+      error: reason,
+      rowCount: 0,
+      executionTimeMs: DEFAULT_TIMEOUT_MS,
+    });
+  });
+  pendingRequests.clear();
+}
+
+function dispatchRequest<T>(payload: any, timeoutMs: number = DEFAULT_TIMEOUT_MS): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const worker = getWorker();
+    const id = `req_${++currentRequestId}_${Date.now()}`;
+
+    const timer = setTimeout(() => {
+      pendingRequests.delete(id);
+      terminateWorker(`Query exceeded execution timeout (${timeoutMs / 1000}s). Runaway/infinite loop query was killed to keep your browser responsive.`);
+      resolve({
+        columns: [],
+        values: [],
+        error: `Execution timed out (${timeoutMs / 1000}s). The query was safely terminated to prevent freezing your browser. Optimize joins or remove runaway conditions.`,
+        rowCount: 0,
+        executionTimeMs: timeoutMs,
+      } as any);
+    }, timeoutMs);
+
+    pendingRequests.set(id, { resolve, reject, timer });
+    worker.postMessage({ id, ...payload });
+  });
+}
+
+// Public API
+export async function executeQuery(
+  schemaSql: string,
+  userSql: string,
+  timeoutMs: number = DEFAULT_TIMEOUT_MS
+): Promise<QueryResult> {
+  return dispatchRequest<QueryResult>(
+    {
+      type: 'execute',
+      schemaSql,
+      userSql,
+    },
+    timeoutMs
+  );
+}
+
 export async function validateSolution(
   schemaSql: string,
   userSql: string,
   solutionSql: string,
-  expectedColumns?: string[]
+  timeoutMs: number = DEFAULT_TIMEOUT_MS
 ): Promise<ValidationResult> {
-  // Execute user SQL
-  const userResult = await executeQuery(schemaSql, userSql);
-  if (userResult.error) {
-    return {
-      passed: false,
-      message: `Execution Error: ${userResult.error}`,
-      userResult,
-      mismatchReason: userResult.error,
-    };
-  }
+  return dispatchRequest<ValidationResult>(
+    {
+      type: 'validate',
+      schemaSql,
+      userSql,
+      solutionSql,
+    },
+    timeoutMs
+  );
+}
 
-  // Execute expected solution SQL
-  const expectedResult = await executeQuery(schemaSql, solutionSql);
-  if (expectedResult.error) {
-    return {
-      passed: false,
-      message: `System Benchmark Error: ${expectedResult.error}`,
-      userResult,
-      expectedResult,
-      mismatchReason: 'Internal benchmark error.',
-    };
-  }
-
-  // 1. Column count verification
-  if (userResult.columns.length !== expectedResult.columns.length) {
-    const msg = `Column mismatch: Expected ${expectedResult.columns.length} columns (${expectedResult.columns.join(
-      ', '
-    )}), but your query returned ${userResult.columns.length} columns (${userResult.columns.join(', ')}).`;
-    return {
-      passed: false,
-      message: msg,
-      userResult,
-      expectedResult,
-      mismatchReason: msg,
-    };
-  }
-
-  // 2. Row count verification
-  if (userResult.rowCount !== expectedResult.rowCount) {
-    const msg = `Row count mismatch: Expected ${expectedResult.rowCount} rows, but your query returned ${userResult.rowCount} rows.`;
-    return {
-      passed: false,
-      message: msg,
-      userResult,
-      expectedResult,
-      mismatchReason: msg,
-    };
-  }
-
-  // 3. Normalize and compare row values
-  const stringifyRow = (row: any[]) =>
-    row
-      .map((val) => {
-        if (val === null || val === undefined) return 'NULL';
-        if (typeof val === 'number') return Number(val.toFixed(4)).toString();
-        return String(val).trim().toLowerCase();
-      })
-      .join(' | ');
-
-  const userRowsStr = userResult.values.map(stringifyRow);
-  const expectedRowsStr = expectedResult.values.map(stringifyRow);
-
-  // Check if ORDER BY is tested in the solution
-  const hasOrderBy = solutionSql.toUpperCase().includes('ORDER BY');
-
-  if (hasOrderBy) {
-    for (let i = 0; i < expectedRowsStr.length; i++) {
-      if (userRowsStr[i] !== expectedRowsStr[i]) {
-        const msg = `Value mismatch at row ${i + 1}:\nExpected: [${expectedResult.values[i].join(
-          ', '
-        )}]\nReceived: [${userResult.values[i].join(', ')}]`;
-        return {
-          passed: false,
-          message: msg,
-          userResult,
-          expectedResult,
-          mismatchReason: msg,
-        };
-      }
-    }
-  } else {
-    // Sort rows for comparison if order doesn't matter
-    const sortedUser = [...userRowsStr].sort();
-    const sortedExpected = [...expectedRowsStr].sort();
-
-    for (let i = 0; i < sortedExpected.length; i++) {
-      if (sortedUser[i] !== sortedExpected[i]) {
-        const msg = `Output data mismatch. Check your filter conditions or calculations.`;
-        return {
-          passed: false,
-          message: msg,
-          userResult,
-          expectedResult,
-          mismatchReason: msg,
-        };
-      }
-    }
-  }
-
-  return {
-    passed: true,
-    message: '🎉 Outstanding! All test cases passed successfully.',
-    userResult,
-    expectedResult,
-  };
+export async function preloadSqlEngine(): Promise<void> {
+  try {
+    await dispatchRequest({ type: 'init' }, 8000);
+  } catch {}
 }

@@ -12,12 +12,30 @@ export default defineConfig({
     },
   },
   build: {
+    target: 'es2022',
+    minify: 'esbuild',
+    sourcemap: false,
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
         admin: path.resolve(__dirname, 'admin.html'),
       },
+      output: {
+        manualChunks: {
+          // Dedicated vendor chunks for efficient caching and smaller main bundle
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-validator': ['zod', 'dompurify'],
+        },
+      },
     },
+  },
+  esbuild: {
+    // Drop console.log and debugger in production builds to avoid leaking data
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+  },
+  worker: {
+    format: 'es',
   },
   server: {
     port: 5173,
