@@ -141,7 +141,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
         <div className="space-y-1.5">
           {/* Breadcrumb badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-[#0b1220] border border-slate-800/80 text-slate-400">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-canvas border border-slate-800/80 text-slate-400">
             <span className="flex items-center gap-1">
               <Layers className="w-3 h-3 text-slate-500" /> Modules
             </span>
@@ -180,7 +180,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
         {/* Right side: Prev/Next Topic Navigation */}
         <div className="flex items-center gap-2 self-start sm:self-center">
           {/* Navigation Buttons: ← Prev & Next → */}
-          <div className="flex items-center gap-1.5 bg-[#0b1220] p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-1.5 bg-canvas p-1 rounded-xl border border-slate-800">
             <button
               onClick={onPreviousTopic}
               disabled={!hasPreviousTopic}
@@ -229,10 +229,10 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
                     isActive
                       ? 'px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-[0_0_22px_rgba(34,211,238,0.45)]'
                       : isPassed
-                      ? 'px-5 py-2 rounded-full bg-[#0b1322] border border-cyan-500/40 text-cyan-300 text-xs sm:text-sm font-medium hover:bg-slate-800'
+                      ? 'px-5 py-2 rounded-full bg-canvas border border-cyan-500/40 text-cyan-300 text-xs sm:text-sm font-medium hover:bg-slate-800'
                       : s.isUnlocked
-                      ? 'px-5 py-2 rounded-full bg-[#0b1322] border border-slate-800 text-slate-300 text-xs sm:text-sm font-medium hover:border-slate-700'
-                      : 'px-5 py-2 rounded-full bg-[#090f1d] border border-slate-800/70 text-slate-500 text-xs sm:text-sm font-medium cursor-not-allowed'
+                      ? 'px-5 py-2 rounded-full bg-canvas border border-slate-800 text-slate-300 text-xs sm:text-sm font-medium hover:border-slate-700'
+                      : 'px-5 py-2 rounded-full bg-canvas border border-slate-800/70 text-slate-500 text-xs sm:text-sm font-medium cursor-not-allowed'
                   }`}
                 >
                   <span className="font-semibold">
@@ -329,7 +329,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
           disabled={!hasPreviousTopic}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition ${
             hasPreviousTopic
-              ? 'bg-[#080d19] border-slate-700 text-slate-200 hover:text-white hover:border-slate-600 cursor-pointer shadow-sm'
+              ? 'bg-canvas border-slate-700 text-slate-200 hover:text-white hover:border-slate-600 cursor-pointer shadow-sm'
               : 'bg-slate-900/40 border-slate-800 text-slate-600 cursor-not-allowed'
           }`}
         >
@@ -346,7 +346,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
           disabled={!hasNextTopic}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition ${
             hasNextTopic
-              ? 'bg-[#080d19] border-slate-700 text-slate-200 hover:text-white hover:border-slate-600 cursor-pointer shadow-sm'
+              ? 'bg-canvas border-slate-700 text-slate-200 hover:text-white hover:border-slate-600 cursor-pointer shadow-sm'
               : 'bg-slate-900/40 border-slate-800 text-slate-600 cursor-not-allowed'
           }`}
         >

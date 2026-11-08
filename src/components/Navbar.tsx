@@ -43,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout,
 }) => {
   return (
-    <header className="sticky top-0 z-40 bg-[#070d19]/95 backdrop-blur-md border-b border-slate-800/80 select-none">
+    <header className="sticky top-0 z-40 bg-canvas/95 backdrop-blur-md border-b border-slate-800/80 select-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Left: Brand / Logo */}
         <div
@@ -147,7 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
               placeholder="Search topics..."
-              className="w-full bg-[#0b1220] border border-slate-800 rounded-full pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/50"
+              className="w-full bg-canvas border border-slate-800 rounded-full pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/50"
             />
           </div>
 
@@ -165,7 +165,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Notification Bell */}
           <div className="relative p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900/80 cursor-pointer transition">
             <Bell className="w-4 h-4" />
-            <span className="w-2 h-2 rounded-full bg-cyan-400 absolute top-1 right-1 shadow-[0_0_6px_#22d3ee]" />
+            <span className="w-2 h-2 rounded-full bg-cyan-400 absolute top-1 right-1 shadow-e1" />
           </div>
 
           {/* User Profile / Logout */}

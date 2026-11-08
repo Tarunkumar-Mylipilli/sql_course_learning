@@ -251,7 +251,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#080B11] text-slate-100 flex flex-col font-sans select-none overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-canvas text-slate-100 flex flex-col font-sans select-none overflow-hidden">
       {/* Save Success Toast */}
       {saveToast && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-slate-950 font-bold px-5 py-2.5 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.5)] flex items-center gap-2 animate-bounce text-xs">
@@ -263,7 +263,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
       {/* Main Container: Left Sidebar + Center Workspace */}
       <div className="flex-1 flex overflow-hidden">
         {/* LEFT SIDEBAR (Supabase / Linear dark style) */}
-        <aside className="w-64 bg-[#0a0f1d] border-r border-slate-800/80 flex flex-col justify-between p-4 shrink-0">
+        <aside className="w-64 bg-canvas border-r border-slate-800/80 flex flex-col justify-between p-4 shrink-0">
           <div className="space-y-6">
             {/* Sidebar Brand Header */}
             <div className="flex items-center justify-between px-2 pt-1">
@@ -417,7 +417,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
         {/* RIGHT AREA: Top Bar + Studio Editor */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Top Command Bar */}
-          <header className="h-16 bg-[#070b14] border-b border-slate-800/80 px-6 flex items-center justify-between gap-4 shrink-0">
+          <header className="h-16 bg-canvas border-b border-slate-800/80 px-6 flex items-center justify-between gap-4 shrink-0">
             {/* Breadcrumbs & Module Selector */}
             <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
               <span className="text-slate-400">Curriculum</span>
@@ -428,7 +428,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
               <select
                 value={selectedTopicId}
                 onChange={(e) => setSelectedTopicId(e.target.value)}
-                className="bg-[#0b1220] border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-cyan-300 font-bold outline-none cursor-pointer"
+                className="bg-canvas border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-cyan-300 font-bold outline-none cursor-pointer"
               >
                 {localTopics.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -448,7 +448,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search modules..."
-                  className="w-full bg-[#0b1220] border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/50"
+                  className="w-full bg-canvas border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/50"
                 />
               </div>
 
@@ -464,7 +464,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
               {/* Publish Changes Button */}
               <button
                 onClick={handlePublishChanges}
-                className="px-5 py-1.5 rounded-xl bg-[#00D2FF] hover:bg-[#38bdf8] text-slate-950 font-extrabold text-xs shadow-[0_0_20px_rgba(0,210,255,0.45)] transition cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-1.5"
+                className="px-5 py-1.5 rounded-xl bg-canvas hover:bg-canvas text-slate-950 font-extrabold text-xs shadow-[0_0_20px_rgba(0,210,255,0.45)] transition cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-1.5"
               >
                 <Sparkles className="w-3.5 h-3.5 fill-current" />
                 <span>Publish Changes</span>
@@ -473,7 +473,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
           </header>
 
           {/* 4-Tab Content Builder Header */}
-          <div className="px-6 pt-3 pb-1 border-b border-slate-800/80 bg-[#060a12] flex items-center gap-2">
+          <div className="px-6 pt-3 pb-1 border-b border-slate-800/80 bg-canvas flex items-center gap-2">
             <button
               onClick={() => setActiveTab('videos')}
               className={`py-2 px-4 rounded-xl text-xs font-bold transition cursor-pointer relative ${
@@ -520,10 +520,10 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
           </div>
 
           {/* Studio Canvas (2-Column Split matching the mockup) */}
-          <div className="flex-1 overflow-y-auto p-6 bg-[#080B11]">
+          <div className="flex-1 overflow-y-auto p-6 bg-canvas">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto">
               {/* LEFT COLUMN: Video Lesson Links & Multi-Instructor Setup (6 cols) */}
-              <div className="lg:col-span-6 bg-[#0D111E] border border-slate-800/80 rounded-2xl p-5 shadow-2xl space-y-4">
+              <div className="lg:col-span-6 bg-canvas border border-slate-800/80 rounded-2xl p-5 shadow-2xl space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-bold text-white tracking-tight">
                     Video Lesson Links & Multi-Instructor Setup
@@ -541,7 +541,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
                     return (
                       <div
                         key={idx}
-                        className="bg-[#070b14] border border-slate-800 rounded-xl p-3.5 flex items-center gap-3.5 hover:border-slate-700 transition"
+                        className="bg-canvas border border-slate-800 rounded-xl p-3.5 flex items-center gap-3.5 hover:border-slate-700 transition"
                       >
                         {/* Instructor Photo / Thumbnail */}
                         <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-900 shrink-0 border border-slate-800">
@@ -566,7 +566,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
                             </span>
                             <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-medium">
                               <span>Status</span>
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_var(--color-accent-500)]" />
                             </div>
                           </div>
 
@@ -578,7 +578,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
                                 handleUpdateInstructorVideo(idx, { embedUrl: e.target.value })
                               }
                               placeholder="Video URL/Link"
-                              className="w-full bg-[#040810] border border-slate-800 rounded-lg px-2.5 py-1 text-[11px] text-sky-200 font-mono pr-7 focus:outline-none focus:border-cyan-500/50"
+                              className="w-full bg-canvas border border-slate-800 rounded-lg px-2.5 py-1 text-[11px] text-sky-200 font-mono pr-7 focus:outline-none focus:border-cyan-500/50"
                             />
                             <LinkIcon className="w-3 h-3 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2" />
                           </div>
@@ -597,7 +597,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
                 <button
                   type="button"
                   onClick={handleAddInstructorVideo}
-                  className="w-full py-2.5 rounded-xl border border-dashed border-slate-800 hover:border-cyan-500/50 bg-[#070b14]/50 hover:bg-[#070b14] text-xs font-semibold text-slate-400 hover:text-cyan-300 flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  className="w-full py-2.5 rounded-xl border border-dashed border-slate-800 hover:border-cyan-500/50 bg-canvas/50 hover:bg-canvas text-xs font-semibold text-slate-400 hover:text-cyan-300 flex items-center justify-center gap-1.5 transition cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>+ Add Video URL</span>
@@ -605,7 +605,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
               </div>
 
               {/* RIGHT COLUMN: SQL Challenge & Quiz Creator (6 cols) */}
-              <div className="lg:col-span-6 bg-[#0D111E] border border-slate-800/80 rounded-2xl p-5 shadow-2xl space-y-5">
+              <div className="lg:col-span-6 bg-canvas border border-slate-800/80 rounded-2xl p-5 shadow-2xl space-y-5">
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-bold text-white tracking-tight">
                     SQL Challenge & Quiz Creator
@@ -616,7 +616,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
                 </div>
 
                 {/* Section A: Challenge Sandbox Editor */}
-                <div className="bg-[#070b14] border border-slate-800 rounded-xl p-4 space-y-3">
+                <div className="bg-canvas border border-slate-800 rounded-xl p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-200">Challenge Sandbox Editor</span>
                     <button className="text-slate-500 hover:text-white">
@@ -652,7 +652,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
                     value={currentChallenge.instructions}
                     onChange={(e) => handleUpdateChallenge({ instructions: e.target.value })}
                     placeholder="# Challenge Instructions\nWrite a SQL query that retrieves..."
-                    className="w-full bg-[#040810] border border-slate-800 rounded-lg p-2.5 font-mono text-xs text-sky-200 focus:outline-none focus:border-cyan-500/50"
+                    className="w-full bg-canvas border border-slate-800 rounded-lg p-2.5 font-mono text-xs text-sky-200 focus:outline-none focus:border-cyan-500/50"
                   />
 
                   {/* Split Row: Code Schema Input + Expected Query Box */}
@@ -665,7 +665,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
                         value={currentChallenge.schemaSql}
                         onChange={(e) => handleUpdateChallenge({ schemaSql: e.target.value })}
                         placeholder="CREATE TABLE students (id INT, name VARCHAR(50));"
-                        className="w-full bg-[#040810] border border-slate-800 rounded-lg p-2 font-mono text-[11px] text-cyan-300"
+                        className="w-full bg-canvas border border-slate-800 rounded-lg p-2 font-mono text-[11px] text-cyan-300"
                       />
                     </div>
 
@@ -677,14 +677,14 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
                         value={currentChallenge.solutionSql}
                         onChange={(e) => handleUpdateChallenge({ solutionSql: e.target.value })}
                         placeholder="SELECT * FROM students;"
-                        className="w-full bg-[#040810] border border-cyan-500/30 rounded-lg p-2 font-mono text-[11px] text-emerald-300"
+                        className="w-full bg-canvas border border-cyan-500/30 rounded-lg p-2 font-mono text-[11px] text-emerald-300"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Section B: Question Creator */}
-                <div className="bg-[#070b14] border border-slate-800 rounded-xl p-4 space-y-3">
+                <div className="bg-canvas border border-slate-800 rounded-xl p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-200">Question Creator</span>
                     <button
@@ -705,7 +705,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
                           type="text"
                           value={quizList[0].question}
                           onChange={(e) => handleUpdateQuizQuestion(0, { question: e.target.value })}
-                          className="w-full bg-[#040810] border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                          className="w-full bg-canvas border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white"
                         />
                       </div>
 
@@ -717,7 +717,7 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
                             className={`flex items-center gap-2 p-1.5 rounded-lg border text-xs ${
                               quizList[0].correctIndex === optIdx
                                 ? 'bg-cyan-950/30 border-cyan-500/40'
-                                : 'bg-[#040810] border-slate-800'
+                                : 'bg-canvas border-slate-800'
                             }`}
                           >
                             <input
@@ -748,8 +748,8 @@ export const AdminStudio: React.FC<AdminStudioProps> = ({
       {/* Preview as Student Modal */}
       {isPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-          <div className="bg-[#090f1d] border border-slate-800 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-[#070c18]">
+          <div className="bg-canvas border border-slate-800 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-canvas">
               <div className="flex items-center gap-2">
                 <Eye className="w-4 h-4 text-cyan-400" />
                 <span className="text-sm font-bold text-white">

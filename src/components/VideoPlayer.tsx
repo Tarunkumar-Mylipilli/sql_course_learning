@@ -336,7 +336,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
       {/* LEFT COLUMN */}
-      <div className="lg:col-span-8 bg-[#0a101f] border border-slate-800/80 rounded-3xl p-5 shadow-2xl space-y-4">
+      <div className="lg:col-span-8 bg-canvas border border-slate-800/80 rounded-3xl p-5 shadow-2xl space-y-4">
 
         {/* TOP NAV: Recommended Lectures */}
         {creatorVideos.length > 0 && (
@@ -361,7 +361,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     aria-selected={isTabActive}
                     aria-label={`${tab.label} — ${tab.description}${isVideoVerified ? ' (completed)' : ''}`}
                     title={tab.description}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a101f] ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas ${
                       isTabActive
                         ? 'bg-amber-500/15 text-amber-300 font-bold border border-amber-500/50 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
                         : 'bg-slate-900/60 text-slate-300 hover:text-white border border-slate-700 hover:bg-slate-800/60'
@@ -381,7 +381,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
         {/* VIDEO PLAYER */}
         <div
-          className="relative aspect-video w-full rounded-2xl overflow-hidden bg-[#050811] border border-slate-800/80 shadow-inner"
+          className="relative aspect-video w-full rounded-2xl overflow-hidden bg-canvas border border-slate-800/80 shadow-inner"
           aria-label={`Video: ${activeVideo.title}`}
         >
           {isPlaying ? (
@@ -405,18 +405,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               </a>
             </div>
           ) : (
-            <div className="w-full h-full relative flex items-center justify-center select-none bg-gradient-to-b from-[#070e1c] via-[#050914] to-[#04060d]">
+            <div className="w-full h-full relative flex items-center justify-center select-none bg-gradient-to-b from-canvas via-surface to-surface">
               <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-50" aria-hidden="true">
-                <path d="M 210 100 C 260 100, 270 170, 320 170" fill="none" stroke="#00d2ff" strokeWidth="2" />
-                <path d="M 210 240 C 260 240, 270 170, 320 170" fill="none" stroke="#00d2ff" strokeWidth="2" />
-                <path d="M 430 100 C 380 100, 370 170, 320 170" fill="none" stroke="#00d2ff" strokeWidth="2" />
-                <path d="M 430 240 C 380 240, 370 170, 320 170" fill="none" stroke="#00d2ff" strokeWidth="2" />
+                <path d="M 210 100 C 260 100, 270 170, 320 170" fill="none" stroke="currentColor" strokeWidth="2" />
+                <path d="M 210 240 C 260 240, 270 170, 320 170" fill="none" stroke="currentColor" strokeWidth="2" />
+                <path d="M 430 100 C 380 100, 370 170, 320 170" fill="none" stroke="currentColor" strokeWidth="2" />
+                <path d="M 430 240 C 380 240, 370 170, 320 170" fill="none" stroke="currentColor" strokeWidth="2" />
               </svg>
-              <div className="absolute top-5 left-5 sm:left-10 bg-[#0c1626]/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none" aria-hidden="true">
+              <div className="absolute top-5 left-5 sm:left-10 bg-canvas/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none" aria-hidden="true">
                 <div className="text-[11px] font-bold text-sky-200 pb-1 border-b border-slate-700/60 flex items-center gap-1.5"><Database className="w-3.5 h-3.5 text-cyan-400" /> Database</div>
                 <div className="text-[10px] text-slate-300 mt-1.5 space-y-0.5"><div>• Tables</div><div>• Records</div><div>• Queries</div></div>
               </div>
-              <div className="absolute bottom-14 left-5 sm:left-10 bg-[#0c1626]/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none" aria-hidden="true">
+              <div className="absolute bottom-14 left-5 sm:left-10 bg-canvas/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none" aria-hidden="true">
                 <div className="text-[11px] font-bold text-sky-200 pb-1 border-b border-slate-700/60 flex items-center gap-1.5"><Code2 className="w-3.5 h-3.5 text-cyan-400" /> SELECT</div>
                 <div className="text-[10px] text-slate-300 mt-1.5 space-y-0.5"><div>• Data</div><div>• Filtering</div><div>• Sorting</div></div>
               </div>
@@ -430,18 +430,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   </svg>
                   <button
                     onClick={() => setIsPlaying(true)}
-                    className="absolute w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-slate-900/85 backdrop-blur-md border border-cyan-400/60 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:scale-110 active:scale-95 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070e1c]"
+                    className="absolute w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-slate-900/85 backdrop-blur-md border border-cyan-400/60 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:scale-110 active:scale-95 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
                     aria-label={`Play lecture: ${activeVideo.title}`}
                   >
                     <Play className="w-6 h-6 sm:w-7 sm:h-7 text-white fill-white ml-0.5 hover:text-cyan-300 transition" aria-hidden="true" />
                   </button>
                 </div>
               </div>
-              <div className="absolute top-5 right-5 sm:right-10 bg-[#0c1626]/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none" aria-hidden="true">
+              <div className="absolute top-5 right-5 sm:right-10 bg-canvas/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none" aria-hidden="true">
                 <div className="text-[11px] font-bold text-sky-200 pb-1 border-b border-slate-700/60 flex items-center gap-1.5"><TableIcon className="w-3.5 h-3.5 text-cyan-400" /> Table</div>
                 <div className="text-[10px] text-slate-300 mt-1.5 space-y-0.5"><div>• Rows</div><div>• Columns</div><div>• Constraints</div></div>
               </div>
-              <div className="absolute bottom-14 right-5 sm:right-10 bg-[#0c1626]/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none" aria-hidden="true">
+              <div className="absolute bottom-14 right-5 sm:right-10 bg-canvas/90 border border-cyan-500/30 rounded-xl p-2.5 w-32 sm:w-36 shadow-lg backdrop-blur-sm pointer-events-none" aria-hidden="true">
                 <div className="text-[11px] font-bold text-sky-200 pb-1 border-b border-slate-700/60 flex items-center gap-1.5"><Filter className="w-3.5 h-3.5 text-cyan-400" /> Conditions</div>
                 <div className="text-[10px] text-slate-300 mt-1.5 space-y-0.5"><div>• AND</div><div>• OR</div><div>• WHERE</div></div>
               </div>
@@ -454,7 +454,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 </div>
                 <div className="flex-1 mx-3">
                   <div className="relative w-full h-1 bg-slate-800 rounded-full overflow-hidden" aria-hidden="true">
-                    <div className="w-1/4 h-full bg-cyan-400 rounded-full shadow-[0_0_8px_#22d3ee]" />
+                    <div className="w-1/4 h-full bg-cyan-400 rounded-full shadow-e1" />
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -495,7 +495,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     role="tab"
                     aria-selected={isTabActive}
                     aria-label={`Submodule ${idx + 1}: ${sm.title}${isSubVerified ? ' — completed' : ' — required'}`}
-                    className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a101f] ${
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas ${
                       isTabActive
                         ? 'bg-cyan-950/70 text-cyan-300 font-bold border border-cyan-500/60 shadow-[0_0_14px_rgba(6,182,212,0.3)]'
                         : 'bg-slate-900 text-slate-300 hover:text-slate-100 border border-slate-700 hover:bg-slate-800/60'
@@ -520,7 +520,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       <div className="lg:col-span-4 space-y-4">
 
         {/* Card 1: Lesson Overview + Watch Verification */}
-        <div className="bg-[#0a101f] border border-slate-800/80 rounded-2xl p-6 shadow-xl relative overflow-hidden space-y-3">
+        <div className="bg-canvas border border-slate-800/80 rounded-2xl p-6 shadow-xl relative overflow-hidden space-y-3">
           <div className="absolute top-4 right-4 opacity-75 pointer-events-none" aria-hidden="true">
             <svg className="w-16 h-16 text-cyan-500" viewBox="0 0 24 24" fill="currentColor">
               <path opacity="0.3" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -614,7 +614,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               aria-label={`Watch progress: ${Math.round(watchPercent)}%`}
             >
               <div
-                className={`h-full transition-all duration-300 ${hasVerifiedWatched ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'}`}
+                className={`h-full transition-all duration-300 ${hasVerifiedWatched ? 'bg-emerald-400 shadow-e1' : 'bg-cyan-400 shadow-e1'}`}
                 style={{ width: `${watchPercent}%` }}
               />
             </div>
@@ -632,7 +632,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           <button
             onClick={handleUnlockTheory}
             aria-label={hasVerifiedWatched ? 'Proceed to Step 2: Theory' : 'Verify watch time then unlock Theory'}
-            className={`w-full mt-4 py-3.5 px-4 rounded-xl font-extrabold text-sm transition transform flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a101f] ${
+            className={`w-full mt-4 py-3.5 px-4 rounded-xl font-extrabold text-sm transition transform flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas ${
               hasVerifiedWatched
                 ? 'bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 text-slate-950 shadow-[0_0_22px_rgba(16,185,129,0.35)] hover:from-emerald-300 hover:to-cyan-400 hover:-translate-y-0.5 focus-visible:ring-emerald-400'
                 : 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 shadow-[0_0_22px_rgba(245,158,11,0.3)] hover:-translate-y-0.5 focus-visible:ring-amber-400'
@@ -650,7 +650,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
           {/* Card 2A: Interactive Live Cheat Sheet */}
-          <div className="bg-[#0a101f] border border-slate-800/80 rounded-2xl p-4 shadow-xl space-y-2">
+          <div className="bg-canvas border border-slate-800/80 rounded-2xl p-4 shadow-xl space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
@@ -667,7 +667,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   <div key={snippet.id} className="relative group">
                     <button
                       onClick={() => handleCopySnippet(snippet.id, snippet.code)}
-                      className="w-full text-left bg-[#050811] border border-slate-800/80 hover:border-slate-600 rounded-xl p-2.5 font-mono text-[11px] leading-relaxed space-y-0.5 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                      className="w-full text-left bg-canvas border border-slate-800/80 hover:border-slate-600 rounded-xl p-2.5 font-mono text-[11px] leading-relaxed space-y-0.5 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                       aria-label={`Copy snippet: ${snippet.label}`}
                       title={snippet.description}
                     >
@@ -699,7 +699,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </div>
 
           {/* Card 2B: Interactive SQL Quick Reference */}
-          <div className="bg-[#0a101f] border border-slate-800/80 rounded-2xl p-4 shadow-xl space-y-2">
+          <div className="bg-canvas border border-slate-800/80 rounded-2xl p-4 shadow-xl space-y-2">
             <div className="flex items-center gap-1.5">
               <BarChart2 className="w-3.5 h-3.5 text-cyan-400" aria-hidden="true" />
               <h3 className="text-white font-bold text-xs tracking-tight">SQL Quick Reference</h3>

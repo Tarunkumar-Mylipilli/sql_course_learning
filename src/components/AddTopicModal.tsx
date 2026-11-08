@@ -325,9 +325,9 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-[#090f1d] border border-slate-800 rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-canvas border border-slate-800 rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-[#070c18]">
+        <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-canvas">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
               <Sparkles className="w-5 h-5" />
@@ -350,7 +350,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center border-b border-slate-800 bg-[#060a14] px-6">
+        <div className="flex items-center border-b border-slate-800 bg-canvas px-6">
           <button
             type="button"
             onClick={() => setActiveTab('details')}
@@ -405,7 +405,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="e.g. Window Functions: ROW_NUMBER & RANK"
-                    className="w-full bg-[#050811] border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50"
+                    className="w-full bg-canvas border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50"
                   />
                 </div>
 
@@ -414,7 +414,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                   <select
                     value={level}
                     onChange={(e) => setLevel(e.target.value as any)}
-                    className="w-full bg-[#050811] border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/50"
+                    className="w-full bg-canvas border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/50"
                   >
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
@@ -430,12 +430,12 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                   value={overview}
                   onChange={(e) => setOverview(e.target.value)}
                   placeholder="Short description of what the student will learn..."
-                  className="w-full bg-[#050811] border border-slate-800 rounded-xl p-3 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50"
+                  className="w-full bg-canvas border border-slate-800 rounded-xl p-3 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50"
                 />
               </div>
 
               {/* Video Configuration */}
-              <div className="bg-[#060c18] border border-slate-800 rounded-2xl p-4 space-y-3">
+              <div className="bg-canvas border border-slate-800 rounded-2xl p-4 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-cyan-300">
                   <Video className="w-4 h-4" />
                   <span>Curated Lecture Video</span>
@@ -449,7 +449,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                       value={videoUrl}
                       onChange={(e) => setVideoUrl(e.target.value)}
                       placeholder="https://www.youtube.com/watch?v=..."
-                      className="w-full bg-[#050811] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
+                      className="w-full bg-canvas border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
                     />
                   </div>
 
@@ -460,7 +460,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                       value={videoChannel}
                       onChange={(e) => setVideoChannel(e.target.value)}
                       placeholder="e.g. Alex The Analyst"
-                      className="w-full bg-[#050811] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
+                      className="w-full bg-canvas border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
                     />
                   </div>
                 </div>
@@ -472,13 +472,13 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                     value={videoSummary}
                     onChange={(e) => setVideoSummary(e.target.value)}
                     placeholder="Master syntax\nUnderstand query execution\nRetrieve data"
-                    className="w-full bg-[#050811] border border-slate-800 rounded-xl p-2.5 text-xs text-white font-mono"
+                    className="w-full bg-canvas border border-slate-800 rounded-xl p-2.5 text-xs text-white font-mono"
                   />
                 </div>
               </div>
 
               {/* Theory Reference */}
-              <div className="bg-[#060c18] border border-slate-800 rounded-2xl p-4 space-y-3">
+              <div className="bg-canvas border border-slate-800 rounded-2xl p-4 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-cyan-300">
                   <BookOpen className="w-4 h-4" />
                   <span>Theory & Syntax Quick Reference</span>
@@ -491,7 +491,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                     value={theorySyntax}
                     onChange={(e) => setTheorySyntax(e.target.value)}
                     placeholder="SELECT column_name FROM table_name;"
-                    className="w-full bg-[#050811] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-cyan-300 font-mono"
+                    className="w-full bg-canvas border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-cyan-300 font-mono"
                   />
                 </div>
               </div>
@@ -522,7 +522,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                 {quizQuestions.map((q, qIdx) => (
                   <div
                     key={q.id || qIdx}
-                    className="bg-[#060c18] border border-slate-800 rounded-2xl p-4 space-y-3 relative group"
+                    className="bg-canvas border border-slate-800 rounded-2xl p-4 space-y-3 relative group"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-cyan-400">
@@ -546,7 +546,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                         type="text"
                         value={q.question}
                         onChange={(e) => handleUpdateQuizQuestion(qIdx, 'question', e.target.value)}
-                        className="w-full bg-[#050811] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
+                        className="w-full bg-canvas border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
                       />
                     </div>
 
@@ -558,7 +558,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                           className={`flex items-center gap-2 p-2 rounded-xl border ${
                             q.correctIndex === optIdx
                               ? 'bg-emerald-950/30 border-emerald-500/40'
-                              : 'bg-[#050811] border-slate-800'
+                              : 'bg-canvas border-slate-800'
                           }`}
                         >
                           <input
@@ -588,7 +588,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                         type="text"
                         value={q.explanation}
                         onChange={(e) => handleUpdateQuizQuestion(qIdx, 'explanation', e.target.value)}
-                        className="w-full bg-[#050811] border border-slate-800 rounded-xl px-3 py-1 text-xs text-slate-300"
+                        className="w-full bg-canvas border border-slate-800 rounded-xl px-3 py-1 text-xs text-slate-300"
                       />
                     </div>
                   </div>
@@ -621,7 +621,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                 {codingChallenges.map((ch, chIdx) => (
                   <div
                     key={ch.id || chIdx}
-                    className="bg-[#060c18] border border-slate-800 rounded-2xl p-4 space-y-3 relative"
+                    className="bg-canvas border border-slate-800 rounded-2xl p-4 space-y-3 relative"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-cyan-400">
@@ -646,7 +646,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                           type="text"
                           value={ch.title}
                           onChange={(e) => handleUpdateCodingChallenge(chIdx, 'title', e.target.value)}
-                          className="w-full bg-[#050811] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
+                          className="w-full bg-canvas border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
                         />
                       </div>
 
@@ -655,7 +655,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                         <select
                           value={ch.difficulty}
                           onChange={(e) => handleUpdateCodingChallenge(chIdx, 'difficulty', e.target.value)}
-                          className="w-full bg-[#050811] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
+                          className="w-full bg-canvas border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
                         >
                           <option value="Easy">Easy</option>
                           <option value="Medium">Medium</option>
@@ -670,7 +670,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                         rows={2}
                         value={ch.instructions}
                         onChange={(e) => handleUpdateCodingChallenge(chIdx, 'instructions', e.target.value)}
-                        className="w-full bg-[#050811] border border-slate-800 rounded-xl p-2 text-xs text-white"
+                        className="w-full bg-canvas border border-slate-800 rounded-xl p-2 text-xs text-white"
                       />
                     </div>
 
@@ -680,7 +680,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                         rows={3}
                         value={ch.schemaSql}
                         onChange={(e) => handleUpdateCodingChallenge(chIdx, 'schemaSql', e.target.value)}
-                        className="w-full bg-[#050811] border border-slate-800 rounded-xl p-2 text-xs text-sky-200 font-mono"
+                        className="w-full bg-canvas border border-slate-800 rounded-xl p-2 text-xs text-sky-200 font-mono"
                       />
                     </div>
 
@@ -697,7 +697,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
                         rows={2}
                         value={ch.solutionSql}
                         onChange={(e) => handleUpdateCodingChallenge(chIdx, 'solutionSql', e.target.value)}
-                        className="w-full bg-[#050811] border border-amber-500/30 rounded-xl p-2 text-xs text-amber-300 font-mono"
+                        className="w-full bg-canvas border border-amber-500/30 rounded-xl p-2 text-xs text-amber-300 font-mono"
                       />
                     </div>
                   </div>

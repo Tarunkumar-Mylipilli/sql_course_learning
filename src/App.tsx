@@ -19,7 +19,37 @@ import { StudentDashboard } from './components/StudentDashboard';
 import { LoginModal } from './components/LoginModal';
 import { getStoredUser, logoutUser, AuthUser } from './lib/auth';
 
+const PreviewApp = React.lazy(() => import('./preview/PreviewApp'));
+
 export default function App() {
+  // Preview mode detection (public demo route outside auth gate)
+  const [isPreview, setIsPreview] = useState<boolean>(() => {
+    return (
+      typeof window !== 'undefined' &&
+      (window.location.hash === '#/preview' ||
+        window.location.hash.startsWith('#/preview') ||
+        window.location.pathname.endsWith('/preview') ||
+        window.location.pathname.includes('/preview'))
+    );
+  });
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setIsPreview(
+        window.location.hash === '#/preview' ||
+        window.location.hash.startsWith('#/preview') ||
+        window.location.pathname.endsWith('/preview') ||
+        window.location.pathname.includes('/preview')
+      );
+    };
+    window.addEventListener('hashchange', handleLocationChange);
+    window.addEventListener('popstate', handleLocationChange);
+    return () => {
+      window.removeEventListener('hashchange', handleLocationChange);
+      window.removeEventListener('popstate', handleLocationChange);
+    };
+  }, []);
+
   // Authentication state
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => getStoredUser());
   // Load topics from storage (with core curriculum and user customizations)
@@ -295,6 +325,15 @@ export default function App() {
     setAiTutorContext(ctx);
     setIsAITutorOpen(true);
   };
+
+  // If preview route requested, render standalone PreviewApp without auth gate
+  if (isPreview) {
+    return (
+      <React.Suspense fallback={<div className="min-h-screen bg-canvas" />}>
+        <PreviewApp />
+      </React.Suspense>
+    );
+  }
 
   // If not logged in, render the secure LoginModal gate
   if (!currentUser) {

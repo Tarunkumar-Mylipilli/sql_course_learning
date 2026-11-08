@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import './src/design/tokens.ts';
+
 export default {
   darkMode: ['selector', '[data-theme="dark"]'],
   content: [
@@ -23,53 +25,22 @@ export default {
         mono: ['var(--font-code)'],
       },
       colors: {
-        canvas: 'var(--bg-canvas)',
-        surface: 'var(--bg-surface)',
-        elevated: 'var(--bg-elevated)',
-        overlay: 'var(--bg-overlay)',
-
-        border: {
-          subtle: 'var(--border-subtle)',
-          default: 'var(--border-default)',
-          strong: 'var(--border-strong)',
-        },
-
-        content: {
-          primary: 'var(--text-primary)',
-          secondary: 'var(--text-secondary)',
-          muted: 'var(--text-muted)',
-          subtle: 'var(--text-subtle)',
-        },
-
+        canvas: 'var(--color-bg-canvas)',
+        surface: 'var(--color-bg-surface)',
+        elevated: 'var(--color-bg-elevated)',
+        overlay: 'var(--color-bg-overlay)',
+        'content-primary': 'var(--color-content-primary)',
+        'content-secondary': 'var(--color-content-secondary)',
+        'content-muted': 'var(--color-content-muted)',
+        'border-subtle': 'var(--color-border-subtle)',
+        'border-default': 'var(--color-border-default)',
+        'border-strong': 'var(--color-border-strong)',
         accent: {
-          50: 'var(--accent-50)',
-          100: 'var(--accent-100)',
-          200: 'var(--accent-200)',
-          300: 'var(--accent-300)',
-          400: 'var(--accent-400)',
-          500: 'var(--accent-500)',
-          600: 'var(--accent-600)',
-          700: 'var(--accent-700)',
-          800: 'var(--accent-800)',
-          900: 'var(--accent-900)',
-          950: 'var(--accent-950)',
-          fg: 'var(--accent-fg)',
+          500: 'var(--color-accent-500)',
+          600: 'var(--color-accent-600)',
         },
-
-        feedback: {
-          'success-bg': 'var(--success-bg)',
-          'success-border': 'var(--success-border)',
-          'success-fg': 'var(--success-fg)',
-          'warning-bg': 'var(--warning-bg)',
-          'warning-border': 'var(--warning-border)',
-          'warning-fg': 'var(--warning-fg)',
-          'error-bg': 'var(--error-bg)',
-          'error-border': 'var(--error-border)',
-          'error-fg': 'var(--error-fg)',
-          'info-bg': 'var(--info-bg)',
-          'info-border': 'var(--info-border)',
-          'info-fg': 'var(--info-fg)',
-        },
+        danger: 'var(--color-danger)',
+        success: 'var(--color-success)',
       },
       boxShadow: {
         e1: 'var(--elevation-e1)',

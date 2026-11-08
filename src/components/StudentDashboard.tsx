@@ -83,7 +83,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   return (
     <div className="space-y-8 animate-fadeIn pb-12">
       {/* 1. HERO & WELCOME BANNER */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0d1627] via-[#09101d] to-[#040810] border border-cyan-500/20 p-6 sm:p-8 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-canvas via-surface to-surface border border-cyan-500/20 p-6 sm:p-8 shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -104,15 +104,15 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
             {/* Quick Stats Pill Row */}
             <div className="flex items-center gap-4 pt-2 flex-wrap text-xs text-slate-300">
-              <div className="flex items-center gap-2 bg-[#060a12]/80 px-3.5 py-2 rounded-xl border border-slate-800">
+              <div className="flex items-center gap-2 bg-canvas/80 px-3.5 py-2 rounded-xl border border-slate-800">
                 <Flame className="w-4 h-4 text-orange-400 animate-pulse" />
                 <span><strong className="text-white">{progress.streakDays || 1} Days</strong> Streak</span>
               </div>
-              <div className="flex items-center gap-2 bg-[#060a12]/80 px-3.5 py-2 rounded-xl border border-slate-800">
+              <div className="flex items-center gap-2 bg-canvas/80 px-3.5 py-2 rounded-xl border border-slate-800">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 <span><strong className="text-white">{completedTopicsCount}/{totalTopics}</strong> Modules Completed</span>
               </div>
-              <div className="flex items-center gap-2 bg-[#060a12]/80 px-3.5 py-2 rounded-xl border border-slate-800">
+              <div className="flex items-center gap-2 bg-canvas/80 px-3.5 py-2 rounded-xl border border-slate-800">
                 <Target className="w-4 h-4 text-cyan-400" />
                 <span><strong className="text-white">{percentComplete}%</strong> Total Progress</span>
               </div>
@@ -120,7 +120,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           </div>
 
           {/* Continue Learning Card */}
-          <div className="lg:col-span-4 bg-[#050912]/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3.5">
+          <div className="lg:col-span-4 bg-canvas/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3.5">
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px]">Continue Learning</span>
               <span className="px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 text-[10px] font-semibold border border-cyan-800">
@@ -216,7 +216,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       {/* 2. KPI OVERVIEW METRICS */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {/* Total Progress */}
-        <div className="bg-[#0a101f] border border-slate-800/80 rounded-2xl p-4 shadow-lg space-y-1">
+        <div className="bg-canvas border border-slate-800/80 rounded-2xl p-4 shadow-lg space-y-1">
           <div className="flex items-center justify-between text-slate-400 text-xs">
             <span>Overall Mastery</span>
             <TrendingUp className="w-4 h-4 text-cyan-400" />
@@ -231,7 +231,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         </div>
 
         {/* Modules Done */}
-        <div className="bg-[#0a101f] border border-slate-800/80 rounded-2xl p-4 shadow-lg space-y-1">
+        <div className="bg-canvas border border-slate-800/80 rounded-2xl p-4 shadow-lg space-y-1">
           <div className="flex items-center justify-between text-slate-400 text-xs">
             <span>Completed Modules</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -243,7 +243,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         </div>
 
         {/* Learning Streak */}
-        <div className="bg-[#0a101f] border border-slate-800/80 rounded-2xl p-4 shadow-lg space-y-1">
+        <div className="bg-canvas border border-slate-800/80 rounded-2xl p-4 shadow-lg space-y-1">
           <div className="flex items-center justify-between text-slate-400 text-xs">
             <span>Active Streak</span>
             <Flame className="w-4 h-4 text-amber-400" />
@@ -255,7 +255,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         </div>
 
         {/* Practice Challenges */}
-        <div className="bg-[#0a101f] border border-slate-800/80 rounded-2xl p-4 shadow-lg space-y-1">
+        <div className="bg-canvas border border-slate-800/80 rounded-2xl p-4 shadow-lg space-y-1">
           <div className="flex items-center justify-between text-slate-400 text-xs">
             <span>Interview Practice</span>
             <Award className="w-4 h-4 text-purple-400" />
@@ -268,7 +268,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       {/* 3. DAILY PRACTICE CARD & LEVEL BREAKDOWN */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Daily SQL Practice Highlight */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-[#0e172a] to-[#070d18] border border-amber-500/30 rounded-2xl p-6 shadow-xl space-y-4">
+        <div className="lg:col-span-5 bg-gradient-to-br from-canvas to-surface border border-amber-500/30 rounded-2xl p-6 shadow-xl space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider">
               <Calendar className="w-4 h-4" />
@@ -299,7 +299,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         </div>
 
         {/* 3-Tier Pedagogy Overview */}
-        <div className="lg:col-span-7 bg-[#0a101f] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
+        <div className="lg:col-span-7 bg-canvas border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-white font-bold text-sm tracking-tight flex items-center gap-2">
@@ -368,7 +368,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           </div>
 
           {/* Level Filter Tabs */}
-          <div className="flex items-center gap-1.5 bg-[#060c18] p-1 rounded-xl border border-slate-800 self-start sm:self-center">
+          <div className="flex items-center gap-1.5 bg-canvas p-1 rounded-xl border border-slate-800 self-start sm:self-center">
             {(['All', 'Beginner', 'Intermediate', 'Advanced'] as const).map((lvl) => (
               <button
                 key={lvl}
@@ -402,7 +402,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               <div
                 key={topic.id}
                 onClick={() => onSelectTopic(topic)}
-                className="group relative bg-[#0a101f] hover:bg-[#0c1426] border border-slate-800/80 hover:border-cyan-500/40 rounded-2xl p-5 shadow-lg transition duration-200 cursor-pointer flex flex-col justify-between space-y-3"
+                className="group relative bg-canvas hover:bg-canvas border border-slate-800/80 hover:border-cyan-500/40 rounded-2xl p-5 shadow-lg transition duration-200 cursor-pointer flex flex-col justify-between space-y-3"
               >
                 {/* Top: Order & Badges */}
                 <div className="flex items-center justify-between">
