@@ -29,12 +29,15 @@ import confetti from 'canvas-confetti';
 import { TopicVideo } from '../types';
 
 interface VideoPlayerProps {
+  topicId?: string;
   video: TopicVideo;
   alternativeVideos?: TopicVideo[];
   addonVideos?: TopicVideo[];
   subModules?: import('../types').SubModule[];
   isWatched: boolean;
+  watchedVideos?: string[];
   onMarkWatched: () => void;
+  onVideoWatched?: (videoId: string) => void;
   onProceedToTheory: () => void;
   topicTitle?: string;
   topicOverview?: string;
@@ -83,27 +86,36 @@ const QUICK_REF = [
 ];
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
+  topicId = 'topic',
   video,
   alternativeVideos = [],
   addonVideos = [],
   subModules = [],
   isWatched,
+  watchedVideos = [],
   onMarkWatched,
+  onVideoWatched,
   onProceedToTheory,
   topicTitle = 'SQL Basics & The SELECT Statement',
   theorySyntax,
 }) => {
   // Top tier: Recommended alternative creator masterclasses
   const creatorVideos: TopicVideo[] = [video, ...(alternativeVideos || []), ...(addonVideos || [])].filter(Boolean);
+  const creatorVideosWithId = creatorVideos.map((v, vIdx) => ({
+    ...v,
+    id: `${topicId}-creator-${vIdx + 1}`,
+  }));
 
   // Bottom tier: Granular submodules added on admin page
   const submoduleList: {
+    id: string;
     title: string;
     videoUrl: string;
     duration: string;
     summary: string;
     notes?: string;
   }[] = (subModules || []).map((sm, smIdx) => ({
+    id: sm.id || `${topicId}-sub-${smIdx + 1}`,
     title: sm.title || `Submodule ${smIdx + 1}`,
     videoUrl: sm.videoUrl || video?.embedUrl || 'https://www.youtube.com/embed/A9TOuDZTPDU',
     duration: sm.duration || '10:00',
@@ -189,11 +201,95 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setWatchWarning('');
   };
 
+  const handleVideoEnded = useCallback(() => {
+    if (activeTier === 'submodule') {
+      const sm = submoduleList[selectedSubmoduleIdx];
+      if (sm) {
+        setWatchedSubmoduleIndices((prevList) => {
+          const updated = prevList.includes(selectedSubmoduleIdx)
+            ? prevList
+            : [...prevList, selectedSubmoduleIdx];
+          return updated;
+        });
+        onVideoWatched?.(sm.id);
+
+        const currentWatchedSet = new Set([...watchedVideos, sm.id]);
+        if (currentWatchedSet.size >= submoduleList.length) {
+          onMarkWatched();
+        }
+      }
+    } else {
+      const cr = creatorVideosWithId[selectedCreatorIdx];
+      if (cr) {
+        setWatchedCreatorIndices((prevList) => {
+          const updated = prevList.includes(selectedCreatorIdx)
+            ? prevList
+            : [...prevList, selectedCreatorIdx];
+          return updated;
+        });
+        onVideoWatched?.(cr.id);
+        if (submoduleList.length === 0) {
+          onMarkWatched();
+        }
+      }
+    }
+    setWatchProgressSeconds(requiredSeconds);
+    try { confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } }); } catch (_) {}
+  }, [
+    activeTier,
+    selectedSubmoduleIdx,
+    selectedCreatorIdx,
+    submoduleList,
+    creatorVideosWithId,
+    watchedVideos,
+    requiredSeconds,
+    onVideoWatched,
+    onMarkWatched,
+  ]);
+
+  // Listen for YouTube IFrame API messages (onStateChange event: info: 0 = ENDED)
+  useEffect(() => {
+    const handleYouTubeMessage = (event: MessageEvent) => {
+      try {
+        let payload = event.data;
+        if (typeof payload === 'string') {
+          try {
+            payload = JSON.parse(payload);
+          } catch (_) {
+            return;
+          }
+        }
+        if (!payload || typeof payload !== 'object') return;
+
+        // YouTube postMessage: onStateChange with info === 0 is ENDED
+        if (
+          (payload.event === 'onStateChange' && payload.info === 0) ||
+          (payload.event === 'infoDelivery' && payload.info?.playerState === 0)
+        ) {
+          handleVideoEnded();
+        }
+      } catch (_) {}
+    };
+
+    window.addEventListener('message', handleYouTubeMessage);
+    return () => window.removeEventListener('message', handleYouTubeMessage);
+  }, [handleVideoEnded]);
+
+  const handleIframeLoaded = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
+    try {
+      e.currentTarget.contentWindow?.postMessage(
+        JSON.stringify({ event: 'listening', id: 'yt-course-player' }),
+        '*'
+      );
+    } catch (_) {}
+  };
+
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     const isCurrentVerified =
       activeTier === 'submodule'
-        ? watchedSubmoduleIndices.includes(selectedSubmoduleIdx)
+        ? watchedSubmoduleIndices.includes(selectedSubmoduleIdx) ||
+          (submoduleList[selectedSubmoduleIdx] && watchedVideos.includes(submoduleList[selectedSubmoduleIdx].id))
         : watchedCreatorIndices.includes(selectedCreatorIdx);
 
     if (isPlaying && !isCurrentVerified) {
@@ -201,28 +297,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         setWatchProgressSeconds((prev) => {
           const next = prev + 1;
           if (next >= requiredSeconds) {
-            if (activeTier === 'submodule') {
-              setWatchedSubmoduleIndices((prevList) => {
-                const updated = prevList.includes(selectedSubmoduleIdx)
-                  ? prevList
-                  : [...prevList, selectedSubmoduleIdx];
-                if (updated.length >= submoduleList.length) {
-                  onMarkWatched();
-                }
-                return updated;
-              });
-            } else {
-              setWatchedCreatorIndices((prevList) => {
-                const updated = prevList.includes(selectedCreatorIdx)
-                  ? prevList
-                  : [...prevList, selectedCreatorIdx];
-                if (submoduleList.length === 0) {
-                  onMarkWatched();
-                }
-                return updated;
-              });
-            }
-            try { confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } }); } catch (_) {}
+            handleVideoEnded();
           }
           return next;
         });
@@ -232,17 +307,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }, [
     isPlaying, activeTier, selectedSubmoduleIdx, selectedCreatorIdx,
     watchedSubmoduleIndices, watchedCreatorIndices, requiredSeconds,
-    submoduleList.length, onMarkWatched,
+    submoduleList, watchedVideos, handleVideoEnded,
   ]);
 
   const hasCurrentVideoWatched =
     activeTier === 'submodule'
-      ? watchedSubmoduleIndices.includes(selectedSubmoduleIdx)
+      ? watchedSubmoduleIndices.includes(selectedSubmoduleIdx) ||
+        (submoduleList[selectedSubmoduleIdx] && watchedVideos.includes(submoduleList[selectedSubmoduleIdx].id))
       : watchedCreatorIndices.includes(selectedCreatorIdx);
 
   const hasVerifiedWatched = hasCurrentVideoWatched;
   const totalSubmodulesCount = submoduleList.length;
-  const completedSubmodulesCount = watchedSubmoduleIndices.length;
+  const completedSubmodulesCount = submoduleList.filter((sm, idx) =>
+    watchedVideos.includes(sm.id) || watchedSubmoduleIndices.includes(idx)
+  ).length;
   const allSubmodulesCompleted =
     totalSubmodulesCount === 0 || completedSubmodulesCount >= totalSubmodulesCount;
 
@@ -387,6 +465,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           {isPlaying ? (
             <div className="w-full h-full relative">
               <iframe
+                id="yt-course-player"
+                onLoad={handleIframeLoaded}
                 src={`${currentEmbedUrl}&autoplay=1`}
                 title={activeVideo.title}
                 className="w-full h-full border-0"
@@ -480,17 +560,22 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 <Layers className="w-3.5 h-3.5 text-cyan-400" aria-hidden="true" />
                 Required Submodules
               </span>
-              <span className="text-[10px] font-mono text-slate-400" aria-live="polite">
-                {completedSubmodulesCount}/{totalSubmodulesCount} completed
+              <span className="text-[11px] font-mono font-bold text-cyan-400 flex items-center gap-1.5" aria-live="polite">
+                {completedSubmodulesCount === totalSubmodulesCount && totalSubmodulesCount > 0 ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                ) : null}
+                <span>{completedSubmodulesCount} / {totalSubmodulesCount} Videos Watched</span>
               </span>
             </div>
             <div className="w-full flex items-center justify-start gap-2 overflow-x-auto py-1" role="tablist" aria-label="Required submodule videos">
               {submoduleList.map((sm, idx) => {
                 const isTabActive = activeTier === 'submodule' && selectedSubmoduleIdx === idx;
-                const isSubVerified = watchedSubmoduleIndices.includes(idx);
+                const isSubVerified =
+                  (watchedVideos && watchedVideos.includes(sm.id)) ||
+                  watchedSubmoduleIndices.includes(idx);
                 return (
                   <button
-                    key={idx}
+                    key={sm.id || idx}
                     onClick={() => handleSelectSubmoduleVideo(idx)}
                     role="tab"
                     aria-selected={isTabActive}
@@ -549,10 +634,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
               <span className="text-slate-300">Submodules Completed:</span>
               <span
-                className={`font-mono font-bold ${completedSubmodulesCount === totalSubmodulesCount ? 'text-emerald-400' : 'text-cyan-400'}`}
+                className={`font-mono font-bold flex items-center gap-1.5 ${completedSubmodulesCount === totalSubmodulesCount ? 'text-emerald-400' : 'text-cyan-400'}`}
                 aria-live="polite"
               >
-                {completedSubmodulesCount} / {totalSubmodulesCount} Watched
+                {completedSubmodulesCount === totalSubmodulesCount ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : null}
+                <span>{completedSubmodulesCount} / {totalSubmodulesCount} Watched</span>
               </span>
             </div>
           )}

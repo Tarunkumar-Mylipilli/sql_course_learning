@@ -25,7 +25,7 @@ interface TopicWorkflowProps {
   currentStep: TopicStep;
   setCurrentStep: (step: TopicStep) => void;
   progress: CourseProgress;
-  onMarkVideoWatched: (topicId: string) => void;
+  onMarkVideoWatched: (topicId: string, videoId?: string) => void;
   onMarkTheoryRead: (topicId: string) => void;
   onQuizSubmit: (topicId: string, score: number, passed: boolean) => void;
   onCodingComplete: (topicId: string, sql: string) => void;
@@ -160,19 +160,43 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
 
           {/* Sub-modules Pills Bar if present */}
           {topic.subModules && topic.subModules.length > 0 && (
-            <div className="flex items-center gap-2 pt-1 flex-wrap">
-              <span className="text-[11px] font-bold text-slate-400">Submodules:</span>
-              {topic.subModules.map((sub, sIdx) => (
-                <div
-                  key={sub.id || sIdx}
-                  className="px-2.5 py-1 rounded-lg bg-cyan-950/30 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
-                  title={sub.summary || sub.title}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-                  <span>{sub.title}</span>
-                  {sub.duration && <span className="text-[10px] text-slate-400 font-mono">({sub.duration})</span>}
-                </div>
-              ))}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-400">Submodule Videos:</span>
+                <span className="text-cyan-400 font-mono font-semibold flex items-center gap-1.5">
+                  {(topicProgress.watchedVideos?.length || 0) >= topic.subModules.length ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  ) : null}
+                  <span>
+                    {Math.min(topic.subModules.length, topicProgress.watchedVideos?.length || 0)} / {topic.subModules.length} Videos Watched
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center gap-2 pt-0.5 flex-wrap">
+                {topic.subModules.map((sub, sIdx) => {
+                  const subId = sub.id || `${topic.id}-sub-${sIdx + 1}`;
+                  const isSubWatched = (topicProgress.watchedVideos || []).includes(subId);
+                  return (
+                    <div
+                      key={subId}
+                      className={`px-2.5 py-1 rounded-lg border text-xs font-semibold flex items-center gap-1.5 shadow-sm transition ${
+                        isSubWatched
+                          ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                          : 'bg-cyan-950/30 border-cyan-500/30 text-cyan-300'
+                      }`}
+                      title={sub.summary || sub.title}
+                    >
+                      {isSubWatched ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      ) : (
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0"></span>
+                      )}
+                      <span>{sub.title}</span>
+                      {sub.duration && <span className="text-[10px] text-slate-400 font-mono">({sub.duration})</span>}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -271,12 +295,15 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
       <div className="mt-4">
         {currentStep === 'video' && (
           <VideoPlayer
+            topicId={topic.id}
             video={topic.video}
             alternativeVideos={topic.alternativeVideos}
             addonVideos={topic.addonVideos}
             subModules={topic.subModules}
             isWatched={topicProgress.videoWatched}
+            watchedVideos={topicProgress.watchedVideos || []}
             onMarkWatched={() => onMarkVideoWatched(topic.id)}
+            onVideoWatched={(vId) => onMarkVideoWatched(topic.id, vId)}
             onProceedToTheory={() => setCurrentStep('theory')}
             topicTitle={topic.title}
             topicOverview={topic.overview}

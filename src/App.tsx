@@ -98,9 +98,14 @@ export default function App() {
   const hasPreviousTopic = currentIndex > 0;
   const hasNextTopic = currentIndex < topics.length - 1;
 
-  // Step 1: Mark Video as Watched
-  const handleMarkVideoWatched = (topicId: string) => {
+  // Step 1: Mark Video as Watched (with per-video tracking & module completion)
+  const handleMarkVideoWatched = (topicId: string, videoId?: string) => {
     setProgress((prev) => {
+      const topicObj = topics.find((t) => t.id === topicId);
+      const totalVideos = topicObj?.subModules && topicObj.subModules.length > 0
+        ? topicObj.subModules.length
+        : [topicObj?.video, ...(topicObj?.alternativeVideos || []), ...(topicObj?.addonVideos || [])].filter(Boolean).length || 1;
+
       const existing = prev.topics[topicId] || {
         videoWatched: false,
         theoryRead: false,
@@ -110,13 +115,22 @@ export default function App() {
         userSql: '',
       };
 
+      const currentWatched = existing.watchedVideos || [];
+      const updatedWatched = videoId && !currentWatched.includes(videoId)
+        ? [...currentWatched, videoId]
+        : currentWatched;
+
+      const isAllVideosWatched = updatedWatched.length >= totalVideos || !videoId;
+
       return {
         ...prev,
         topics: {
           ...prev.topics,
           [topicId]: {
             ...existing,
-            videoWatched: true,
+            watchedVideos: updatedWatched,
+            videoWatched: isAllVideosWatched || existing.videoWatched,
+            codingCompleted: isAllVideosWatched ? true : existing.codingCompleted,
           },
         },
       };

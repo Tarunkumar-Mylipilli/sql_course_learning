@@ -242,3 +242,91 @@ export function importUserData(jsonText: string): { success: boolean; error?: st
     return { success: false, error: err?.message || 'Failed to import backup.' };
   }
 }
+
+// ==========================================
+// VIDEO PROGRESS & MODULE COMPLETION TRACKER
+// ==========================================
+
+export interface ModuleVideoItem {
+  id: string;
+  title: string;
+  duration?: string;
+  url: string;
+  order: number;
+}
+
+export function getVideoListForTopic(topic: Topic): ModuleVideoItem[] {
+  if (!topic) return [];
+  if (topic.subModules && topic.subModules.length > 0) {
+    return topic.subModules.map((sm, idx) => ({
+      id: sm.id || `${topic.id}-submodule-${idx + 1}`,
+      title: sm.title || `Submodule ${idx + 1}`,
+      duration: sm.duration || '10:00',
+      url: sm.videoUrl || topic.video?.embedUrl || 'https://www.youtube.com/embed/A9TOuDZTPDU',
+      order: sm.order || idx + 1,
+    }));
+  }
+
+  const creatorVideos = [topic.video, ...(topic.alternativeVideos || []), ...(topic.addonVideos || [])].filter(Boolean);
+  return creatorVideos.map((v, idx) => ({
+    id: `${topic.id}-video-${idx + 1}`,
+    title: v.title || `Video ${idx + 1}`,
+    duration: v.duration || '15:00',
+    url: v.embedUrl || '',
+    order: idx + 1,
+  }));
+}
+
+export function getWatchedVideosForTopic(topicId: string, currentProgress?: CourseProgress): string[] {
+  if (currentProgress?.topics?.[topicId]?.watchedVideos) {
+    return currentProgress.topics[topicId].watchedVideos || [];
+  }
+  const raw = safeRead<CourseProgress | null>(KEYS.PROGRESS, null);
+  return raw?.topics?.[topicId]?.watchedVideos || [];
+}
+
+export function markVideoAsWatched(
+  topicId: string,
+  videoId: string,
+  totalVideosInModule: number
+): {
+  watchedVideos: string[];
+  isModuleCompleted: boolean;
+  updatedProgress: CourseProgress;
+} {
+  const current = safeRead<CourseProgress | null>(KEYS.PROGRESS, null) || {
+    currentTopicId: topicId,
+    topics: {},
+    streakDays: 1,
+    lastActiveDate: new Date().toISOString().split('T')[0],
+  };
+
+  const topicProg = current.topics[topicId] || {
+    videoWatched: false,
+    theoryRead: false,
+    quizPassed: false,
+    quizScore: 0,
+    codingCompleted: false,
+    userSql: '',
+  };
+
+  const existing = topicProg.watchedVideos || [];
+  const updatedWatched = existing.includes(videoId) ? existing : [...existing, videoId];
+  const allWatched = totalVideosInModule > 0 && updatedWatched.length >= totalVideosInModule;
+
+  current.topics[topicId] = {
+    ...topicProg,
+    watchedVideos: updatedWatched,
+    videoWatched: allWatched || topicProg.videoWatched,
+    // Task 4: When watchedVideos.length === totalVideos.length, update module overall progress to Completed
+    codingCompleted: allWatched ? true : topicProg.codingCompleted,
+  };
+
+  saveProgress(current);
+
+  return {
+    watchedVideos: updatedWatched,
+    isModuleCompleted: allWatched,
+    updatedProgress: current,
+  };
+}

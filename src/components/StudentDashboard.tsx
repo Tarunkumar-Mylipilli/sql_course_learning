@@ -44,12 +44,17 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
   // Compute metrics
   const totalTopics = topics.length;
-  const completedTopicsCount = topics.filter(
-    (t) => progress.topics[t.id]?.codingCompleted
-  ).length;
+  const isTopicCompleted = (t: Topic) => {
+    const p = progress.topics[t.id];
+    if (!p) return false;
+    if (p.codingCompleted) return true;
+    const totalVideos = t.subModules && t.subModules.length > 0 ? t.subModules.length : 0;
+    return totalVideos > 0 && (p.watchedVideos?.length || 0) >= totalVideos;
+  };
+  const completedTopicsCount = topics.filter(isTopicCompleted).length;
   const inProgressTopicsCount = topics.filter((t) => {
     const p = progress.topics[t.id];
-    return p && (p.videoWatched || p.theoryRead || p.quizPassed) && !p.codingCompleted;
+    return p && (p.videoWatched || p.theoryRead || p.quizPassed || (p.watchedVideos && p.watchedVideos.length > 0)) && !isTopicCompleted(t);
   }).length;
   const percentComplete = Math.round((completedTopicsCount / Math.max(1, totalTopics)) * 100);
 
@@ -445,10 +450,18 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   </p>
                 </div>
 
-                {/* Submodule count pill if present */}
+                {/* Submodule count pill with watched checker & counter */}
                 {topic.subModules && topic.subModules.length > 0 && (
-                  <div className="text-[11px] text-cyan-400/90 font-mono flex items-center gap-1">
-                    <span>↳ {topic.subModules.length} Submodules breakdown</span>
+                  <div className="text-[11px] font-mono flex items-center justify-between text-slate-400">
+                    <span className="flex items-center gap-1 text-cyan-400/90">
+                      <span>↳ {topic.subModules.length} Submodules</span>
+                    </span>
+                    <span className="flex items-center gap-1 font-semibold text-slate-300">
+                      {(prog.watchedVideos?.length || 0) >= topic.subModules.length ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      ) : null}
+                      <span>{Math.min(topic.subModules.length, prog.watchedVideos?.length || 0)} / {topic.subModules.length} Watched</span>
+                    </span>
                   </div>
                 )}
 

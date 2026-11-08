@@ -63,6 +63,7 @@ export interface TopicVideo {
 export interface TopicProgress {
   videoWatched: boolean;
   videoWatchedSeconds?: number;
+  watchedVideos?: string[]; // Array of watched video/submodule IDs
   theoryRead: boolean;
   quizPassed: boolean;
   quizScore: number; // percentage
