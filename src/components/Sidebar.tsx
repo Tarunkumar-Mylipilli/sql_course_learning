@@ -1,125 +1,130 @@
 import React from 'react';
-import { Home, Code2, BarChart2, Bookmark, Settings, Rocket, ArrowRight, LayoutDashboard } from 'lucide-react';
+import {
+  LayoutDashboard,
+  BookOpen,
+  Route,
+  FileText,
+  Briefcase,
+  Settings,
+  Sparkles,
+} from 'lucide-react';
 
 interface SidebarProps {
   activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50';
   setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50') => void;
-  onOpenUpgradeModal?: () => void;
+  onOpenAITutor: () => void;
+  isOpenMobile: boolean;
+  onCloseMobile: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeView,
   setActiveView,
-  onOpenUpgradeModal,
+  onOpenAITutor,
+  isOpenMobile,
+  onCloseMobile,
 }) => {
-  return (
-    <aside className="w-20 shrink-0 hidden lg:flex flex-col items-center justify-between py-6 px-2 bg-[#060c18] border-r border-slate-800/80 min-h-[calc(100vh-4rem)] select-none">
-      {/* Top Nav Rail Icons */}
-      <div className="flex flex-col items-center gap-3 w-full">
-        {/* Dashboard / Home */}
-        <button
-          onClick={() => setActiveView('dashboard')}
-          className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition cursor-pointer ${
-            activeView === 'dashboard'
-              ? 'bg-cyan-950/50 border border-cyan-500/50 text-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.3)]'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-          }`}
-          title="Home Dashboard"
-        >
-          <LayoutDashboard className="w-5 h-5" />
-          <span>Home</span>
-        </button>
+  const navItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: <LayoutDashboard className="w-4 h-4" />,
+    },
+    {
+      id: 'course',
+      label: 'Learning Path',
+      icon: <BookOpen className="w-4 h-4" />,
+    },
+    {
+      id: 'roadmap',
+      label: 'Roadmap',
+      icon: <Route className="w-4 h-4" />,
+    },
+    {
+      id: 'notes',
+      label: 'SQL Cheat Sheet',
+      icon: <FileText className="w-4 h-4" />,
+    },
+    {
+      id: 'interview50',
+      label: 'FAANG 50 Practice',
+      icon: <Briefcase className="w-4 h-4" />,
+    },
+  ] as const;
 
-        {/* Course / Active Lesson */}
-        <button
-          onClick={() => setActiveView('course')}
-          className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition cursor-pointer ${
-            activeView === 'course'
-              ? 'bg-cyan-950/50 border border-cyan-500/50 text-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.3)]'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-          }`}
-          title="Active Lesson & Modules"
-        >
-          <Home className="w-5 h-5" />
-          <span>Lesson</span>
-        </button>
+  const content = (
+    <aside className="w-60 h-full bg-surface border-r border-border-default flex flex-col justify-between p-3 font-ui select-none">
+      <div className="space-y-4">
+        <div className="px-3 pt-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-content-subtle">
+            Curriculum
+          </p>
+        </div>
+        <nav className="space-y-1">
+          {navItems.map((item) => {
+            const isActive = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveView(item.id);
+                  onCloseMobile();
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent-500 cursor-pointer ${
+                  isActive
+                    ? 'bg-accent-50 text-accent-700 dark:bg-accent-950 dark:text-accent-300 font-bold'
+                    : 'text-content-secondary hover:text-content-primary hover:bg-elevated'
+                }`}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
 
-        {/* Practice (Interview 50 & Practice Arena) */}
-        <button
-          onClick={() => setActiveView('interview50')}
-          className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition cursor-pointer ${
-            activeView === 'interview50'
-              ? 'bg-cyan-950/50 border border-cyan-500/50 text-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.3)]'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-          }`}
-          title="SQL Practice Challenges"
-        >
-          <Code2 className="w-5 h-5" />
-          <span>Practice</span>
-        </button>
-
-        {/* Progress / Roadmap */}
-        <button
-          onClick={() => setActiveView('roadmap')}
-          className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition cursor-pointer ${
-            activeView === 'roadmap'
-              ? 'bg-cyan-950/50 border border-cyan-500/50 text-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.3)]'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-          }`}
-          title="Progress & Curriculum Roadmap"
-        >
-          <BarChart2 className="w-5 h-5" />
-          <span>Progress</span>
-        </button>
-
-        {/* Bookmarks / Notes */}
-        <button
-          onClick={() => setActiveView('notes')}
-          className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition cursor-pointer ${
-            activeView === 'notes'
-              ? 'bg-cyan-950/50 border border-cyan-500/50 text-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.3)]'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-          }`}
-          title="Bookmarks & Saved Notes"
-        >
-          <Bookmark className="w-5 h-5" />
-          <span>Bookmarks</span>
-        </button>
-
-        {/* Settings */}
+      <div className="space-y-2 pt-4 border-t border-border-default">
         <button
           onClick={() => {
-            alert('Settings: In-browser WebAssembly SQLite engine is active. Progress is saved locally.');
+            onOpenAITutor();
+            onCloseMobile();
           }}
-          className="w-14 h-14 rounded-2xl flex flex-col items-center justify-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 transition cursor-pointer"
-          title="Settings"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-xs font-bold bg-accent-600 hover:bg-accent-700 text-white shadow-e1 transition cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
         >
-          <Settings className="w-5 h-5" />
-          <span>Settings</span>
+          <Sparkles className="w-4 h-4" />
+          <span>Ask Socratic AI</span>
         </button>
-      </div>
 
-      {/* Bottom Promo: Learn SQL Faster! Upgrade -> */}
-      <div className="w-full px-1">
-        <div className="bg-[#0b1220] border border-slate-800 rounded-2xl p-2.5 flex flex-col items-center text-center space-y-1.5 shadow-lg">
-          <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-base">
-            🚀
-          </div>
-          <span className="text-[10px] font-bold text-slate-200 leading-tight">
-            Learn SQL<br />Faster!
-          </span>
-          <button
-            onClick={() => {
-              if (onOpenUpgradeModal) onOpenUpgradeModal();
-              else alert('Pro features unlocked! All 50 LeetCode interview challenges and custom modules are accessible.');
-            }}
-            className="w-full py-1 px-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-[10px] flex items-center justify-center gap-0.5 shadow-md cursor-pointer transition"
-          >
-            <span>Upgrade</span>
-            <ArrowRight className="w-2.5 h-2.5" />
-          </button>
-        </div>
+        <a
+          href="./admin.html"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium text-content-muted hover:text-content-primary hover:bg-elevated transition cursor-pointer"
+        >
+          <Settings className="w-4 h-4" />
+          <span>Admin Studio</span>
+        </a>
       </div>
     </aside>
+  );
+
+  return (
+    <>
+      {/* Desktop Persistent Sidebar */}
+      <div className="hidden lg:block shrink-0">{content}</div>
+
+      {/* Mobile Drawer Overlay */}
+      {isOpenMobile && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          <div
+            className="fixed inset-0 bg-overlay backdrop-blur-sm"
+            onClick={onCloseMobile}
+            aria-hidden="true"
+          />
+          <div className="relative z-10 w-64 max-w-[85vw] h-full shadow-e3 animate-slideIn">
+            {content}
+          </div>
+        </div>
+      )}
+    </>
   );
 };

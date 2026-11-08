@@ -12,6 +12,8 @@
     "deploy": "node scripts/deploy-gh-pages.cjs"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.0.0",
     "@types/canvas-confetti": "^1.9.0",

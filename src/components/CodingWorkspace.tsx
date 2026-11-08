@@ -22,6 +22,7 @@ import {
 import confetti from 'canvas-confetti';
 import { CodingChallenge } from '../types';
 import { executeQuery, validateSolution, QueryResult, ValidationResult } from '../lib/sqlEngine';
+import { fetchChallengeSolution } from '../lib/solutionService';
 import { SCENARIO_THEMES, ScenarioTheme, generateLocalExercise } from '../lib/aiExerciseGenerator';
 import { getRandomCodingChallenge } from '../lib/randomizer';
 
@@ -166,10 +167,13 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
     setValidationResult(null);
 
     try {
+      // Solutions are lazily retrieved on demand to prevent bundling all answers into initial script
+      const targetSolution = activeChallenge.solutionSql || (await fetchChallengeSolution(activeChallenge.id));
+
       const result = await validateSolution(
         activeChallenge.schemaSql,
         userCode,
-        activeChallenge.solutionSql
+        targetSolution
       );
 
       setValidationResult(result);
@@ -571,6 +575,19 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                 <span>SQL Query Editor</span>
               </div>
               <div className="flex items-center gap-2">
+                {/* Reveal Solution Button */}
+                <button
+                  onClick={async () => {
+                    const sol = activeChallenge.solutionSql || (await fetchChallengeSolution(activeChallenge.id));
+                    setUserCode(sol);
+                  }}
+                  className="flex items-center gap-1 text-xs text-content-muted hover:text-content-primary px-2.5 py-1 rounded-lg hover:bg-surface transition cursor-pointer"
+                  title="Reveal model benchmark query"
+                >
+                  <Lightbulb className="w-3 h-3 text-amber-400" />
+                  <span>Reveal Solution</span>
+                </button>
+
                 <button
                   onClick={handleReset}
                   className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-200 px-2.5 py-1 rounded-lg hover:bg-slate-800 transition cursor-pointer"

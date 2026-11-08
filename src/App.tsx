@@ -8,8 +8,7 @@ import {
   loadAllTopics,
   saveAllTopics,
 } from './lib/storage';
-import { Navbar } from './components/Navbar';
-import { Sidebar } from './components/Sidebar';
+import { AppShell } from './components/AppShell';
 import { TopicWorkflow } from './components/TopicWorkflow';
 import { CourseRoadmap } from './components/CourseRoadmap';
 import { NotesHub } from './components/NotesHub';
@@ -303,94 +302,71 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#040814] text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
-      {/* Top Header Navbar */}
-      <Navbar
-        currentUser={currentUser}
-        onLogout={() => {
-          logoutUser();
-          setCurrentUser(null);
-        }}
-        topics={topics}
-        progress={progress}
-        activeView={activeView}
-        setActiveView={setActiveView}
-        onOpenAddTopic={() => {
-          window.location.href = './admin.html';
-        }}
-        onResetProgress={handleResetProgress}
-        onOpenAITutor={() => {
-          setAiTutorContext(undefined);
-          setIsAITutorOpen(true);
-        }}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
-
-      {/* Main Layout: Left Sidebar + Central Work Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Vertical Left Sidebar Rail */}
-        <Sidebar
-          activeView={activeView}
-          setActiveView={setActiveView}
-          onOpenUpgradeModal={() =>
-            alert('Pro status is active! You have full access to all 50 LeetCode interview challenges and custom module generation.')
-          }
+    <AppShell
+      activeView={activeView}
+      setActiveView={setActiveView}
+      onOpenAITutor={() => {
+        setAiTutorContext(undefined);
+        setIsAITutorOpen(true);
+      }}
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+      currentUser={currentUser}
+      onLogout={() => {
+        logoutUser();
+        setCurrentUser(null);
+      }}
+      streakDays={progress.streakDays || 1}
+    >
+      {activeView === 'dashboard' && (
+        <StudentDashboard
+          topics={filteredTopics}
+          progress={progress}
+          onSelectTopic={handleSelectTopic}
+          onStartDailyPractice={() => {
+            const dayIdx = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+            const target = topics[dayIdx % Math.max(1, topics.length)] || topics[0];
+            handleSelectTopic(target);
+          }}
+          onOpenRoadmap={() => setActiveView('roadmap')}
+          onOpenInterview50={() => setActiveView('interview50')}
+          onOpenNotes={() => setActiveView('notes')}
         />
+      )}
 
-        {/* Central Learning Canvas */}
-        <main className="flex-1 overflow-y-auto max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7">
-          {activeView === 'dashboard' && (
-            <StudentDashboard
-              topics={filteredTopics}
-              progress={progress}
-              onSelectTopic={handleSelectTopic}
-              onStartDailyPractice={() => {
-                const dayIdx = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-                const target = topics[dayIdx % Math.max(1, topics.length)] || topics[0];
-                handleSelectTopic(target);
-              }}
-              onOpenRoadmap={() => setActiveView('roadmap')}
-              onOpenInterview50={() => setActiveView('interview50')}
-              onOpenNotes={() => setActiveView('notes')}
-            />
-          )}
+      {activeView === 'course' && currentTopic && (
+        <TopicWorkflow
+          topic={currentTopic}
+          currentStep={currentStep}
+          setCurrentStep={setCurrentStep}
+          progress={progress}
+          onMarkVideoWatched={handleMarkVideoWatched}
+          onMarkTheoryRead={handleMarkTheoryRead}
+          onQuizSubmit={handleQuizSubmit}
+          onCodingComplete={handleCodingComplete}
+          onProceedToNextTopic={handleProceedToNextTopic}
+          onPreviousTopic={handlePreviousTopic}
+          hasPreviousTopic={hasPreviousTopic}
+          hasNextTopic={hasNextTopic}
+          onToggleBookmark={handleToggleBookmark}
+          onOpenAITutorWithContext={handleOpenAITutorWithContext}
+        />
+      )}
 
-          {activeView === 'course' && currentTopic && (
-            <TopicWorkflow
-              topic={currentTopic}
-              currentStep={currentStep}
-              setCurrentStep={setCurrentStep}
-              progress={progress}
-              onMarkVideoWatched={handleMarkVideoWatched}
-              onMarkTheoryRead={handleMarkTheoryRead}
-              onQuizSubmit={handleQuizSubmit}
-              onCodingComplete={handleCodingComplete}
-              onProceedToNextTopic={handleProceedToNextTopic}
-              onPreviousTopic={handlePreviousTopic}
-              hasPreviousTopic={hasPreviousTopic}
-              hasNextTopic={hasNextTopic}
-              onToggleBookmark={handleToggleBookmark}
-              onOpenAITutorWithContext={handleOpenAITutorWithContext}
-            />
-          )}
+      {activeView === 'roadmap' && (
+        <CourseRoadmap
+          topics={filteredTopics}
+          progress={progress}
+          onSelectTopic={handleSelectTopic}
+          onOpenAddTopic={() => {
+            window.location.href = './admin.html';
+          }}
+        />
+      )}
 
-          {activeView === 'roadmap' && (
-            <CourseRoadmap
-              topics={filteredTopics}
-              progress={progress}
-              onSelectTopic={handleSelectTopic}
-              onOpenAddTopic={() => {
-                window.location.href = './admin.html';
-              }}
-            />
-          )}
+      {activeView === 'interview50' && <Interview50Hub />}
 
-          {activeView === 'interview50' && <Interview50Hub />}
-
-          {activeView === 'notes' && <NotesHub />}
-        </main>
-      </div>
+      {activeView === 'notes' && <NotesHub />}
 
       {/* AI Tutor Assistant Modal */}
       <AITutorModal
@@ -399,6 +375,6 @@ export default function App() {
         currentTopic={currentTopic}
         context={aiTutorContext}
       />
-    </div>
+    </AppShell>
   );
 }
