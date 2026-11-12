@@ -5,11 +5,12 @@ import {
   Route,
   FileText,
   Briefcase,
+  Database,
 } from 'lucide-react';
 
 interface MobileNavProps {
-  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50';
-  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50') => void;
+  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice';
+  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice') => void;
 }
 
 export const MobileNav: React.FC<MobileNavProps> = ({
@@ -19,8 +20,8 @@ export const MobileNav: React.FC<MobileNavProps> = ({
   const items = [
     { id: 'dashboard', label: 'Home', icon: <LayoutDashboard className="w-5 h-5" /> },
     { id: 'course', label: 'Learn', icon: <BookOpen className="w-5 h-5" /> },
+    { id: 'practice', label: 'Arena', icon: <Database className="w-5 h-5" /> },
     { id: 'roadmap', label: 'Roadmap', icon: <Route className="w-5 h-5" /> },
-    { id: 'notes', label: 'Notes', icon: <FileText className="w-5 h-5" /> },
     { id: 'interview50', label: 'FAANG', icon: <Briefcase className="w-5 h-5" /> },
   ] as const;
 

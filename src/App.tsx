@@ -13,6 +13,7 @@ import { TopicWorkflow } from './components/TopicWorkflow';
 import { CourseRoadmap } from './components/CourseRoadmap';
 import { NotesHub } from './components/NotesHub';
 import { Interview50Hub } from './components/Interview50Hub';
+import { SqlPracticeArena } from './components/SqlPracticeArena';
 import { AITutorModal } from './components/AITutorModal';
 import { AddTopicModal } from './components/AddTopicModal';
 import { StudentDashboard } from './components/StudentDashboard';
@@ -58,7 +59,7 @@ export default function App() {
   });
 
   const [progress, setProgress] = useState<CourseProgress>(() => loadProgress(topics));
-  const [activeView, setActiveView] = useState<'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice'>('dashboard');
   const [currentTopicId, setCurrentTopicId] = useState<string>(
     progress.currentTopicId || topics[0]?.id || 'topic-1-select'
   );
@@ -418,6 +419,19 @@ export default function App() {
       )}
 
       {activeView === 'interview50' && <Interview50Hub />}
+
+      {activeView === 'practice' && (
+        <SqlPracticeArena
+          onOpenAITutorWithContext={(ctx) => {
+            // Adapt to the currentTopic schema for the modal
+            setAiTutorContext({
+              userSql: ctx.userSql,
+              errorMessage: ctx.errorMessage,
+            });
+            setIsAITutorOpen(true);
+          }}
+        />
+      )}
 
       {activeView === 'notes' && <NotesHub />}
 

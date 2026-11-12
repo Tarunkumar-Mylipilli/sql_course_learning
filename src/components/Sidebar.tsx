@@ -5,13 +5,14 @@ import {
   Route,
   FileText,
   Briefcase,
+  Database,
   Settings,
   Sparkles,
 } from 'lucide-react';
 
 interface SidebarProps {
-  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50';
-  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50') => void;
+  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice';
+  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice') => void;
   onOpenAITutor: () => void;
   isOpenMobile: boolean;
   onCloseMobile: () => void;
@@ -49,6 +50,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'interview50',
       label: 'FAANG 50 Practice',
       icon: <Briefcase className="w-4 h-4" />,
+    },
+    {
+      id: 'practice',
+      label: 'SQL Practice Arena',
+      icon: <Database className="w-4 h-4" />,
     },
   ] as const;
 
