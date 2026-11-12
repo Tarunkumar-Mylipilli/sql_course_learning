@@ -1,4 +1,4 @@
-export type TopicStep = 'video' | 'theory' | 'quiz' | 'coding';
+export type TopicStep = 'video' | 'notebook' | 'theory' | 'quiz' | 'coding';
 
 export interface QuizQuestion {
   id: string;

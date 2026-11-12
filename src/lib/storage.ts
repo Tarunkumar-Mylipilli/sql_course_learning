@@ -175,6 +175,8 @@ export function isStepUnlocked(
   switch (step) {
     case 'video':
       return true;
+    case 'notebook':
+      return Boolean(p.videoWatched);
     case 'theory':
       return Boolean(p.videoWatched);
     case 'quiz':

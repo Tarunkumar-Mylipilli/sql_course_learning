@@ -17,6 +17,7 @@ import { Topic, TopicStep, CourseProgress } from '../types';
 import { isStepUnlocked } from '../lib/storage';
 import { VideoPlayer } from './VideoPlayer';
 import { TheoryViewer } from './TheoryViewer';
+import { NotebookLLMViewer } from './NotebookLLMViewer';
 import { QuizStep } from './QuizStep';
 import { CodingWorkspace } from './CodingWorkspace';
 
@@ -86,16 +87,24 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
       isUnlocked: true,
     },
     {
-      id: 'theory',
+      id: 'notebook',
       stepNumber: 2,
-      title: 'Theory',
+      title: 'NotebookLM Notes',
       icon: <FileText className="w-3.5 h-3.5" />,
+      isCompleted: topicProgress.theoryRead,
+      isUnlocked: isStepUnlocked(topic.id, 'notebook', progress),
+    },
+    {
+      id: 'theory',
+      stepNumber: 3,
+      title: 'Detailed Theory',
+      icon: <Layers className="w-3.5 h-3.5" />,
       isCompleted: topicProgress.theoryRead,
       isUnlocked: isStepUnlocked(topic.id, 'theory', progress),
     },
     {
       id: 'quiz',
-      stepNumber: 3,
+      stepNumber: 4,
       title: 'Quiz',
       icon: <HelpCircle className="w-3.5 h-3.5" />,
       isCompleted: topicProgress.quizPassed,
@@ -103,7 +112,7 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
     },
     {
       id: 'coding',
-      stepNumber: 4,
+      stepNumber: 5,
       title: 'SQL Playground',
       icon: <Code2 className="w-3.5 h-3.5" />,
       isCompleted: topicProgress.codingCompleted,
@@ -304,10 +313,18 @@ export const TopicWorkflow: React.FC<TopicWorkflowProps> = ({
             watchedVideos={topicProgress.watchedVideos || []}
             onMarkWatched={() => onMarkVideoWatched(topic.id)}
             onVideoWatched={(vId) => onMarkVideoWatched(topic.id, vId)}
-            onProceedToTheory={() => setCurrentStep('theory')}
+            onProceedToTheory={() => setCurrentStep('notebook')}
             topicTitle={topic.title}
             topicOverview={topic.overview}
             theorySyntax={topic.theory?.syntax}
+          />
+        )}
+
+        {currentStep === 'notebook' && (
+          <NotebookLLMViewer
+            topic={topic}
+            onProceedToQuiz={() => setCurrentStep('quiz')}
+            onProceedToCoding={() => setCurrentStep('coding')}
           />
         )}
 
