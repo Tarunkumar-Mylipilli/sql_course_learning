@@ -628,12 +628,65 @@ export const W3RESOURCE_SCHEMAS: PracticeTableSchema[] = [
       { name: 'salesman_id', type: 'INT', isFk: true, fkRef: 'salesman.salesman_id' },
     ],
   },
+  {
+    tableName: 'nobel_win',
+    description: 'Historical records of Nobel Prize winners, categories, award years, and nationalities',
+    columns: [
+      { name: 'year', type: 'INT' },
+      { name: 'subject', type: 'TEXT' },
+      { name: 'winner', type: 'TEXT' },
+      { name: 'country', type: 'TEXT' },
+      { name: 'category', type: 'TEXT' },
+    ],
+  },
+  {
+    tableName: 'item_mast',
+    description: 'Product inventory master with pricing and manufacturer company association',
+    columns: [
+      { name: 'pro_id', type: 'INT', isPk: true },
+      { name: 'pro_name', type: 'TEXT' },
+      { name: 'pro_price', type: 'DECIMAL(10,2)' },
+      { name: 'pro_com', type: 'INT', isFk: true, fkRef: 'company_mast.com_id' },
+    ],
+  },
+  {
+    tableName: 'company_mast',
+    description: 'Electronics & hardware manufacturing enterprises',
+    columns: [
+      { name: 'com_id', type: 'INT', isPk: true },
+      { name: 'com_name', type: 'TEXT' },
+    ],
+  },
+  {
+    tableName: 'emp_department',
+    description: 'Company departments with assigned budget allotments',
+    columns: [
+      { name: 'dpt_code', type: 'INT', isPk: true },
+      { name: 'dpt_name', type: 'TEXT' },
+      { name: 'dpt_allotment', type: 'INT' },
+    ],
+  },
+  {
+    tableName: 'emp_details',
+    description: 'Employee directory with identifiers, full names, and department codes',
+    columns: [
+      { name: 'emp_idno', type: 'INT', isPk: true },
+      { name: 'emp_fname', type: 'TEXT' },
+      { name: 'emp_lname', type: 'TEXT' },
+      { name: 'emp_dept', type: 'INT', isFk: true, fkRef: 'emp_department.dpt_code' },
+    ],
+  },
 ];
 
 export const W3RESOURCE_SEED_SQL = `
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS customer;
 DROP TABLE IF EXISTS salesman;
+DROP TABLE IF EXISTS nobel_win;
+DROP TABLE IF EXISTS item_mast;
+DROP TABLE IF EXISTS company_mast;
+DROP TABLE IF EXISTS emp_details;
+DROP TABLE IF EXISTS emp_department;
 
 CREATE TABLE salesman (
   salesman_id INT PRIMARY KEY,
@@ -692,6 +745,102 @@ INSERT INTO orders (ord_no, purch_amt, ord_date, customer_id, salesman_id) VALUE
 (70012, 250.45, '2012-06-27', 3008, 5002),
 (70011, 75.29, '2012-08-17', 3003, 5007),
 (70013, 3045.60, '2012-04-25', 3002, 5001);
+
+CREATE TABLE nobel_win (
+  year INT NOT NULL,
+  subject TEXT NOT NULL,
+  winner TEXT NOT NULL,
+  country TEXT NOT NULL,
+  category TEXT NOT NULL
+);
+
+INSERT INTO nobel_win (year, subject, winner, country, category) VALUES
+(1970, 'Physics', 'Hannes Alfven', 'Sweden', 'Scientist'),
+(1970, 'Physics', 'Louis Neel', 'France', 'Scientist'),
+(1970, 'Chemistry', 'Luis Federico Leloir', 'France', 'Scientist'),
+(1970, 'Physiology', 'Ulf von Euler', 'Sweden', 'Scientist'),
+(1970, 'Physiology', 'Bernard Katz', 'Germany', 'Scientist'),
+(1970, 'Literature', 'Aleksandr Solzhenitsyn', 'Russia', 'Linguist'),
+(1970, 'Economics', 'Paul Samuelson', 'USA', 'Economist'),
+(1970, 'Physiology', 'Julius Axelrod', 'USA', 'Scientist'),
+(1971, 'Physics', 'Dennis Gabor', 'Hungary', 'Scientist'),
+(1971, 'Chemistry', 'Gerhard Herzberg', 'Germany', 'Scientist'),
+(1971, 'Peace', 'Willy Brandt', 'Germany', 'Chancellor'),
+(1971, 'Literature', 'Pablo Neruda', 'Chile', 'Linguist'),
+(1971, 'Economics', 'Simon Kuznets', 'Russia', 'Economist'),
+(1978, 'Peace', 'Menachem Begin', 'Israel', 'Prime Minister'),
+(1987, 'Physics', 'Johannes Georg Bednorz', 'Germany', 'Scientist'),
+(1994, 'Peace', 'Yitzhak Rabin', 'Israel', 'Prime Minister'),
+(1994, 'Literature', 'Kenzaburo Oe', 'Japan', 'Linguist');
+
+CREATE TABLE company_mast (
+  com_id INT PRIMARY KEY,
+  com_name TEXT NOT NULL
+);
+
+INSERT INTO company_mast (com_id, com_name) VALUES
+(11, 'Samsung'),
+(12, 'iBall'),
+(13, 'Epsion'),
+(14, 'Zebronics'),
+(15, 'Asus'),
+(16, 'Frontech');
+
+CREATE TABLE item_mast (
+  pro_id INT PRIMARY KEY,
+  pro_name TEXT NOT NULL,
+  pro_price DECIMAL(10, 2) NOT NULL,
+  pro_com INT NOT NULL,
+  FOREIGN KEY (pro_com) REFERENCES company_mast(com_id)
+);
+
+INSERT INTO item_mast (pro_id, pro_name, pro_price, pro_com) VALUES
+(101, 'Mother Board', 3200.00, 15),
+(102, 'Key Board', 450.00, 16),
+(103, 'ZIP drive', 250.00, 14),
+(104, 'Speaker', 550.00, 16),
+(105, 'Monitor', 5000.00, 11),
+(106, 'DVD drive', 900.00, 12),
+(107, 'CD drive', 800.00, 12),
+(108, 'Printer', 2600.00, 13),
+(109, 'Refill cartridge', 350.00, 13),
+(110, 'Mouse', 250.00, 12);
+
+CREATE TABLE emp_department (
+  dpt_code INT PRIMARY KEY,
+  dpt_name TEXT NOT NULL,
+  dpt_allotment INT NOT NULL
+);
+
+INSERT INTO emp_department (dpt_code, dpt_name, dpt_allotment) VALUES
+(57, 'IT', 65000),
+(63, 'Finance', 15000),
+(47, 'HR', 240000),
+(27, 'RD', 55000),
+(89, 'QC', 75000);
+
+CREATE TABLE emp_details (
+  emp_idno INT PRIMARY KEY,
+  emp_fname TEXT NOT NULL,
+  emp_lname TEXT NOT NULL,
+  emp_dept INT NOT NULL,
+  FOREIGN KEY (emp_dept) REFERENCES emp_department(dpt_code)
+);
+
+INSERT INTO emp_details (emp_idno, emp_fname, emp_lname, emp_dept) VALUES
+(127323, 'Michale', 'Robbin', 57),
+(526689, 'Carlos', 'Snares', 63),
+(843795, 'Enric', 'Dosio', 57),
+(328717, 'Jhon', 'Snares', 63),
+(444527, 'Joseph', 'Dosni', 47),
+(659831, 'Zanifer', 'Emily', 47),
+(847674, 'Kuleswar', 'Sitaraman', 57),
+(748681, 'Henrey', 'Gabriel', 47),
+(555935, 'Alex', 'Manuel', 57),
+(539569, 'George', 'Mardy', 27),
+(733843, 'Mario', 'Saule', 63),
+(631548, 'Alan', 'Snappy', 27),
+(839139, 'Maria', 'Foster', 57);
 `;
 
 export const W3RESOURCE_QUESTIONS: PracticeQuestion[] = [
@@ -881,5 +1030,317 @@ export const W3RESOURCE_QUESTIONS: PracticeQuestion[] = [
     starterSql: 'SELECT * FROM orders WHERE purch_amt > (SELECT AVG(...) FROM orders WHERE ...);',
     solutionSql: "SELECT * FROM orders WHERE purch_amt > (SELECT AVG(purch_amt) FROM orders WHERE ord_date = '2012-10-10');",
     tags: ['Subquery', 'AVG', 'Comparison'],
+  },
+
+  // --- BOOLEAN & RELATIONAL OPERATORS (W3Resource) ---
+  {
+    id: 'w3-bool-1',
+    database: 'w3resource',
+    difficulty: 'easy',
+    category: 'Boolean Operators',
+    title: 'Customers with Grade > 100',
+    description: 'Write a SQL query to locate the details of customers with grade values strictly above 100. Return all columns.',
+    hint: 'Filter customer table WHERE grade > 100.',
+    starterSql: 'SELECT * FROM customer WHERE ...;',
+    solutionSql: 'SELECT * FROM customer WHERE grade > 100;',
+    tags: ['WHERE', 'Relational Operators'],
+  },
+  {
+    id: 'w3-bool-2',
+    database: 'w3resource',
+    difficulty: 'easy',
+    category: 'Boolean Operators',
+    title: "New York Customers with Grade > 100",
+    description: "Write a SQL query to find all customers residing in 'New York' who have a grade value strictly above 100.",
+    hint: "Combine conditions with AND: city = 'New York' AND grade > 100.",
+    starterSql: 'SELECT * FROM customer WHERE city = ... AND ...;',
+    solutionSql: "SELECT * FROM customer WHERE city = 'New York' AND grade > 100;",
+    tags: ['AND', 'Compound Filtering'],
+  },
+  {
+    id: 'w3-bool-3',
+    database: 'w3resource',
+    difficulty: 'easy',
+    category: 'Boolean Operators',
+    title: "New York City OR Grade > 100",
+    description: "Write a SQL query to find customers who are either from the city of 'New York' OR have a grade strictly greater than 100.",
+    hint: "Use OR operator between the two clauses.",
+    starterSql: 'SELECT * FROM customer WHERE city = ... OR ...;',
+    solutionSql: "SELECT * FROM customer WHERE city = 'New York' OR grade > 100;",
+    tags: ['OR', 'Boolean Logic'],
+  },
+  {
+    id: 'w3-bool-4',
+    database: 'w3resource',
+    difficulty: 'medium',
+    category: 'Boolean Operators',
+    title: 'Salespeople with Commission Between 0.12 and 0.14',
+    description: 'Write a SQL query to find salespeople whose commission is between 0.12 and 0.14 inclusive. Return all columns.',
+    hint: 'Use commission BETWEEN 0.12 AND 0.14 or >= and <=.',
+    starterSql: 'SELECT * FROM salesman WHERE commission BETWEEN ... AND ...;',
+    solutionSql: 'SELECT * FROM salesman WHERE commission BETWEEN 0.12 AND 0.14;',
+    tags: ['BETWEEN', 'Numbers'],
+  },
+  {
+    id: 'w3-bool-5',
+    database: 'w3resource',
+    difficulty: 'medium',
+    category: 'Boolean Operators',
+    title: 'Excluding High Amount or Specific Salesmen Orders',
+    description: "Write a SQL query to find orders excluding those with ord_date = '2012-09-10' and salesman_id > 5005 or purch_amt > 1000.",
+    hint: "Use NOT ((ord_date = '2012-09-10' AND salesman_id > 5005) OR purch_amt > 1000).",
+    starterSql: 'SELECT * FROM orders WHERE NOT ((...) OR ...);',
+    solutionSql: "SELECT * FROM orders WHERE NOT ((ord_date = '2012-09-10' AND salesman_id > 5005) OR purch_amt > 1000);",
+    tags: ['NOT', 'Complex Conditions'],
+  },
+
+  // --- WILDCARD & PATTERN MATCHING (W3Resource) ---
+  {
+    id: 'w3-wild-1',
+    database: 'w3resource',
+    difficulty: 'easy',
+    category: 'Wildcards',
+    title: "Salespeople Whose Name Starts with 'N' or 'P'",
+    description: "Write a SQL query to find salespeople whose name begins with either 'N' or 'P'. Return all columns.",
+    hint: "Use LIKE 'N%' OR LIKE 'P%'.",
+    starterSql: 'SELECT * FROM salesman WHERE name LIKE ... OR ...;',
+    solutionSql: "SELECT * FROM salesman WHERE name LIKE 'N%' OR name LIKE 'P%';",
+    tags: ['LIKE', 'Wildcards'],
+  },
+  {
+    id: 'w3-wild-2',
+    database: 'w3resource',
+    difficulty: 'easy',
+    category: 'Wildcards',
+    title: "Customers Whose Name Ends with 'n'",
+    description: "Write a SQL query to find all customers whose cust_name ends with the lowercase letter 'n'.",
+    hint: "Use cust_name LIKE '%n'.",
+    starterSql: 'SELECT * FROM customer WHERE cust_name LIKE ...;',
+    solutionSql: "SELECT * FROM customer WHERE cust_name LIKE '%n';",
+    tags: ['LIKE', 'Pattern Matching'],
+  },
+  {
+    id: 'w3-wild-3',
+    database: 'w3resource',
+    difficulty: 'medium',
+    category: 'Wildcards',
+    title: "Salespeople Whose Name Has 4th Letter 'l'",
+    description: "Write a SQL query to find salespeople whose name begins with 'N' and has 'l' as the 4th character.",
+    hint: "Use underscore wildcards: name LIKE 'N__l%'.",
+    starterSql: "SELECT * FROM salesman WHERE name LIKE 'N__l%';",
+    solutionSql: "SELECT * FROM salesman WHERE name LIKE 'N__l%';",
+    tags: ['LIKE', 'Underscore Wildcard'],
+  },
+  {
+    id: 'w3-wild-4',
+    database: 'w3resource',
+    difficulty: 'easy',
+    category: 'Wildcards',
+    title: 'Orders Not In Specific Purchase Amounts',
+    description: 'Write a SQL query to find orders where purch_amt is BETWEEN 500 and 4000, but NOT IN (948.50, 1983.43).',
+    hint: 'Use purch_amt BETWEEN 500 AND 4000 AND purch_amt NOT IN (948.50, 1983.43).',
+    starterSql: 'SELECT * FROM orders WHERE purch_amt BETWEEN ... AND ... AND purch_amt NOT IN (...);',
+    solutionSql: 'SELECT * FROM orders WHERE purch_amt BETWEEN 500 AND 4000 AND purch_amt NOT IN (948.50, 1983.43);',
+    tags: ['BETWEEN', 'NOT IN'],
+  },
+
+  // --- NOBEL PRIZE EXERCISES (W3Resource) ---
+  {
+    id: 'w3-nobel-1',
+    database: 'w3resource',
+    difficulty: 'easy',
+    category: 'Nobel Win',
+    title: 'Nobel Prize Winners of 1970',
+    description: 'Write a SQL query to find the Nobel Prize winners for the year 1970. Return year, subject, and winner.',
+    hint: 'Filter nobel_win WHERE year = 1970 and project year, subject, winner.',
+    starterSql: 'SELECT year, subject, winner FROM nobel_win WHERE ...;',
+    solutionSql: 'SELECT year, subject, winner FROM nobel_win WHERE year = 1970;',
+    tags: ['SELECT', 'WHERE', 'Nobel'],
+  },
+  {
+    id: 'w3-nobel-2',
+    database: 'w3resource',
+    difficulty: 'easy',
+    category: 'Nobel Win',
+    title: 'Literature Winner of 1971',
+    description: "Write a SQL query to find the Nobel Prize winner in 'Literature' for the year 1971. Return winner.",
+    hint: "Filter year = 1971 AND subject = 'Literature'.",
+    starterSql: 'SELECT winner FROM nobel_win WHERE ...;',
+    solutionSql: "SELECT winner FROM nobel_win WHERE year = 1971 AND subject = 'Literature';",
+    tags: ['AND', 'Filtering'],
+  },
+  {
+    id: 'w3-nobel-3',
+    database: 'w3resource',
+    difficulty: 'easy',
+    category: 'Nobel Win',
+    title: "Locate Winner Dennis Gabor",
+    description: "Write a SQL query to locate the Nobel Prize winner 'Dennis Gabor'. Return year and subject.",
+    hint: "WHERE winner = 'Dennis Gabor'.",
+    starterSql: 'SELECT year, subject FROM nobel_win WHERE ...;',
+    solutionSql: "SELECT year, subject FROM nobel_win WHERE winner = 'Dennis Gabor';",
+    tags: ['WHERE', 'Exact Match'],
+  },
+  {
+    id: 'w3-nobel-4',
+    database: 'w3resource',
+    difficulty: 'medium',
+    category: 'Nobel Win',
+    title: 'Physics Winners from 1970 to 1987',
+    description: "Write a SQL query to find Nobel Prize winners in 'Physics' between years 1970 and 1987 inclusive. Return all columns.",
+    hint: "WHERE subject = 'Physics' AND year BETWEEN 1970 AND 1987.",
+    starterSql: 'SELECT * FROM nobel_win WHERE subject = ... AND year BETWEEN ... AND ...;',
+    solutionSql: "SELECT * FROM nobel_win WHERE subject = 'Physics' AND year BETWEEN 1970 AND 1987;",
+    tags: ['BETWEEN', 'Compound Filter'],
+  },
+  {
+    id: 'w3-nobel-5',
+    database: 'w3resource',
+    difficulty: 'medium',
+    category: 'Nobel Win',
+    title: 'Winners in Peace or Literature with Category Prime Minister or Chancellor',
+    description: "Write a SQL query to find Nobel winners whose subject is 'Peace' or 'Literature', and category is 'Prime Minister' or 'Chancellor'.",
+    hint: "Use IN operator: subject IN ('Peace', 'Literature') AND category IN ('Prime Minister', 'Chancellor').",
+    starterSql: 'SELECT * FROM nobel_win WHERE subject IN (...) AND category IN (...);',
+    solutionSql: "SELECT * FROM nobel_win WHERE subject IN ('Peace', 'Literature') AND category IN ('Prime Minister', 'Chancellor');",
+    tags: ['IN', 'Boolean Logic'],
+  },
+
+  // --- ITEM & COMPANY MAST EXERCISES (W3Resource) ---
+  {
+    id: 'w3-item-1',
+    database: 'w3resource',
+    difficulty: 'easy',
+    category: 'Inventory & Mast',
+    title: 'Average Price of Items by Company',
+    description: 'Write a SQL query to calculate the average price of items for each company code (pro_com). Return pro_com and avg_price rounded to 2 decimals.',
+    hint: 'GROUP BY pro_com and SELECT ROUND(AVG(pro_price), 2) AS avg_price.',
+    starterSql: 'SELECT pro_com, ROUND(AVG(pro_price), 2) AS avg_price FROM item_mast GROUP BY ...;',
+    solutionSql: 'SELECT pro_com, ROUND(AVG(pro_price), 2) AS avg_price FROM item_mast GROUP BY pro_com;',
+    tags: ['GROUP BY', 'AVG', 'Item Mast'],
+  },
+  {
+    id: 'w3-item-2',
+    database: 'w3resource',
+    difficulty: 'medium',
+    category: 'Inventory & Mast',
+    title: 'Products with Company Names (JOIN)',
+    description: 'Write a SQL query to display the item name (pro_name), price (pro_price), and company name (com_name) for all products.',
+    hint: 'JOIN item_mast i WITH company_mast c ON i.pro_com = c.com_id.',
+    starterSql: 'SELECT i.pro_name, i.pro_price, c.com_name FROM item_mast i JOIN company_mast c ON ...;',
+    solutionSql: 'SELECT i.pro_name, i.pro_price, c.com_name FROM item_mast i JOIN company_mast c ON i.pro_com = c.com_id;',
+    tags: ['JOIN', 'Foreign Keys'],
+  },
+  {
+    id: 'w3-item-3',
+    database: 'w3resource',
+    difficulty: 'hard',
+    category: 'Inventory & Mast',
+    title: 'Most Expensive Item in Each Company',
+    description: 'Write a SQL query to find the most expensive item price for each company name. Return com_name and max_price.',
+    hint: 'JOIN item_mast i WITH company_mast c ON i.pro_com = c.com_id GROUP BY c.com_name.',
+    starterSql: 'SELECT c.com_name, MAX(i.pro_price) AS max_price FROM item_mast i JOIN company_mast c ON ... GROUP BY ...;',
+    solutionSql: 'SELECT c.com_name, MAX(i.pro_price) AS max_price FROM item_mast i JOIN company_mast c ON i.pro_com = c.com_id GROUP BY c.com_name;',
+    tags: ['JOIN', 'GROUP BY', 'MAX'],
+  },
+
+  // --- EMPLOYEE & DEPARTMENT EXERCISES (W3Resource) ---
+  {
+    id: 'w3-emp-1',
+    database: 'w3resource',
+    difficulty: 'easy',
+    category: 'Employee Directory',
+    title: 'Employees in IT or HR Department',
+    description: "Write a SQL query to find employees whose department code (emp_dept) is 57 (IT) or 47 (HR). Return emp_idno, emp_fname, emp_lname, emp_dept.",
+    hint: 'WHERE emp_dept IN (57, 47).',
+    starterSql: 'SELECT emp_idno, emp_fname, emp_lname, emp_dept FROM emp_details WHERE emp_dept IN (...);',
+    solutionSql: 'SELECT emp_idno, emp_fname, emp_lname, emp_dept FROM emp_details WHERE emp_dept IN (57, 47);',
+    tags: ['IN', 'Employee'],
+  },
+  {
+    id: 'w3-emp-2',
+    database: 'w3resource',
+    difficulty: 'medium',
+    category: 'Employee Directory',
+    title: 'Employees with Department Name and Budget Allotment',
+    description: 'Write a SQL query to display the employee full name (emp_fname, emp_lname), department name (dpt_name), and department allotment (dpt_allotment).',
+    hint: 'JOIN emp_details e WITH emp_department d ON e.emp_dept = d.dpt_code.',
+    starterSql: 'SELECT e.emp_fname, e.emp_lname, d.dpt_name, d.dpt_allotment FROM emp_details e JOIN emp_department d ON ...;',
+    solutionSql: 'SELECT e.emp_fname, e.emp_lname, d.dpt_name, d.dpt_allotment FROM emp_details e JOIN emp_department d ON e.emp_dept = d.dpt_code;',
+    tags: ['JOIN', 'Departments'],
+  },
+  {
+    id: 'w3-emp-3',
+    database: 'w3resource',
+    difficulty: 'hard',
+    category: 'Employee Directory',
+    title: 'Departments with Allotment Exceeding 60000 Having Employees',
+    description: 'Write a SQL query to find distinct department names (dpt_name) that have an allotment greater than 60000 and at least one employee assigned.',
+    hint: 'SELECT DISTINCT d.dpt_name FROM emp_department d JOIN emp_details e ON d.dpt_code = e.emp_dept WHERE d.dpt_allotment > 60000.',
+    starterSql: 'SELECT DISTINCT d.dpt_name FROM emp_department d JOIN emp_details e ON ... WHERE ...;',
+    solutionSql: 'SELECT DISTINCT d.dpt_name FROM emp_department d JOIN emp_details e ON d.dpt_code = e.emp_dept WHERE d.dpt_allotment > 60000;',
+    tags: ['DISTINCT', 'JOIN', 'Filtering'],
+  },
+  {
+    id: 'w3-emp-4',
+    database: 'w3resource',
+    difficulty: 'medium',
+    category: 'Employee Directory',
+    title: 'Count Employees in Each Department',
+    description: 'Write a SQL query to count the number of employees in each department. Return dpt_name and total_employees, ordered by total_employees descending.',
+    hint: 'JOIN emp_department d WITH emp_details e ON d.dpt_code = e.emp_dept GROUP BY d.dpt_name ORDER BY total_employees DESC.',
+    starterSql: 'SELECT d.dpt_name, COUNT(e.emp_idno) AS total_employees FROM emp_department d JOIN emp_details e ON ... GROUP BY ... ORDER BY ...;',
+    solutionSql: 'SELECT d.dpt_name, COUNT(e.emp_idno) AS total_employees FROM emp_department d JOIN emp_details e ON d.dpt_code = e.emp_dept GROUP BY d.dpt_name ORDER BY total_employees DESC;',
+    tags: ['GROUP BY', 'COUNT', 'ORDER BY'],
+  },
+
+  // --- MORE ADVANCED JOINS & SUBQUERIES (W3Resource) ---
+  {
+    id: 'w3-join-4',
+    database: 'w3resource',
+    difficulty: 'medium',
+    category: 'Joins',
+    title: 'Customer and Salesman with Orders and Commission',
+    description: 'Write a SQL query to display ord_no, cust_name, name AS salesman_name, and commission for all orders.',
+    hint: 'JOIN orders o WITH customer c ON o.customer_id = c.customer_id JOIN salesman s ON o.salesman_id = s.salesman_id.',
+    starterSql: 'SELECT o.ord_no, c.cust_name, s.name AS salesman_name, s.commission FROM orders o JOIN customer c ON ... JOIN salesman s ON ...;',
+    solutionSql: 'SELECT o.ord_no, c.cust_name, s.name AS salesman_name, s.commission FROM orders o JOIN customer c ON o.customer_id = c.customer_id JOIN salesman s ON o.salesman_id = s.salesman_id;',
+    tags: ['Three-table JOIN', 'Relationships'],
+  },
+  {
+    id: 'w3-join-5',
+    database: 'w3resource',
+    difficulty: 'medium',
+    category: 'Joins',
+    title: 'Customers and Salespeople with Different Cities',
+    description: 'Find all orders where the customer and their assigned salesman reside in different cities. Return ord_no, cust_name, c.city AS customer_city, s.name AS salesman_name, s.city AS salesman_city.',
+    hint: 'JOIN orders o WITH customer c and salesman s WHERE c.city != s.city.',
+    starterSql: 'SELECT o.ord_no, c.cust_name, c.city AS customer_city, s.name AS salesman_name, s.city AS salesman_city FROM orders o JOIN customer c ON o.customer_id = c.customer_id JOIN salesman s ON o.salesman_id = s.salesman_id WHERE ...;',
+    solutionSql: 'SELECT o.ord_no, c.cust_name, c.city AS customer_city, s.name AS salesman_name, s.city AS salesman_city FROM orders o JOIN customer c ON o.customer_id = c.customer_id JOIN salesman s ON o.salesman_id = s.salesman_id WHERE c.city != s.city;',
+    tags: ['JOIN', 'Inequality Filter'],
+  },
+  {
+    id: 'w3-sub-4',
+    database: 'w3resource',
+    difficulty: 'hard',
+    category: 'Subqueries',
+    title: 'Customers Whose Grade is Higher Than Every Customer in New York',
+    description: 'Write a SQL query using a subquery to find all customers whose grade is strictly greater than the maximum grade of customers residing in New York.',
+    hint: 'WHERE grade > (SELECT MAX(grade) FROM customer WHERE city = \'New York\').',
+    starterSql: 'SELECT * FROM customer WHERE grade > (SELECT MAX(...) FROM customer WHERE ...);',
+    solutionSql: "SELECT * FROM customer WHERE grade > (SELECT MAX(grade) FROM customer WHERE city = 'New York');",
+    tags: ['Subquery', 'MAX', 'Scalar Subquery'],
+  },
+  {
+    id: 'w3-sub-5',
+    database: 'w3resource',
+    difficulty: 'hard',
+    category: 'Subqueries',
+    title: 'Salesmen with Customers Located in Their Home City',
+    description: 'Write a SQL query using EXISTS to find salesmen who have at least one customer living in the same city as them.',
+    hint: 'WHERE EXISTS (SELECT 1 FROM customer c WHERE c.salesman_id = s.salesman_id AND c.city = s.city).',
+    starterSql: 'SELECT * FROM salesman s WHERE EXISTS (SELECT 1 FROM customer c WHERE ...);',
+    solutionSql: 'SELECT * FROM salesman s WHERE EXISTS (SELECT 1 FROM customer c WHERE c.salesman_id = s.salesman_id AND c.city = s.city);',
+    tags: ['Subquery', 'EXISTS', 'Correlated Subquery'],
   },
 ];
