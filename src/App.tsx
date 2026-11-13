@@ -14,7 +14,6 @@ import { CourseRoadmap } from './components/CourseRoadmap';
 import { NotesHub } from './components/NotesHub';
 import { Interview50Hub } from './components/Interview50Hub';
 import { SqlPracticeArena } from './components/SqlPracticeArena';
-import { W3ResourceCatalog } from './components/W3ResourceCatalog';
 import { AITutorModal } from './components/AITutorModal';
 import { AddTopicModal } from './components/AddTopicModal';
 import { StudentDashboard } from './components/StudentDashboard';
@@ -60,7 +59,7 @@ export default function App() {
   });
 
   const [progress, setProgress] = useState<CourseProgress>(() => loadProgress(topics));
-  const [activeView, setActiveView] = useState<'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice' | 'w3catalog'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice'>('practice');
   const [currentTopicId, setCurrentTopicId] = useState<string>(
     progress.currentTopicId || topics[0]?.id || 'topic-1-select'
   );
@@ -424,23 +423,12 @@ export default function App() {
 
       {activeView === 'practice' && (
         <SqlPracticeArena
+          initialDb="w3resource"
           onOpenAITutorWithContext={(ctx) => {
             // Adapt to the currentTopic schema for the modal
             setAiTutorContext({
               userSql: ctx.userSql,
               errorMessage: ctx.errorMessage,
-            });
-            setIsAITutorOpen(true);
-          }}
-        />
-      )}
-
-      {activeView === 'w3catalog' && (
-        <W3ResourceCatalog
-          onNavigateToPractice={() => setActiveView('practice')}
-          onOpenAITutorWithPrompt={(prompt) => {
-            setAiTutorContext({
-              userSql: prompt,
             });
             setIsAITutorOpen(true);
           }}

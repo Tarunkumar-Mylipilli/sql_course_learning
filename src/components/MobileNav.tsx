@@ -9,8 +9,8 @@ import {
 } from 'lucide-react';
 
 interface MobileNavProps {
-  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice' | 'w3catalog';
-  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice' | 'w3catalog') => void;
+  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice';
+  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice') => void;
 }
 
 export const MobileNav: React.FC<MobileNavProps> = ({

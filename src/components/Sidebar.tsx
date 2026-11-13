@@ -12,8 +12,8 @@ import {
 } from 'lucide-react';
 
 interface SidebarProps {
-  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice' | 'w3catalog';
-  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice' | 'w3catalog') => void;
+  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice';
+  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice') => void;
   onOpenAITutor: () => void;
   isOpenMobile: boolean;
   onCloseMobile: () => void;
@@ -43,9 +43,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <Route className="w-4 h-4" />,
     },
     {
-      id: 'notes',
-      label: 'SQL Cheat Sheet',
-      icon: <FileText className="w-4 h-4" />,
+      id: 'practice',
+      label: 'SQL Practice Arena (990)',
+      icon: <Database className="w-4 h-4" />,
     },
     {
       id: 'interview50',
@@ -53,14 +53,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <Briefcase className="w-4 h-4" />,
     },
     {
-      id: 'practice',
-      label: 'SQL Practice Arena',
-      icon: <Database className="w-4 h-4" />,
-    },
-    {
-      id: 'w3catalog',
-      label: 'W3Resource Catalog',
-      icon: <Library className="w-4 h-4" />,
+      id: 'notes',
+      label: 'SQL Cheat Sheet',
+      icon: <FileText className="w-4 h-4" />,
     },
   ] as const;
 
