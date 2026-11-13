@@ -114,7 +114,7 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
   const currentQuestion =
     questions.find((q) => q.id === activeQuestionId) || filteredQuestions[0] || questions[0];
 
-  const [userSql, setUserSql] = useState<string>(currentQuestion.starterSql);
+  const [userSql, setUserSql] = useState<string>('');
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -127,9 +127,9 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
   const [isLoadingSample, setIsLoadingSample] = useState<boolean>(false);
   const [isSchemaDrawerOpen, setIsSchemaDrawerOpen] = useState<boolean>(true);
 
-  // Sync starter SQL when switching questions
+  // Clear query editor when switching questions so student starts fresh
   useEffect(() => {
-    setUserSql(currentQuestion.starterSql);
+    setUserSql('');
     setQueryResult(null);
     setValidationResult(null);
   }, [currentQuestion.id]);
@@ -142,7 +142,7 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
     setSearchQuery('');
     const newConfig = getDbConfig(db);
     setActiveQuestionId(newConfig.questions[0].id);
-    setUserSql(newConfig.questions[0].starterSql);
+    setUserSql('');
     setQueryResult(null);
     setValidationResult(null);
     setActiveSchemaTable(null);
@@ -154,8 +154,7 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
     setIsRunning(true);
     setValidationResult(null);
 
-    const fullSql = `${seedSql}\n${userSql}`;
-    const res = await executeQuery(fullSql);
+    const res = await executeQuery(seedSql, userSql);
     setQueryResult(res);
     setIsRunning(false);
   };
@@ -201,8 +200,7 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
     setActiveSchemaTable(table);
     setIsLoadingSample(true);
     try {
-      const previewSql = `${seedSql}\nSELECT * FROM ${table.tableName} LIMIT 5;`;
-      const res = await executeQuery(previewSql);
+      const res = await executeQuery(seedSql, `SELECT * FROM ${table.tableName} LIMIT 5;`);
       setTableSampleData(res);
     } catch {
       setTableSampleData(null);
@@ -703,17 +701,17 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
                   onChange={(e) => setUserSql(e.target.value)}
                   className="flex-1 bg-transparent p-3 text-xs font-mono text-content-primary focus:outline-none resize-none leading-6"
                   rows={Math.max(sqlLines.length, 6)}
-                  placeholder="Enter your SQL query here..."
+                  placeholder="Enter your SQL query here (e.g. SELECT * FROM salesman;)..."
                   spellCheck={false}
                 />
 
                 {/* Floating Bottom Right Actions: Reset & Run Query button in green */}
                 <div className="absolute right-3 bottom-3 flex items-center gap-2">
                   <button
-                    onClick={() => setUserSql(currentQuestion.starterSql)}
+                    onClick={() => setUserSql('')}
                     className="px-3 py-1.5 rounded-lg text-xs font-semibold text-content-secondary hover:text-content-primary bg-surface/90 border border-border-default transition cursor-pointer"
                   >
-                    Reset
+                    Clear
                   </button>
                   <button
                     onClick={handleRunQuery}

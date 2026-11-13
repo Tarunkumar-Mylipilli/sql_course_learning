@@ -121,15 +121,17 @@ function dispatchRequest<T>(payload: any, timeoutMs: number = DEFAULT_TIMEOUT_MS
 
 // Public API
 export async function executeQuery(
-  schemaSql: string,
-  userSql: string,
+  schemaOrUserSql: string,
+  userSql?: string,
   timeoutMs: number = DEFAULT_TIMEOUT_MS
 ): Promise<QueryResult> {
+  const schema = userSql !== undefined ? schemaOrUserSql : '';
+  const user = userSql !== undefined ? userSql : schemaOrUserSql;
   return dispatchRequest<QueryResult>(
     {
       type: 'execute',
-      schemaSql,
-      userSql,
+      schemaSql: schema,
+      userSql: user,
     },
     timeoutMs
   );
