@@ -14,7 +14,8 @@ import {
   Layers,
   HelpCircle,
   AlertTriangle,
-  FolderGit2,
+  ChevronDown,
+  Code2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import {
@@ -29,8 +30,8 @@ import {
   NORTHWIND_QUESTIONS,
   W3RESOURCE_SCHEMAS,
   W3RESOURCE_SEED_SQL,
-  W3RESOURCE_QUESTIONS,
 } from '../data/modules/sqlPracticeData';
+import { W3RESOURCE_ALL_QUESTIONS } from '../data/modules/w3FullPracticeData';
 import { executeQuery, validateSolution, QueryResult, ValidationResult } from '../lib/sqlEngine';
 
 interface SqlPracticeArenaProps {
@@ -41,14 +42,16 @@ interface SqlPracticeArenaProps {
     userSql: string;
     errorMessage?: string;
   }) => void;
+  initialDb?: PracticeDatabaseType;
 }
 
 const STORAGE_KEY_COMPLETED = 'sqlmastery_practice_completed_ids_v1';
 
 export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
   onOpenAITutorWithContext,
+  initialDb = 'northwind',
 }) => {
-  const [activeDb, setActiveDb] = useState<PracticeDatabaseType>('hospital');
+  const [activeDb, setActiveDb] = useState<PracticeDatabaseType>(initialDb);
   const [filterDifficulty, setFilterDifficulty] = useState<'all' | 'easy' | 'medium' | 'hard'>('all');
   const [completedIds, setCompletedIds] = useState<string[]>(() => {
     try {
@@ -66,7 +69,7 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
       case 'northwind':
         return { questions: NORTHWIND_QUESTIONS, schemas: NORTHWIND_SCHEMAS, seedSql: NORTHWIND_SEED_SQL };
       case 'w3resource':
-        return { questions: W3RESOURCE_QUESTIONS, schemas: W3RESOURCE_SCHEMAS, seedSql: W3RESOURCE_SEED_SQL };
+        return { questions: W3RESOURCE_ALL_QUESTIONS, schemas: W3RESOURCE_SCHEMAS, seedSql: W3RESOURCE_SEED_SQL };
     }
   };
 
@@ -83,8 +86,8 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<'query' | 'schema' | 'solution'>('query');
-  const [selectedSchemaTable, setSelectedSchemaTable] = useState<string>(schemas[0].tableName);
+  const [isHintOpen, setIsHintOpen] = useState<boolean>(true);
+  const [isSolutionModalOpen, setIsSolutionModalOpen] = useState<boolean>(false);
 
   // Sync starter SQL when switching questions
   useEffect(() => {
@@ -101,7 +104,6 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
     setUserSql(newConfig.questions[0].starterSql);
     setQueryResult(null);
     setValidationResult(null);
-    setSelectedSchemaTable(newConfig.schemas[0].tableName);
   };
 
   const handleRunQuery = async () => {
@@ -146,92 +148,105 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
     }
   };
 
-  const isCurrentCompleted = completedIds.includes(currentQuestion.id);
+  // Metrics for header pill
+  const totalSolvedAcrossAll =
+    HOSPITAL_QUESTIONS.filter((q) => completedIds.includes(q.id)).length +
+    NORTHWIND_QUESTIONS.filter((q) => completedIds.includes(q.id)).length +
+    W3RESOURCE_ALL_QUESTIONS.filter((q) => completedIds.includes(q.id)).length;
+  const totalQuestionsAcrossAll =
+    HOSPITAL_QUESTIONS.length + NORTHWIND_QUESTIONS.length + W3RESOURCE_ALL_QUESTIONS.length;
+
+  const currentDbSolved = questions.filter((q) => completedIds.includes(q.id)).length;
+
+  // Split lines for custom line numbered editor look
+  const sqlLines = userSql.split('\n');
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-      {/* Top Banner / Dataset Switcher */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-surface border border-border-default shadow-sm">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-accent-600/20 text-accent-500 flex items-center justify-center font-bold">
-              <Database className="w-4 h-4" />
-            </div>
-            <div>
-              <h1 className="text-xl font-extrabold text-content-primary">
+    <div className="flex-1 overflow-y-auto bg-canvas text-content-primary p-4 sm:p-6 lg:p-8 font-ui">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* TOP COMPACT HEADER (Matches User's Reference Screenshot) */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-default pb-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Database className="w-5 h-5 text-accent-500" />
+              <h1 className="text-xl font-bold tracking-tight text-content-primary">
                 SQL Practice Arena
               </h1>
-              <p className="text-xs text-content-secondary">
-                Curated challenges from sql-practice.com (Hospital & Northwind) and w3resource (Sales & Inventory) with in-browser execution.
-              </p>
             </div>
+            <div className="text-xs font-semibold px-2.5 py-1 rounded-full bg-surface border border-border-default text-content-secondary">
+              <span className="text-accent-500 font-bold">{totalSolvedAcrossAll}</span>
+              <span className="text-content-subtle">/{totalQuestionsAcrossAll} Solved</span>
+            </div>
+          </div>
+
+          {/* Database Switcher Tabs matching screenshot layout */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <button
+              onClick={() => handleSwitchDb('hospital')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer flex items-center gap-2 ${
+                activeDb === 'hospital'
+                  ? 'bg-surface border-cyan-500/80 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                  : 'bg-surface/50 border-border-default text-content-secondary hover:text-content-primary'
+              }`}
+            >
+              <span>🏥 Hospital DB</span>
+              <span className="text-[10px] opacity-75 font-mono">
+                {HOSPITAL_QUESTIONS.filter((q) => completedIds.includes(q.id)).length}/{HOSPITAL_QUESTIONS.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => handleSwitchDb('northwind')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer flex items-center gap-2 ${
+                activeDb === 'northwind'
+                  ? 'bg-surface border-cyan-500/80 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                  : 'bg-surface/50 border-border-default text-content-secondary hover:text-content-primary'
+              }`}
+            >
+              <span>📦 Northwind DB</span>
+              <span className="text-[10px] opacity-75 font-mono">
+                {NORTHWIND_QUESTIONS.filter((q) => completedIds.includes(q.id)).length}/{NORTHWIND_QUESTIONS.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => handleSwitchDb('w3resource')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer flex items-center gap-2 ${
+                activeDb === 'w3resource'
+                  ? 'bg-surface border-cyan-500/80 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                  : 'bg-surface/50 border-border-default text-content-secondary hover:text-content-primary'
+              }`}
+            >
+              <span>📚 W3Resource (970 Tasks)</span>
+              <span className="text-[10px] opacity-75 font-mono">
+                {W3RESOURCE_ALL_QUESTIONS.filter((q) => completedIds.includes(q.id)).length}/{W3RESOURCE_ALL_QUESTIONS.length}
+              </span>
+            </button>
           </div>
         </div>
 
-        {/* Database Switcher Pills */}
-        <div className="flex items-center gap-2 bg-canvas p-1.5 rounded-xl border border-border-default flex-wrap">
-          <button
-            onClick={() => handleSwitchDb('hospital')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-              activeDb === 'hospital'
-                ? 'bg-accent-600 text-white shadow-sm'
-                : 'text-content-secondary hover:text-content-primary'
-            }`}
-          >
-            <span>🏥 Hospital DB (sql-practice)</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/20">
-              {HOSPITAL_QUESTIONS.filter((q) => completedIds.includes(q.id)).length}/{HOSPITAL_QUESTIONS.length}
-            </span>
-          </button>
-          
-          <button
-            onClick={() => handleSwitchDb('northwind')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-              activeDb === 'northwind'
-                ? 'bg-accent-600 text-white shadow-sm'
-                : 'text-content-secondary hover:text-content-primary'
-            }`}
-          >
-            <span>📦 Northwind DB (sql-practice)</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/20">
-              {NORTHWIND_QUESTIONS.filter((q) => completedIds.includes(q.id)).length}/{NORTHWIND_QUESTIONS.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleSwitchDb('w3resource')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-              activeDb === 'w3resource'
-                ? 'bg-accent-600 text-white shadow-sm'
-                : 'text-content-secondary hover:text-content-primary'
-            }`}
-          >
-            <span>📚 W3Resource (Sales & Inventory)</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/20">
-              {W3RESOURCE_QUESTIONS.filter((q) => completedIds.includes(q.id)).length}/{W3RESOURCE_QUESTIONS.length}
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Question Browser */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="bg-surface rounded-2xl border border-border-default p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-content-muted">
-                {activeDb === 'hospital' ? 'Hospital DB' : activeDb === 'northwind' ? 'Northwind DB' : 'W3Resource'} ({filteredQuestions.length})
+        {/* 2-COLUMN FORMAL PRACTICE LAYOUT */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* LEFT COLUMN: Question List & Difficulty Filter */}
+          <div className="lg:col-span-4 space-y-3">
+            <div className="flex items-center justify-between text-xs px-1">
+              <span className="font-bold uppercase tracking-wider text-[11px] text-content-subtle">
+                {activeDb === 'hospital'
+                  ? 'Hospital DB'
+                  : activeDb === 'northwind'
+                  ? 'Northwind DB'
+                  : 'W3Resource'}
               </span>
-              {/* Difficulty filter */}
-              <div className="flex items-center gap-1">
+              {/* Difficulty pill selectors */}
+              <div className="flex items-center gap-1 bg-surface p-0.5 rounded-lg border border-border-default">
                 {(['all', 'easy', 'medium', 'hard'] as const).map((diff) => (
                   <button
                     key={diff}
                     onClick={() => setFilterDifficulty(diff)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider transition cursor-pointer ${
+                    className={`px-2.5 py-1 rounded text-[11px] font-semibold capitalize transition cursor-pointer ${
                       filterDifficulty === diff
-                        ? 'bg-accent-600 text-white'
-                        : 'text-content-muted hover:text-content-primary bg-canvas border border-border-subtle'
+                        ? 'bg-surface-muted text-content-primary shadow-sm font-bold'
+                        : 'text-content-subtle hover:text-content-primary'
                     }`}
                   >
                     {diff}
@@ -240,7 +255,8 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
               </div>
             </div>
 
-            <div className="space-y-1.5 max-h-[560px] overflow-y-auto pr-1">
+            {/* Questions List */}
+            <div className="space-y-2.5 max-h-[calc(100vh-250px)] overflow-y-auto pr-1">
               {filteredQuestions.map((q, idx) => {
                 const isSelected = q.id === currentQuestion.id;
                 const isDone = completedIds.includes(q.id);
@@ -248,79 +264,86 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
                   <button
                     key={q.id}
                     onClick={() => setActiveQuestionId(q.id)}
-                    className={`w-full text-left p-3 rounded-xl border transition flex items-start justify-between gap-2 cursor-pointer ${
+                    className={`w-full text-left p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-2 ${
                       isSelected
-                        ? 'bg-accent-500/10 border-accent-500 ring-1 ring-accent-500'
-                        : 'bg-canvas/60 hover:bg-canvas border-border-default'
+                        ? 'bg-surface border-cyan-500/80 ring-1 ring-cyan-500/30 shadow-md'
+                        : 'bg-surface border-border-default hover:border-border-hover'
                     }`}
                   >
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span
                           className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
                             q.difficulty === 'easy'
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                               : q.difficulty === 'medium'
-                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                              : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                           }`}
                         >
                           {q.difficulty}
                         </span>
                         {q.category && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface border border-border-subtle text-content-muted font-medium">
-                            {q.category}
+                          <span className="text-[10px] text-content-subtle font-mono uppercase tracking-wider">
+                            • {q.category}
                           </span>
                         )}
                       </div>
-                      <span className="text-xs font-semibold text-content-primary line-clamp-1">
+
+                      <h2 className="text-xs font-bold text-content-primary line-clamp-1">
                         {idx + 1}. {q.title}
-                      </span>
-                      <p className="text-[11px] text-content-muted line-clamp-2">{q.description}</p>
+                      </h2>
+
+                      <p className="text-[11px] text-content-secondary line-clamp-2 leading-relaxed">
+                        {q.description}
+                      </p>
                     </div>
-                    {isDone && (
-                      <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    )}
+
+                    <div className="flex items-center justify-between pt-1 border-t border-border-subtle text-[10px]">
+                      <span className="text-content-subtle font-mono">
+                        {q.tags.slice(0, 2).join(' • ')}
+                      </span>
+                      {isDone ? (
+                        <span className="inline-flex items-center gap-1 text-emerald-400 font-bold">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span>Solved</span>
+                        </span>
+                      ) : (
+                        <span className="text-content-subtle font-medium">Unsolved</span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
             </div>
           </div>
-        </div>
 
-        {/* Right Column: Question Details, SQL Editor, Schema Explorer, Execution */}
-        <div className="lg:col-span-8 space-y-4">
-          {/* Question Details Header */}
-          <div className="bg-surface rounded-2xl border border-border-default p-5 space-y-3">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                      currentQuestion.difficulty === 'easy'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : currentQuestion.difficulty === 'medium'
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                    }`}
-                  >
-                    {currentQuestion.difficulty}
+          {/* RIGHT COLUMN: Formal Workspace matching Reference Image */}
+          <div className="lg:col-span-8 space-y-4">
+            {/* Header: Title, Level, AI Tutor button */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                    currentQuestion.difficulty === 'easy'
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                      : currentQuestion.difficulty === 'medium'
+                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                      : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                  }`}
+                >
+                  {currentQuestion.difficulty}
+                </span>
+                {currentQuestion.category && (
+                  <span className="text-xs font-semibold text-content-subtle uppercase tracking-wider">
+                    • {currentQuestion.category}
                   </span>
-                  {currentQuestion.category && (
-                    <span className="text-[10px] font-semibold text-accent-500 uppercase tracking-wide">
-                      • {currentQuestion.category}
-                    </span>
-                  )}
-                  <h2 className="text-base font-bold text-content-primary">
-                    {currentQuestion.title}
-                  </h2>
-                </div>
-                <p className="text-sm text-content-secondary leading-relaxed">
-                  {currentQuestion.description}
-                </p>
+                )}
+                <h3 className="text-lg font-bold text-content-primary">
+                  {currentQuestion.title}
+                </h3>
               </div>
 
-              {/* Ask Socratic AI Tutor button */}
               <button
                 onClick={() =>
                   onOpenAITutorWithContext({
@@ -331,277 +354,216 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
                     errorMessage: queryResult?.error || validationResult?.message,
                   })
                 }
-                className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-accent-600 hover:bg-accent-700 text-white text-xs font-bold transition shadow cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border-default hover:border-accent-500 text-xs font-semibold text-content-primary transition cursor-pointer shadow-sm"
               >
-                <Sparkles className="w-4 h-4" />
-                <span>Ask AI Tutor</span>
+                <Sparkles className="w-3.5 h-3.5 text-accent-500" />
+                <span>Ask AI Tutor 🪄</span>
               </button>
             </div>
 
-            {/* Hint alert */}
-            <div className="flex items-start gap-2 p-3 rounded-xl bg-accent-500/5 border border-accent-500/20 text-xs text-content-secondary">
-              <HelpCircle className="w-4 h-4 text-accent-500 shrink-0 mt-0.5" />
-              <div>
+            {/* Description Text */}
+            <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
+              {currentQuestion.description}
+            </p>
+
+            {/* Collapsible Formal Hint Box */}
+            <div className="bg-surface/70 border border-border-default rounded-xl p-3 text-xs text-content-secondary flex items-start gap-2.5">
+              <button
+                onClick={() => setIsHintOpen((prev) => !prev)}
+                className="mt-0.5 text-content-subtle hover:text-content-primary transition"
+              >
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    isHintOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
+              <div className="flex-1 min-w-0">
                 <span className="font-semibold text-content-primary">Hint: </span>
-                {currentQuestion.hint}
+                {isHintOpen ? (
+                  <span>{currentQuestion.hint}</span>
+                ) : (
+                  <span className="text-content-subtle italic">Click to expand hint</span>
+                )}
               </div>
             </div>
-          </div>
 
-          {/* Editor & Schema Explorer Tabs */}
-          <div className="bg-surface rounded-2xl border border-border-default overflow-hidden">
-            <div className="flex items-center justify-between border-b border-border-default px-4 bg-canvas">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setActiveTab('query')}
-                  className={`px-4 py-3 text-xs font-bold border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
-                    activeTab === 'query'
-                      ? 'border-accent-500 text-accent-500'
-                      : 'border-transparent text-content-muted hover:text-content-primary'
-                  }`}
-                >
-                  <span>SQL Query Editor</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('schema')}
-                  className={`px-4 py-3 text-xs font-bold border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
-                    activeTab === 'schema'
-                      ? 'border-accent-500 text-accent-500'
-                      : 'border-transparent text-content-muted hover:text-content-primary'
-                  }`}
-                >
-                  <Table className="w-3.5 h-3.5" />
-                  <span>Schema Explorer</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('solution')}
-                  className={`px-4 py-3 text-xs font-bold border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
-                    activeTab === 'solution'
-                      ? 'border-accent-500 text-accent-500'
-                      : 'border-transparent text-content-muted hover:text-content-primary'
-                  }`}
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>View Reference Solution</span>
-                </button>
-              </div>
+            {/* FORMAL SQL CODE EDITOR (Matched exactly with Reference Screenshot) */}
+            <div className="bg-surface border border-border-default rounded-xl overflow-hidden shadow-e1">
+              <div className="relative font-mono text-xs flex min-h-[180px]">
+                {/* Line numbers gutter */}
+                <div className="w-10 bg-canvas/40 py-3 select-none text-right pr-3 text-content-subtle border-r border-border-subtle leading-6">
+                  {Array.from({ length: Math.max(sqlLines.length, 5) }).map((_, i) => (
+                    <div key={i}>{i + 1}</div>
+                  ))}
+                </div>
 
-              {/* Actions */}
-              {activeTab === 'query' && (
-                <div className="flex items-center gap-2 py-2">
+                {/* Textarea */}
+                <textarea
+                  value={userSql}
+                  onChange={(e) => setUserSql(e.target.value)}
+                  className="flex-1 bg-transparent p-3 text-xs font-mono text-content-primary focus:outline-none resize-none leading-6"
+                  rows={Math.max(sqlLines.length, 6)}
+                  placeholder="Enter your SQL query here..."
+                  spellCheck={false}
+                />
+
+                {/* Floating Bottom Right Actions: Reset & Run Query button in green */}
+                <div className="absolute right-3 bottom-3 flex items-center gap-2">
                   <button
                     onClick={() => setUserSql(currentQuestion.starterSql)}
-                    className="p-1.5 text-content-muted hover:text-content-primary rounded hover:bg-surface transition cursor-pointer"
-                    title="Reset to starter query"
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold text-content-secondary hover:text-content-primary bg-surface/90 border border-border-default transition cursor-pointer"
                   >
-                    <RotateCcw className="w-4 h-4" />
+                    Reset
                   </button>
                   <button
                     onClick={handleRunQuery}
                     disabled={isRunning}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface hover:bg-surface/80 border border-border-default text-xs font-semibold text-content-primary transition cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 shadow-sm transition cursor-pointer disabled:opacity-50"
                   >
-                    <Play className="w-3.5 h-3.5 text-accent-500" />
-                    <span>Run Query</span>
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>{isRunning ? 'Running...' : 'Run Query'}</span>
                   </button>
                   <button
                     onClick={handleValidateSolution}
                     disabled={isRunning}
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer shadow-sm disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-accent-600 hover:bg-accent-500 shadow-sm transition cursor-pointer disabled:opacity-50"
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
                     <span>Check Solution</span>
                   </button>
                 </div>
+              </div>
+            </div>
+
+            {/* VALIDATION ALERT */}
+            {validationResult && (
+              <div
+                className={`p-3.5 rounded-xl border text-xs flex items-start gap-2.5 ${
+                  validationResult.passed
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                }`}
+              >
+                {validationResult.passed ? (
+                  <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                )}
+                <div className="space-y-0.5">
+                  <span className="font-bold">
+                    {validationResult.passed
+                      ? 'Correct Solution! Great job!'
+                      : 'Output Does Not Match Canonical Answer'}
+                  </span>
+                  <p className="text-content-secondary">{validationResult.message}</p>
+                </div>
+              </div>
+            )}
+
+            {/* QUERY OUTPUT DATA TABLE (Styled exactly like Reference Screenshot) */}
+            <div className="bg-surface border border-border-default rounded-xl overflow-hidden shadow-e1">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-default bg-canvas/30 text-xs">
+                <div className="font-semibold text-content-primary">
+                  <span>Query Output</span>{' '}
+                  {queryResult && (
+                    <span className="text-content-subtle font-mono">
+                      ({queryResult.rowCount} rows • {queryResult.executionTimeMs}ms)
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setQueryResult(null)}
+                    className="text-xs text-content-subtle hover:text-content-primary transition cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => setIsSolutionModalOpen(true)}
+                    className="text-xs font-semibold text-accent-500 hover:underline cursor-pointer"
+                  >
+                    View Solution
+                  </button>
+                </div>
+              </div>
+
+              {queryResult?.error ? (
+                <div className="p-4 text-xs font-mono text-rose-400 bg-rose-500/5">
+                  {queryResult.error}
+                </div>
+              ) : queryResult && queryResult.rowCount > 0 ? (
+                <div className="max-h-72 overflow-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-canvas/60 border-b border-border-default sticky top-0 font-bold text-content-secondary">
+                      <tr>
+                        {queryResult.columns.map((col, idx) => (
+                          <th
+                            key={idx}
+                            className="px-4 py-2 border-r border-border-subtle last:border-r-0"
+                          >
+                            {col}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-subtle font-mono text-content-primary">
+                      {queryResult.values.map((row, rIdx) => (
+                        <tr key={rIdx} className="hover:bg-surface-muted/50 transition">
+                          {row.map((val, cIdx) => (
+                            <td
+                              key={cIdx}
+                              className="px-4 py-2 border-r border-border-subtle last:border-r-0 whitespace-nowrap"
+                            >
+                              {val === null ? (
+                                <span className="text-content-subtle italic">NULL</span>
+                              ) : (
+                                String(val)
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="p-8 text-center text-xs text-content-subtle">
+                  Execute query above or click &quot;Run Query&quot; to inspect output rows.
+                </div>
               )}
             </div>
 
-            {/* Tab: Query Editor */}
-            {activeTab === 'query' && (
-              <div className="p-4 space-y-4">
-                <textarea
-                  value={userSql}
-                  onChange={(e) => setUserSql(e.target.value)}
-                  className="w-full h-44 p-4 font-mono text-sm bg-canvas border border-border-default rounded-xl text-content-primary focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 resize-none"
-                  placeholder="Write your SQL solution query here..."
-                  spellCheck={false}
-                />
-
-                {/* Validation Status / Alert */}
-                {validationResult && (
-                  <div
-                    role={validationResult.passed ? 'status' : 'alert'}
-                    aria-live={validationResult.passed ? 'polite' : 'assertive'}
-                    className={`p-4 rounded-xl border flex items-start gap-3 ${
-                      validationResult.passed
-                        ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300'
-                        : 'bg-rose-950/20 border-rose-500/40 text-rose-300'
-                    }`}
-                  >
-                    {validationResult.passed ? (
-                      <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                    ) : (
-                      <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-                    )}
-                    <div className="space-y-1">
-                      <p className="font-bold text-sm">
-                        {validationResult.passed
-                          ? 'Correct Solution! Great job!'
-                          : 'Output Does Not Match Expected Result'}
-                      </p>
-                      <p className="text-xs leading-relaxed">{validationResult.message}</p>
-                      {validationResult.mismatchReason && (
-                        <p className="text-xs font-mono text-rose-200 mt-1">
-                          {validationResult.mismatchReason}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Results Table */}
-                {queryResult && (
-                  <div className="space-y-2" role="status" aria-live="polite">
-                    <div className="flex items-center justify-between text-xs text-content-muted">
-                      <span>Query Output: {queryResult.rowCount} rows</span>
-                      <span>Execution time: {queryResult.executionTimeMs}ms</span>
-                    </div>
-
-                    {queryResult.error ? (
-                      <div className="p-3 bg-rose-950/30 border border-rose-500/30 rounded-xl text-xs text-rose-300 font-mono" role="alert" aria-live="assertive">
-                        {queryResult.error}
-                      </div>
-                    ) : queryResult.rowCount === 0 ? (
-                      <div className="p-4 bg-canvas rounded-xl border border-border-default text-xs text-content-muted text-center">
-                        Query returned 0 rows.
-                      </div>
-                    ) : (
-                      <div className="max-h-64 overflow-auto rounded-xl border border-border-default">
-                        <table className="w-full text-left text-xs border-collapse">
-                          <thead className="bg-canvas border-b border-border-default sticky top-0">
-                            <tr>
-                              {queryResult.columns.map((col, idx) => (
-                                <th
-                                  key={idx}
-                                  className="px-3 py-2 font-bold text-content-secondary border-r border-border-subtle last:border-r-0"
-                                >
-                                  {col}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border-subtle font-mono text-content-primary">
-                            {queryResult.values.map((row, rowIdx) => (
-                              <tr key={rowIdx} className="hover:bg-surface/50 transition">
-                                {row.map((cell, cellIdx) => (
-                                  <td
-                                    key={cellIdx}
-                                    className="px-3 py-1.5 border-r border-border-subtle last:border-r-0 whitespace-nowrap"
-                                  >
-                                    {cell === null ? (
-                                      <span className="text-content-muted italic">NULL</span>
-                                    ) : (
-                                      String(cell)
-                                    )}
-                                  </td>
-                                ))}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Tab: Schema Explorer */}
-            {activeTab === 'schema' && (
-              <div className="p-4 space-y-4">
-                <div className="flex items-center gap-2 flex-wrap border-b border-border-default pb-3">
-                  {schemas.map((s) => (
+            {/* REFERENCE SOLUTION MODAL */}
+            {isSolutionModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+                <div className="bg-surface border border-border-default rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+                  <div className="flex items-center justify-between border-b border-border-subtle pb-3">
+                    <h3 className="text-sm font-bold text-content-primary">
+                      Canonical Reference Solution
+                    </h3>
                     <button
-                      key={s.tableName}
-                      onClick={() => setSelectedSchemaTable(s.tableName)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
-                        selectedSchemaTable === s.tableName
-                          ? 'bg-accent-600 text-white'
-                          : 'bg-canvas text-content-secondary hover:text-content-primary border border-border-default'
-                      }`}
+                      onClick={() => setIsSolutionModalOpen(false)}
+                      className="text-xs text-content-subtle hover:text-content-primary"
                     >
-                      <Table className="w-3.5 h-3.5" />
-                      <span>{s.tableName}</span>
+                      Close
                     </button>
-                  ))}
-                </div>
-
-                {(() => {
-                  const currTable = schemas.find((s) => s.tableName === selectedSchemaTable) || schemas[0];
-                  return (
-                    <div className="space-y-3">
-                      <p className="text-xs text-content-secondary">{currTable.description}</p>
-                      <div className="rounded-xl border border-border-default overflow-hidden">
-                        <table className="w-full text-left text-xs">
-                          <thead className="bg-canvas border-b border-border-default text-content-secondary">
-                            <tr>
-                              <th className="px-3 py-2 font-bold">Column</th>
-                              <th className="px-3 py-2 font-bold">Type</th>
-                              <th className="px-3 py-2 font-bold">Key / Constraint</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border-subtle font-mono text-content-primary">
-                            {currTable.columns.map((col, idx) => (
-                              <tr key={idx} className="hover:bg-surface/50">
-                                <td className="px-3 py-2 font-semibold text-accent-500">{col.name}</td>
-                                <td className="px-3 py-2 text-content-secondary">{col.type}</td>
-                                <td className="px-3 py-2">
-                                  {col.isPk && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold">
-                                      <Key className="w-3 h-3" /> PRIMARY KEY
-                                    </span>
-                                  )}
-                                  {col.isFk && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-bold">
-                                      FK → {col.fkRef}
-                                    </span>
-                                  )}
-                                  {!col.isPk && !col.isFk && (
-                                    <span className="text-content-muted text-[11px]">
-                                      {col.nullable ? 'NULLABLE' : 'NOT NULL'}
-                                    </span>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
-
-            {/* Tab: Solution */}
-            {activeTab === 'solution' && (
-              <div className="p-4 space-y-4">
-                <div className="p-4 bg-canvas rounded-xl border border-border-default space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-content-primary">Canonical Solution Query:</span>
+                  </div>
+                  <pre className="p-4 rounded-xl bg-canvas border border-border-default text-xs font-mono text-content-primary overflow-x-auto leading-relaxed">
+                    {currentQuestion.solutionSql}
+                  </pre>
+                  <div className="flex justify-end gap-2 pt-2">
                     <button
                       onClick={() => {
                         setUserSql(currentQuestion.solutionSql);
-                        setActiveTab('query');
+                        setIsSolutionModalOpen(false);
                       }}
-                      className="text-xs font-semibold text-accent-500 hover:underline cursor-pointer"
+                      className="px-3.5 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-white text-xs font-semibold cursor-pointer"
                     >
-                      Copy to Editor & Run
+                      Copy to Editor
                     </button>
                   </div>
-                  <pre className="p-3 bg-surface rounded-lg border border-border-subtle font-mono text-xs text-content-primary overflow-x-auto">
-                    {currentQuestion.solutionSql}
-                  </pre>
                 </div>
               </div>
             )}
