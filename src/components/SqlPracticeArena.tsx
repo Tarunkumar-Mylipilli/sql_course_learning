@@ -14,6 +14,7 @@ import {
   Layers,
   HelpCircle,
   AlertTriangle,
+  FolderGit2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import {
@@ -26,6 +27,9 @@ import {
   NORTHWIND_SCHEMAS,
   NORTHWIND_SEED_SQL,
   NORTHWIND_QUESTIONS,
+  W3RESOURCE_SCHEMAS,
+  W3RESOURCE_SEED_SQL,
+  W3RESOURCE_QUESTIONS,
 } from '../data/modules/sqlPracticeData';
 import { executeQuery, validateSolution, QueryResult, ValidationResult } from '../lib/sqlEngine';
 
@@ -55,9 +59,18 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
     }
   });
 
-  const questions = activeDb === 'hospital' ? HOSPITAL_QUESTIONS : NORTHWIND_QUESTIONS;
-  const schemas: PracticeTableSchema[] = activeDb === 'hospital' ? HOSPITAL_SCHEMAS : NORTHWIND_SCHEMAS;
-  const seedSql = activeDb === 'hospital' ? HOSPITAL_SEED_SQL : NORTHWIND_SEED_SQL;
+  const getDbConfig = (db: PracticeDatabaseType) => {
+    switch (db) {
+      case 'hospital':
+        return { questions: HOSPITAL_QUESTIONS, schemas: HOSPITAL_SCHEMAS, seedSql: HOSPITAL_SEED_SQL };
+      case 'northwind':
+        return { questions: NORTHWIND_QUESTIONS, schemas: NORTHWIND_SCHEMAS, seedSql: NORTHWIND_SEED_SQL };
+      case 'w3resource':
+        return { questions: W3RESOURCE_QUESTIONS, schemas: W3RESOURCE_SCHEMAS, seedSql: W3RESOURCE_SEED_SQL };
+    }
+  };
+
+  const { questions, schemas, seedSql } = getDbConfig(activeDb);
 
   const filteredQuestions = questions.filter((q) =>
     filterDifficulty === 'all' ? true : q.difficulty === filterDifficulty
@@ -83,12 +96,12 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
   // When switching database, default to first question
   const handleSwitchDb = (db: PracticeDatabaseType) => {
     setActiveDb(db);
-    const newQuestions = db === 'hospital' ? HOSPITAL_QUESTIONS : NORTHWIND_QUESTIONS;
-    setActiveQuestionId(newQuestions[0].id);
-    setUserSql(newQuestions[0].starterSql);
+    const newConfig = getDbConfig(db);
+    setActiveQuestionId(newConfig.questions[0].id);
+    setUserSql(newConfig.questions[0].starterSql);
     setQueryResult(null);
     setValidationResult(null);
-    setSelectedSchemaTable(db === 'hospital' ? HOSPITAL_SCHEMAS[0].tableName : NORTHWIND_SCHEMAS[0].tableName);
+    setSelectedSchemaTable(newConfig.schemas[0].tableName);
   };
 
   const handleRunQuery = async () => {
@@ -146,41 +159,56 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
             </div>
             <div>
               <h1 className="text-xl font-extrabold text-content-primary">
-                SQL Practice Arena (sql-practice.com Edition)
+                SQL Practice Arena
               </h1>
               <p className="text-xs text-content-secondary">
-                Practice real-world production queries on Hospital and Northwind datasets with instant evaluation.
+                Curated challenges from sql-practice.com (Hospital & Northwind) and w3resource (Sales & Inventory) with in-browser execution.
               </p>
             </div>
           </div>
         </div>
 
         {/* Database Switcher Pills */}
-        <div className="flex items-center gap-2 bg-canvas p-1.5 rounded-xl border border-border-default">
+        <div className="flex items-center gap-2 bg-canvas p-1.5 rounded-xl border border-border-default flex-wrap">
           <button
             onClick={() => handleSwitchDb('hospital')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
               activeDb === 'hospital'
                 ? 'bg-accent-600 text-white shadow-sm'
                 : 'text-content-secondary hover:text-content-primary'
             }`}
           >
-            <span>🏥 Hospital DB</span>
+            <span>🏥 Hospital DB (sql-practice)</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/20">
               {HOSPITAL_QUESTIONS.filter((q) => completedIds.includes(q.id)).length}/{HOSPITAL_QUESTIONS.length}
             </span>
           </button>
+          
           <button
             onClick={() => handleSwitchDb('northwind')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
               activeDb === 'northwind'
                 ? 'bg-accent-600 text-white shadow-sm'
                 : 'text-content-secondary hover:text-content-primary'
             }`}
           >
-            <span>📦 Northwind DB</span>
+            <span>📦 Northwind DB (sql-practice)</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/20">
               {NORTHWIND_QUESTIONS.filter((q) => completedIds.includes(q.id)).length}/{NORTHWIND_QUESTIONS.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => handleSwitchDb('w3resource')}
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+              activeDb === 'w3resource'
+                ? 'bg-accent-600 text-white shadow-sm'
+                : 'text-content-secondary hover:text-content-primary'
+            }`}
+          >
+            <span>📚 W3Resource (Sales & Inventory)</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/20">
+              {W3RESOURCE_QUESTIONS.filter((q) => completedIds.includes(q.id)).length}/{W3RESOURCE_QUESTIONS.length}
             </span>
           </button>
         </div>
@@ -192,7 +220,7 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
           <div className="bg-surface rounded-2xl border border-border-default p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-content-muted">
-                {activeDb === 'hospital' ? 'Hospital' : 'Northwind'} Questions
+                {activeDb === 'hospital' ? 'Hospital DB' : activeDb === 'northwind' ? 'Northwind DB' : 'W3Resource'} ({filteredQuestions.length})
               </span>
               {/* Difficulty filter */}
               <div className="flex items-center gap-1">
@@ -239,10 +267,15 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
                         >
                           {q.difficulty}
                         </span>
-                        <span className="text-xs font-semibold text-content-primary line-clamp-1">
-                          {idx + 1}. {q.title}
-                        </span>
+                        {q.category && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface border border-border-subtle text-content-muted font-medium">
+                            {q.category}
+                          </span>
+                        )}
                       </div>
+                      <span className="text-xs font-semibold text-content-primary line-clamp-1">
+                        {idx + 1}. {q.title}
+                      </span>
                       <p className="text-[11px] text-content-muted line-clamp-2">{q.description}</p>
                     </div>
                     {isDone && (
@@ -273,6 +306,11 @@ export const SqlPracticeArena: React.FC<SqlPracticeArenaProps> = ({
                   >
                     {currentQuestion.difficulty}
                   </span>
+                  {currentQuestion.category && (
+                    <span className="text-[10px] font-semibold text-accent-500 uppercase tracking-wide">
+                      • {currentQuestion.category}
+                    </span>
+                  )}
                   <h2 className="text-base font-bold text-content-primary">
                     {currentQuestion.title}
                   </h2>

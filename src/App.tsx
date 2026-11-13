@@ -385,6 +385,7 @@ export default function App() {
           onOpenRoadmap={() => setActiveView('roadmap')}
           onOpenInterview50={() => setActiveView('interview50')}
           onOpenNotes={() => setActiveView('notes')}
+          onOpenPracticeArena={() => setActiveView('practice')}
         />
       )}
 

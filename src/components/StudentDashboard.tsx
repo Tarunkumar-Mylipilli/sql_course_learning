@@ -29,6 +29,7 @@ interface StudentDashboardProps {
   onOpenRoadmap: () => void;
   onOpenInterview50: () => void;
   onOpenNotes: () => void;
+  onOpenPracticeArena?: () => void;
 }
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({
@@ -39,6 +40,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   onOpenRoadmap,
   onOpenInterview50,
   onOpenNotes,
+  onOpenPracticeArena,
 }) => {
   const [selectedLevelFilter, setSelectedLevelFilter] = useState<'All' | 'Beginner' | 'Intermediate' | 'Advanced'>('All');
 
@@ -260,13 +262,16 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         </div>
 
         {/* Practice Challenges */}
-        <div className="bg-canvas border border-slate-800/80 rounded-2xl p-4 shadow-lg space-y-1">
+        <div 
+          onClick={onOpenPracticeArena}
+          className="bg-canvas border border-slate-800/80 hover:border-cyan-500/50 rounded-2xl p-4 shadow-lg space-y-1 cursor-pointer transition"
+        >
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Interview Practice</span>
-            <Award className="w-4 h-4 text-purple-400" />
+            <span>SQL Practice Arena</span>
+            <Database className="w-4 h-4 text-cyan-400" />
           </div>
-          <div className="text-2xl font-extrabold text-purple-400">50+</div>
-          <div className="text-[11px] text-slate-400">FAANG & LeetCode problems</div>
+          <div className="text-2xl font-extrabold text-cyan-400">sql-practice + w3</div>
+          <div className="text-[11px] text-slate-400">Hospital, Northwind & Sales DB</div>
         </div>
       </div>
 
