@@ -676,9 +676,73 @@ export const W3RESOURCE_SCHEMAS: PracticeTableSchema[] = [
       { name: 'emp_dept', type: 'INT', isFk: true, fkRef: 'emp_department.dpt_code' },
     ],
   },
+  {
+    tableName: 'movie',
+    description: 'Cinematic catalogue with release dates, running times, languages, and countries',
+    columns: [
+      { name: 'mov_id', type: 'INT', isPk: true },
+      { name: 'mov_title', type: 'TEXT' },
+      { name: 'mov_year', type: 'INT' },
+      { name: 'mov_time', type: 'INT' },
+      { name: 'mov_lang', type: 'TEXT' },
+      { name: 'mov_dt_rel', type: 'DATE', nullable: true },
+      { name: 'mov_rel_country', type: 'TEXT' },
+    ],
+  },
+  {
+    tableName: 'actor',
+    description: 'Film actors directory with full names and gender records',
+    columns: [
+      { name: 'act_id', type: 'INT', isPk: true },
+      { name: 'act_fname', type: 'TEXT' },
+      { name: 'act_lname', type: 'TEXT' },
+      { name: 'act_gender', type: 'CHAR(1)' },
+    ],
+  },
+  {
+    tableName: 'director',
+    description: 'Film directors registry with identifiers and names',
+    columns: [
+      { name: 'dir_id', type: 'INT', isPk: true },
+      { name: 'dir_fname', type: 'TEXT' },
+      { name: 'dir_lname', type: 'TEXT' },
+    ],
+  },
+  {
+    tableName: 'movie_direction',
+    description: 'Relational mapping connecting directors to films',
+    columns: [
+      { name: 'dir_id', type: 'INT', isFk: true, fkRef: 'director.dir_id' },
+      { name: 'mov_id', type: 'INT', isFk: true, fkRef: 'movie.mov_id' },
+    ],
+  },
+  {
+    tableName: 'reviewer',
+    description: 'Critics and review organizations',
+    columns: [
+      { name: 'rev_id', type: 'INT', isPk: true },
+      { name: 'rev_name', type: 'TEXT' },
+    ],
+  },
+  {
+    tableName: 'rating',
+    description: 'Film ratings, star evaluations, and review counts',
+    columns: [
+      { name: 'mov_id', type: 'INT', isFk: true, fkRef: 'movie.mov_id' },
+      { name: 'rev_id', type: 'INT', isFk: true, fkRef: 'reviewer.rev_id' },
+      { name: 'rev_stars', type: 'DECIMAL(4,2)' },
+      { name: 'num_o_ratings', type: 'INT' },
+    ],
+  },
 ];
 
 export const W3RESOURCE_SEED_SQL = `
+DROP TABLE IF EXISTS rating;
+DROP TABLE IF EXISTS reviewer;
+DROP TABLE IF EXISTS movie_direction;
+DROP TABLE IF EXISTS director;
+DROP TABLE IF EXISTS actor;
+DROP TABLE IF EXISTS movie;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS customer;
 DROP TABLE IF EXISTS salesman;
@@ -841,6 +905,160 @@ INSERT INTO emp_details (emp_idno, emp_fname, emp_lname, emp_dept) VALUES
 (733843, 'Mario', 'Saule', 63),
 (631548, 'Alan', 'Snappy', 27),
 (839139, 'Maria', 'Foster', 57);
+
+CREATE TABLE movie (
+  mov_id INT PRIMARY KEY,
+  mov_title TEXT NOT NULL,
+  mov_year INT NOT NULL,
+  mov_time INT NOT NULL,
+  mov_lang TEXT NOT NULL,
+  mov_dt_rel DATE,
+  mov_rel_country TEXT NOT NULL
+);
+
+INSERT INTO movie (mov_id, mov_title, mov_year, mov_time, mov_lang, mov_dt_rel, mov_rel_country) VALUES
+(901, 'Vertigo', 1958, 128, 'English', '1958-08-24', 'UK'),
+(902, 'The Innocents', 1961, 100, 'English', '1962-02-19', 'SW'),
+(903, 'Lawrence of Arabia', 1962, 216, 'English', '1962-12-11', 'UK'),
+(904, 'The Deer Hunter', 1978, 183, 'English', '1979-03-08', 'UK'),
+(905, 'Amadeus', 1984, 160, 'English', '1985-01-07', 'UK'),
+(906, 'Blade Runner', 1982, 117, 'English', '1982-09-09', 'UK'),
+(907, 'Eyes Wide Shut', 1999, 159, 'English', NULL, 'UK'),
+(908, 'The Usual Suspects', 1995, 106, 'English', '1995-08-25', 'UK'),
+(909, 'Chinatown', 1974, 130, 'English', '1974-08-09', 'UK'),
+(910, 'Boogie Nights', 1997, 155, 'English', '1998-02-16', 'UK'),
+(911, 'Annie Hall', 1977, 93, 'English', '1977-04-20', 'USA'),
+(912, 'Princess Mononoke', 1997, 134, 'Japanese', '2001-10-19', 'UK'),
+(913, 'The Shawshank Redemption', 1994, 142, 'English', '1995-02-17', 'UK'),
+(914, 'American Beauty', 1999, 122, 'English', NULL, 'UK'),
+(915, 'Titanic', 1997, 194, 'English', '1998-01-23', 'UK'),
+(916, 'Good Will Hunting', 1997, 126, 'English', '1998-06-03', 'UK'),
+(917, 'Deliverance', 1972, 109, 'English', '1982-10-05', 'UK'),
+(918, 'Trainspotting', 1996, 94, 'English', '1996-02-23', 'UK'),
+(919, 'The Prestige', 2006, 130, 'English', '2006-11-10', 'UK'),
+(920, 'Donnie Darko', 2001, 113, 'English', NULL, 'UK');
+
+CREATE TABLE actor (
+  act_id INT PRIMARY KEY,
+  act_fname TEXT NOT NULL,
+  act_lname TEXT NOT NULL,
+  act_gender CHAR(1) NOT NULL
+);
+
+INSERT INTO actor (act_id, act_fname, act_lname, act_gender) VALUES
+(101, 'James', 'Stewart', 'M'),
+(102, 'Deborah', 'Kerr', 'F'),
+(103, 'Peter', 'OToole', 'M'),
+(104, 'Robert', 'De Niro', 'M'),
+(105, 'F. Murray', 'Abraham', 'M'),
+(106, 'Harrison', 'Ford', 'M'),
+(107, 'Nicole', 'Kidman', 'F'),
+(108, 'Stephen', 'Baldwin', 'M'),
+(109, 'Jack', 'Nicholson', 'M'),
+(110, 'Mark', 'Wahlberg', 'M'),
+(111, 'Woody', 'Allen', 'M'),
+(112, 'Claire', 'Danes', 'F'),
+(113, 'Tim', 'Robbins', 'M'),
+(114, 'Kevin', 'Spacey', 'M'),
+(115, 'Kate', 'Winslet', 'F'),
+(116, 'Robin', 'Williams', 'M'),
+(117, 'Jon', 'Voight', 'M'),
+(118, 'Ewan', 'McGregor', 'M'),
+(119, 'Christian', 'Bale', 'M'),
+(120, 'Maggie', 'Gyllenhaal', 'F');
+
+CREATE TABLE director (
+  dir_id INT PRIMARY KEY,
+  dir_fname TEXT NOT NULL,
+  dir_lname TEXT NOT NULL
+);
+
+INSERT INTO director (dir_id, dir_fname, dir_lname) VALUES
+(201, 'Alfred', 'Hitchcock'),
+(202, 'Jack', 'Clayton'),
+(203, 'David', 'Lean'),
+(204, 'Michael', 'Cimino'),
+(205, 'Milos', 'Forman'),
+(206, 'Ridley', 'Scott'),
+(207, 'Stanley', 'Kubrick'),
+(208, 'Bryan', 'Singer'),
+(209, 'Roman', 'Polanski'),
+(210, 'Paul', 'Thomas Anderson'),
+(211, 'Woody', 'Allen'),
+(212, 'Hayao', 'Miyazaki'),
+(213, 'Frank', 'Darabont'),
+(214, 'Sam', 'Mendes'),
+(215, 'James', 'Cameron'),
+(216, 'Gus', 'Van Sant'),
+(217, 'John', 'Boorman'),
+(218, 'Danny', 'Boyle'),
+(219, 'Christopher', 'Nolan'),
+(220, 'Richard', 'Kelly');
+
+CREATE TABLE movie_direction (
+  dir_id INT NOT NULL,
+  mov_id INT NOT NULL,
+  FOREIGN KEY (dir_id) REFERENCES director(dir_id),
+  FOREIGN KEY (mov_id) REFERENCES movie(mov_id)
+);
+
+INSERT INTO movie_direction (dir_id, mov_id) VALUES
+(201, 901),
+(202, 902),
+(203, 903),
+(204, 904),
+(205, 905),
+(206, 906),
+(207, 907),
+(208, 908),
+(209, 909),
+(210, 910),
+(211, 911),
+(212, 912),
+(213, 913),
+(214, 914),
+(215, 915),
+(216, 916),
+(217, 917),
+(218, 918),
+(219, 919),
+(220, 920);
+
+CREATE TABLE reviewer (
+  rev_id INT PRIMARY KEY,
+  rev_name TEXT NOT NULL
+);
+
+INSERT INTO reviewer (rev_id, rev_name) VALUES
+(9001, 'Righty Sock'),
+(9002, 'Jack Malvern'),
+(9003, 'Flagrant Baronessa'),
+(9004, 'Alec Mills'),
+(9005, 'Francois Truffaut'),
+(9006, 'Victor Fleming'),
+(9007, 'Manuel Lepez'),
+(9008, 'Brandt Sponseller'),
+(9009, 'Richard Adams');
+
+CREATE TABLE rating (
+  mov_id INT NOT NULL,
+  rev_id INT NOT NULL,
+  rev_stars DECIMAL(4,2),
+  num_o_ratings INT,
+  FOREIGN KEY (mov_id) REFERENCES movie(mov_id),
+  FOREIGN KEY (rev_id) REFERENCES reviewer(rev_id)
+);
+
+INSERT INTO rating (mov_id, rev_id, rev_stars, num_o_ratings) VALUES
+(901, 9001, 8.40, 263575),
+(902, 9002, 7.90, 20207),
+(903, 9003, 8.30, 202778),
+(906, 9005, 8.20, 484746),
+(913, 9006, 9.30, 1690000),
+(915, 9007, 7.70, 760000),
+(918, 9008, 8.20, 580301),
+(919, 9009, 8.50, 979100);
+
 `;
 
 export const W3RESOURCE_QUESTIONS: PracticeQuestion[] = [

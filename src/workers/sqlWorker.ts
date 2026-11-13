@@ -1,5 +1,6 @@
 // Dedicated Web Worker for isolated, non-blocking SQL execution with timeout safety
 import initSqlJs, { Database, SqlJsStatic } from 'sql.js';
+import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 
 let SQL: SqlJsStatic | null = null;
 let db: Database | null = null;
@@ -43,12 +44,8 @@ interface WorkerResponse {
 
 async function getEngine(): Promise<SqlJsStatic> {
   if (SQL) return SQL;
-  // Locate the self-hosted wasm binary relative to base path or public root
   SQL = await initSqlJs({
-    locateFile: (file: string) => {
-      // In Vite worker build, import.meta.url gives worker location
-      return new URL(`/${file}`, self.location.origin).href;
-    },
+    locateFile: () => wasmUrl,
   });
   return SQL;
 }
