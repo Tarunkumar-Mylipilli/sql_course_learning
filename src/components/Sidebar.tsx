@@ -6,13 +6,14 @@ import {
   FileText,
   Briefcase,
   Database,
+  Library,
   Settings,
   Sparkles,
 } from 'lucide-react';
 
 interface SidebarProps {
-  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice';
-  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice') => void;
+  activeView: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice' | 'w3catalog';
+  setActiveView: (view: 'dashboard' | 'course' | 'roadmap' | 'notes' | 'interview50' | 'practice' | 'w3catalog') => void;
   onOpenAITutor: () => void;
   isOpenMobile: boolean;
   onCloseMobile: () => void;
@@ -55,6 +56,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'practice',
       label: 'SQL Practice Arena',
       icon: <Database className="w-4 h-4" />,
+    },
+    {
+      id: 'w3catalog',
+      label: 'W3Resource Catalog',
+      icon: <Library className="w-4 h-4" />,
     },
   ] as const;
 
